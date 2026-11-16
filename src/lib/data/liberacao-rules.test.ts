@@ -6,7 +6,9 @@ import {
   isBlankLiberacaoItem,
   liberacaoItemCount,
   LIBERACAO_MODELO_INFO,
+  joinMultiplos,
   onlyDigits,
+  splitMultiplos,
   parseCm,
 } from "./rules";
 import { MIDIA_OPTIONS } from "./liberacao-options";
@@ -71,5 +73,20 @@ describe("modelo mídia", () => {
   it("quantity keeps digits only", () => {
     expect(onlyDigits("12a,5")).toBe("125");
     expect(onlyDigits("abc")).toBe("");
+  });
+});
+
+describe("multi-pick (Projetos: insumos e acabamento)", () => {
+  it("is enabled only for Projetos", () => {
+    expect(LIBERACAO_MODELO_INFO.projeto.multiplos).toEqual(["insumos", "acabamento"]);
+    expect(LIBERACAO_MODELO_INFO.midia.multiplos).toEqual([]);
+  });
+
+  it("splits and joins without blanks or repeats", () => {
+    expect(splitMultiplos("ACM FOSCO, PINTURA ,, ")).toEqual(["ACM FOSCO", "PINTURA"]);
+    expect(joinMultiplos(["ACM FOSCO", " pintura", "PINTURA", "", "Acrílico"])).toBe(
+      "ACM FOSCO, pintura, Acrílico",
+    );
+    expect(joinMultiplos([])).toBe("");
   });
 });

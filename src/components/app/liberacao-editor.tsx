@@ -3,6 +3,7 @@ import { AlertTriangle, Paperclip, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { WrapField } from "@/components/app/wrap-field";
+import { MultiPickField } from "@/components/app/multi-pick-field";
 import {
   BISSEMANAS,
   CLASSIFICACOES_VENDA,
@@ -10,6 +11,7 @@ import {
   LIBERACAO_MODELO_INFO,
   MIDIA_OPTIONS,
   onlyDigits,
+  splitMultiplos,
   parseCm,
   PROJETISTAS,
   PROJETO_OPTIONS,
@@ -441,7 +443,25 @@ export function LiberacaoEditor({
               {rows.map((item, index) => {
                 const label = (what: string) => `${what}, linha ${index + 1}`;
                 const cellText = (field: TextField, suggestions?: string[]) =>
-                  readOnly ? (
+                  readOnly && (info.multiplos as string[]).includes(field) ? (
+                    <span className="flex flex-wrap gap-1 px-1.5 py-1.5">
+                      {splitMultiplos(item[field]).map((v, i) => (
+                        <span
+                          key={`${v}-${i}`}
+                          className="rounded bg-secondary px-1.5 py-0.5 text-xs font-medium leading-snug text-secondary-foreground"
+                        >
+                          {v}
+                        </span>
+                      ))}
+                    </span>
+                  ) : !readOnly && (info.multiplos as string[]).includes(field) ? (
+                    <MultiPickField
+                      value={item[field]}
+                      suggestions={suggestions ?? []}
+                      aria-label={label(field)}
+                      onChange={(v) => updateItem(item.key, { [field]: v })}
+                    />
+                  ) : readOnly ? (
                     <span className="block whitespace-pre-wrap break-words px-2 py-2">
                       {item[field]}
                     </span>

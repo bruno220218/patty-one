@@ -214,6 +214,8 @@ export const LIBERACAO_MODELO_INFO: Record<
     insumos: string;
     /** Whether the model has the "Local de instalação" column. */
     localInstalacao: boolean;
+    /** Item columns where more than one option can be picked (stored as "A, B"). */
+    multiplos: ("insumos" | "acabamento")[];
     aviso: string | null;
     anexo: string;
   }
@@ -224,6 +226,7 @@ export const LIBERACAO_MODELO_INFO: Record<
     referencia: "Nº orçamento",
     insumos: "Insumos",
     localInstalacao: true,
+    multiplos: ["insumos", "acabamento"],
     aviso: "Não esqueça de colocar a cor do ACM / pintura / iluminação",
     anexo: "Obrigatório anexo no e-mail: escopo do serviço e foto do local (projetos)",
   },
@@ -233,6 +236,7 @@ export const LIBERACAO_MODELO_INFO: Record<
     referencia: "Nº painel",
     insumos: "Mídia",
     localInstalacao: false,
+    multiplos: [],
     aviso: null,
     anexo: "Obrigatório anexo no e-mail: foto do local (mídia) / layout (mídias)",
   },
@@ -320,4 +324,30 @@ export function liberacaoItemCount(itens: Parameters<typeof isBlankLiberacaoItem
 /** Keeps only digits (quantity accepts whole numbers only). */
 export function onlyDigits(value: string): string {
   return value.replace(/\D/g, "");
+}
+
+/** Splits a multi-pick value ("ACM FOSCO, PINTURA") into its items. */
+export function splitMultiplos(value: string): string[] {
+  return value
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+/** Joins multi-pick items, dropping blanks and repeats (case/accent-insensitive). */
+export function joinMultiplos(items: string[]): string {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of items) {
+    const v = raw.trim();
+    const key = v
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase();
+    if (v && !seen.has(key)) {
+      seen.add(key);
+      out.push(v);
+    }
+  }
+  return out.join(", ");
 }
