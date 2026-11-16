@@ -106,6 +106,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          created_by_name: string | null
           description: string
           id: string
           project_id: string
@@ -115,6 +116,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          created_by_name?: string | null
           description: string
           id?: string
           project_id: string
@@ -124,6 +126,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          created_by_name?: string | null
           description?: string
           id?: string
           project_id?: string
@@ -151,6 +154,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           completed_by: string | null
+          completed_by_name: string | null
           created_at: string
           id: string
           position: number
@@ -160,6 +164,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           completed_by?: string | null
+          completed_by_name?: string | null
           created_at?: string
           id?: string
           position?: number
@@ -169,6 +174,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           completed_by?: string | null
+          completed_by_name?: string | null
           created_at?: string
           id?: string
           position?: number

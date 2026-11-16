@@ -26,7 +26,8 @@ export interface Checklist {
 }
 
 export interface PersonRef {
-  id: string;
+  /** Null when the person was removed from the team; the name is kept. */
+  id: string | null;
   name: string;
 }
 

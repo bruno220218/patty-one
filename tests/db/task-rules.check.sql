@@ -2,9 +2,10 @@
 -- backend: it always ends with an exception "RESULT: ..." so every change is rolled back.
 -- Expected: g_gestor=true w_gestor=false tasks=2 locked=true addLocked=blocked
 -- directInsert=blocked w_sees_checklists=0 completed_by_w=true w_uncheck=blocked
--- w_unlock=blocked spoofBy=blocked dupKeepsDone=1 dupLocked=true g_uncheck=true
+-- w_unlock=blocked spoofBy=blocked dupKeepsDone=1 dupLocked=true
 -- s_projects=0 s_tasks=0 s_blockers=0 s_profiles=1 s_create=blocked s_dup=blocked
--- s_update=0 s_delete=0 s_blocker=blocked w_blocker=ok deleteLocked=ok anonRead=blocked
+-- s_update=0 s_delete=0 s_blocker=blocked w_blocker=ok g_uncheck=true removedNameKept=1
+-- blockerNameKept=1 deleteLocked=ok anonRead=blocked
 -- (g is made gestor and w an approved member explicitly; s is a new, unapproved sign-up.)
 do $$
 declare g uuid := gen_random_uuid(); w uuid := gen_random_uuid(); s uuid := gen_random_uuid(); n int; c uuid; p uuid; p2 uuid; t1 uuid; out text := '';
@@ -46,6 +47,11 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', g, 'role','authenticated')::text, true);
   update project_tasks set completed_at = null where id=t1;
   out := out || ' g_uncheck=' || ((select completed_at from project_tasks where id=t1) is null);
+  perform set_config('role','none', true);
+  delete from auth.users where id = w;
+  out := out || ' removedNameKept=' || (select count(*) from project_tasks where project_id=p2 and completed_by is null and completed_by_name='Operador Teste')
+    || ' blockerNameKept=' || (select count(*) from project_blockers where project_id=p and created_by is null and created_by_name='Operador Teste');
+  perform set_config('role','authenticated', true);
   begin delete from projects where id=p; out:=out||' deleteLocked=ok'; exception when others then out:=out||' deleteLocked=ERR:'||sqlerrm; end;
   perform set_config('role','anon', true);
   perform set_config('request.jwt.claims', '{"role":"anon"}', true);
