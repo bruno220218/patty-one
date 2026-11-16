@@ -12,7 +12,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { useChecklists, useDataAction } from "@/hooks/use-data";
 import { checklistRepository, projectRepository, type Checklist } from "@/lib/data";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/_gestor/checklists/")({
   head: () => ({
     meta: [
       { title: "Checklists — Patty One" },

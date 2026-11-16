@@ -13,7 +13,7 @@ import { useChecklist, useChecklists, useDataAction } from "@/hooks/use-data";
 import { checklistRepository, projectRepository } from "@/lib/data";
 import { pluralTasks } from "@/lib/format";
 
-export const Route = createFileRoute("/checklists/$checklistId")({
+export const Route = createFileRoute("/_authenticated/_gestor/checklists/$checklistId")({
   head: () => ({
     meta: [
       { title: "Checklist — Patty One" },
@@ -40,7 +40,7 @@ function ChecklistDetailPage() {
 
   const back = (
     <Button variant="outline" asChild className="mb-6">
-      <Link to="/">
+      <Link to="/checklists">
         <ArrowLeft />
         Checklists
       </Link>
@@ -150,7 +150,7 @@ function ChecklistDetailPage() {
         description={`"${checklist.name}" será excluído permanentemente. Projetos já criados a partir dele não serão afetados.`}
         onConfirm={async () => {
           setDeleteOpen(false);
-          await navigate({ to: "/" });
+          await navigate({ to: "/checklists" });
           run(() => checklistRepository.remove(checklist.id), "Checklist excluído.");
         }}
       />

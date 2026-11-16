@@ -14,7 +14,7 @@ import { useDataAction, useProject } from "@/hooks/use-data";
 import { projectProgress, projectRepository, projectStatus } from "@/lib/data";
 import { formatDate, formatDateOnly } from "@/lib/format";
 
-export const Route = createFileRoute("/projetos/$projectId")({
+export const Route = createFileRoute("/_authenticated/projetos/$projectId")({
   head: () => ({
     meta: [
       { title: "Projeto — Patty One" },
