@@ -29,6 +29,13 @@
       "when": 1794837362054,
       "tag": "0003_restrict_team_data_to_approved_members",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794838157493,
+      "tag": "0004_keep_names_after_member_removal",
+      "breakpoints": true
     }
   ]
 }
