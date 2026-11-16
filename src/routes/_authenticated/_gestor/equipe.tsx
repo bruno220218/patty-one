@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { KeyRound, ShieldCheck, Users } from "lucide-react";
+import { useState } from "react";
+import { KeyRound, ShieldCheck, Trash2, Users } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
+import { ConfirmDialog } from "@/components/app/confirm-dialog";
+import { IconAction } from "@/components/app/icon-action";
 import { useCurrentUser, useDataAction, useTeam } from "@/hooks/use-data";
-import { teamRepository } from "@/lib/data";
+import { teamRepository, type TeamMember } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/_gestor/equipe")({
@@ -27,6 +30,7 @@ function TeamPage() {
   const { data: team, isPending } = useTeam();
   const { data: me } = useCurrentUser();
   const run = useDataAction();
+  const [removing, setRemoving] = useState<TeamMember | null>(null);
 
   return (
     <>
@@ -90,11 +94,33 @@ function TeamPage() {
                       }
                     />
                   </label>
+                  {m.id === me?.id ? (
+                    <span className="h-8 w-8" aria-hidden />
+                  ) : (
+                    <IconAction
+                      icon={Trash2}
+                      label={`Remover ${m.name} da equipe`}
+                      danger
+                      onClick={() => setRemoving(m)}
+                    />
+                  )}
                 </div>
               </li>
             ))}
         </ul>
       )}
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => !open && setRemoving(null)}
+        title={`Remover ${removing?.name ?? ""} da equipe?`}
+        description="A conta desta pessoa será excluída e ela não poderá mais entrar. As tarefas que ela concluiu e os bloqueios que registrou continuam mostrando o nome dela. Se voltar a criar conta, precisará de nova aprovação."
+        confirmLabel="Remover"
+        onConfirm={() => {
+          const target = removing;
+          setRemoving(null);
+          if (target) run(() => teamRepository.remove(target.id), `${target.name} foi removido(a) da equipe.`);
+        }}
+      />
     </>
   );
 }
