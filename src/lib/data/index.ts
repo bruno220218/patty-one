@@ -17,6 +17,7 @@ export {
   groupTeamByRole,
   isOverdue,
   localToday,
+  matchingOpenTasks,
   projectProgress,
   projectStatus,
   type DueFilter,

@@ -1,4 +1,4 @@
-import { LayoutGrid, List, Search, X } from "lucide-react";
+import { LayoutGrid, List, ListTodo, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -63,7 +63,10 @@ export function ProjectFiltersBar({
   const set = <K extends keyof ProjectFilters>(key: K, value: ProjectFilters[K]) =>
     onChange({ ...filters, [key]: value });
   const filtering =
-    filters.query.trim() !== "" || filters.due !== "todos" || filters.progress !== "todos";
+    filters.query.trim() !== "" ||
+    filters.openTask.trim() !== "" ||
+    filters.due !== "todos" ||
+    filters.progress !== "todos";
 
   return (
     <div className="mb-4 space-y-2">
@@ -109,9 +112,11 @@ export function ProjectFiltersBar({
         </Select>
 
         <Select value={filters.sort} onValueChange={(v) => set("sort", v as ProjectSort)}>
-          <SelectTrigger className="h-9 w-[12rem]" aria-label="Ordenar projetos">
-            <span className="text-muted-foreground">Ordenar:</span>
-            <SelectValue />
+          <SelectTrigger className="h-9 w-[13.5rem]" aria-label="Ordenar projetos">
+            <span className="mr-1 shrink-0 text-muted-foreground">Ordenar:</span>
+            <span className="min-w-0 flex-1 truncate text-left">
+              <SelectValue />
+            </span>
           </SelectTrigger>
           <SelectContent>
             {SORT_OPTIONS.map((o) => (
@@ -121,14 +126,36 @@ export function ProjectFiltersBar({
             ))}
           </SelectContent>
         </Select>
+      </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-[14rem] flex-1">
+          <ListTodo className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={filters.openTask}
+            onChange={(e) => set("openTask", e.target.value)}
+            placeholder="Tarefa em aberto… ex.: instalação, arte, corte"
+            aria-label="Mostrar só projetos com esta tarefa ainda em aberto"
+            className="h-9 pl-9 pr-8"
+          />
+          {filters.openTask && (
+            <button
+              type="button"
+              onClick={() => set("openTask", "")}
+              aria-label="Limpar tarefa em aberto"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
         <ToggleGroup
           type="single"
           variant="outline"
           value={view}
           onValueChange={(v) => v && onViewChange(v as ProjectView)}
           aria-label="Visualização"
-          className="ml-auto"
+          className="ml-auto shrink-0"
         >
           <ToggleGroupItem value="kanban" aria-label="Kanban" className="h-9 gap-1.5 px-3">
             <LayoutGrid className="h-4 w-4" />

@@ -5,6 +5,7 @@ import { formatDateOnly } from "@/lib/format";
 import { StatusBadge } from "./status-badge";
 import { IconAction } from "./icon-action";
 import { ProjectProgressBar } from "./project-progress";
+import { OpenTaskChips } from "./open-task-chips";
 
 export function ProjectCard({
   project,
@@ -13,8 +14,11 @@ export function ProjectCard({
   onArchive,
   onRestore,
   onDelete,
+  openTasks = [],
 }: {
   project: Project;
+  /** Open tasks matching the "Tarefa em aberto" filter, shown as chips. */
+  openTasks?: string[];
   onEdit?: () => void;
   onDuplicate: () => void;
   onArchive?: () => void;
@@ -49,6 +53,7 @@ export function ProjectCard({
         </span>
         <span>{project.dueDate ? `Prazo ${formatDateOnly(project.dueDate)}` : "Sem prazo"}</span>
       </div>
+      <OpenTaskChips titles={openTasks} />
       <div className="mt-4 flex items-center justify-end gap-1">
         {onEdit && <IconAction icon={Pencil} label="Editar" onClick={onEdit} />}
         {onRestore && <IconAction icon={ArchiveRestore} label="Restaurar" onClick={onRestore} />}
