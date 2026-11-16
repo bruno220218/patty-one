@@ -9,7 +9,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { useDataAction, useProjects } from "@/hooks/use-data";
 import { projectRepository, type Project } from "@/lib/data";
 
-export const Route = createFileRoute("/arquivados")({
+export const Route = createFileRoute("/_authenticated/arquivados")({
   head: () => ({
     meta: [
       { title: "Arquivados — Patty One" },

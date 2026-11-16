@@ -11,7 +11,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { useChecklists, useDataAction, useProjects } from "@/hooks/use-data";
 import { projectRepository, type Project } from "@/lib/data";
 
-export const Route = createFileRoute("/projetos/")({
+export const Route = createFileRoute("/_authenticated/projetos/")({
   head: () => ({
     meta: [
       { title: "Projetos — Patty One" },

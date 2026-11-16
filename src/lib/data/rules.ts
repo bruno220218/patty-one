@@ -1,19 +1,15 @@
-import type { ChecklistTask, MoveDirection, ProjectStatus, ProjectTask } from "./types";
-import { generateId } from "./ids";
+import type { MoveDirection, ProjectStatus } from "./types";
 
-/** Copies checklist tasks into fresh project tasks: new IDs, all unchecked. */
-export function copyTasksForProject(tasks: ChecklistTask[]): ProjectTask[] {
-  return tasks.map((t) => ({ id: generateId(), title: t.title, completedAt: null }));
-}
+type TaskLike = { completedAt: string | null };
 
-export function projectProgress(tasks: ProjectTask[]) {
+export function projectProgress(tasks: TaskLike[]) {
   const total = tasks.length;
   const done = tasks.filter((t) => t.completedAt !== null).length;
   const percent = total === 0 ? 0 : Math.round((done / total) * 100);
   return { total, done, percent };
 }
 
-export function projectStatus(tasks: ProjectTask[]): ProjectStatus {
+export function projectStatus(tasks: TaskLike[]): ProjectStatus {
   const { total, done } = projectProgress(tasks);
   if (total === 0 || done === 0) return "not_started";
   if (done === total) return "done";
@@ -35,4 +31,9 @@ export function requireText(value: string, message: string): string {
   const trimmed = value.trim();
   if (!trimmed) throw new Error(message);
   return trimmed;
+}
+
+/** A completed task can only be unchecked by someone with management permission. */
+export function canToggleTask(task: TaskLike, isGestor: boolean): boolean {
+  return task.completedAt === null || isGestor;
 }

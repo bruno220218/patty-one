@@ -10,11 +10,11 @@ import { StatusBadge } from "@/components/app/status-badge";
 import { EmptyState } from "@/components/app/empty-state";
 import { ProjectProgressBar } from "@/components/app/project-progress";
 import { BlockerPanel } from "@/components/app/blocker-panel";
-import { useDataAction, useProject } from "@/hooks/use-data";
+import { useCurrentUser, useDataAction, useProject } from "@/hooks/use-data";
 import { projectProgress, projectRepository, projectStatus } from "@/lib/data";
 import { formatDate, formatDateOnly } from "@/lib/format";
 
-export const Route = createFileRoute("/projetos/$projectId")({
+export const Route = createFileRoute("/_authenticated/projetos/$projectId")({
   head: () => ({
     meta: [
       { title: "Projeto — Patty One" },
@@ -32,6 +32,7 @@ export const Route = createFileRoute("/projetos/$projectId")({
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
   const { data: project, isPending } = useProject(projectId);
+  const { data: me } = useCurrentUser();
   const run = useDataAction();
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
@@ -103,7 +104,14 @@ function ProjectDetailPage() {
       </section>
 
       <div className="mt-8 mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold">Tarefas</h2>
+        <div>
+          <h2 className="text-base font-semibold">Tarefas</h2>
+          {!me?.isGestor && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Depois de marcada, só um gestor pode desmarcar a tarefa.
+            </p>
+          )}
+        </div>
         {project.locked && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-locked px-2.5 py-0.5 text-xs font-semibold text-locked-foreground">
             <Lock className="h-3 w-3" />
@@ -116,6 +124,7 @@ function ProjectDetailPage() {
         tasks={project.tasks}
         checkable
         locked={project.locked}
+        canUncheck={Boolean(me?.isGestor)}
         emptyText={
           project.locked ? "Este projeto não tem tarefas." : "Nenhuma tarefa ainda. Adicione abaixo."
         }

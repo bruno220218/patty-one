@@ -1,7 +1,7 @@
 # Patty One — Roadmap
 
 - [x] Shell: sidebar (desktop) / bottom bar (mobile), light/dark theme, pt-BR
-- [x] Data access layer over localStorage (swappable for a database), unique IDs
+- [x] Data access layer (now on Lovable Cloud), unique IDs
 - [x] Checklists: create, edit, duplicate, delete (confirm), tasks add/edit/delete/reorder, task count, empty state
 - [x] Projetos: "Novo projeto" from checklist or empty; name (required), description, optional due date
 - [x] Rule: tasks copied from checklist with new IDs, all unchecked; projects and checklists independent afterwards
@@ -13,4 +13,6 @@
 - [x] App name is "Patty One" (replaces Trilha) everywhere
 - [x] Use Patty logo (uploaded PDF) in sidebar/mobile header + favicon
 - [x] Bloqueios: describe a blocker on a project, AI suggests next steps from tasks/progress (Lovable AI)
-- [ ] Record who completed each task; once checked it can't be unchecked except by someone with management permission (blocked: needs decision on how people are identified — real accounts vs local profile)
+- [x] Accounts with login (email/senha, Google, Lovable); first signup becomes gestor; Equipe page to grant gestão
+- [x] Record who completed each task; once checked only a gestor can uncheck (enforced in database)
+- [x] Checklists area visible only to gestores

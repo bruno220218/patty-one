@@ -10,102 +10,169 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ArquivadosRouteImport } from './routes/arquivados'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenticated/_gestor/route'
+import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
-import { Route as ChecklistsChecklistIdRouteImport } from './routes/checklists.$checklistId'
-import { Route as ProjetosIndexRouteImport } from './routes/projetos.index'
-import { Route as ProjetosProjectIdRouteImport } from './routes/projetos.$projectId'
+import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
+import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
+import { Route as AuthenticatedProjetosProjectIdRouteImport } from './routes/_authenticated/projetos.$projectId'
+import { Route as AuthenticatedGestorChecklistsIndexRouteImport } from './routes/_authenticated/_gestor/checklists.index'
+import { Route as AuthenticatedGestorChecklistsChecklistIdRouteImport } from './routes/_authenticated/_gestor/checklists.$checklistId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ArquivadosRoute = ArquivadosRouteImport.update({
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedGestorRouteRoute =
+  AuthenticatedGestorRouteRouteImport.update({
+    id: '/_gestor',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedArquivadosRoute = AuthenticatedArquivadosRouteImport.update({
   id: '/arquivados',
   path: '/arquivados',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
   id: '/api/next-steps',
   path: '/api/next-steps',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChecklistsChecklistIdRoute = ChecklistsChecklistIdRouteImport.update({
-  id: '/checklists/$checklistId',
-  path: '/checklists/$checklistId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjetosIndexRoute = ProjetosIndexRouteImport.update({
-  id: '/projetos/',
-  path: '/projetos/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjetosProjectIdRoute = ProjetosProjectIdRouteImport.update({
-  id: '/projetos/$projectId',
-  path: '/projetos/$projectId',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedGestorEquipeRoute =
+  AuthenticatedGestorEquipeRouteImport.update({
+    id: '/equipe',
+    path: '/equipe',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
+const AuthenticatedProjetosIndexRoute =
+  AuthenticatedProjetosIndexRouteImport.update({
+    id: '/projetos/',
+    path: '/projetos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProjetosProjectIdRoute =
+  AuthenticatedProjetosProjectIdRouteImport.update({
+    id: '/projetos/$projectId',
+    path: '/projetos/$projectId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGestorChecklistsIndexRoute =
+  AuthenticatedGestorChecklistsIndexRouteImport.update({
+    id: '/checklists/',
+    path: '/checklists/',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
+const AuthenticatedGestorChecklistsChecklistIdRoute =
+  AuthenticatedGestorChecklistsChecklistIdRouteImport.update({
+    id: '/checklists/$checklistId',
+    path: '/checklists/$checklistId',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/arquivados': typeof ArquivadosRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
-  '/projetos/$projectId': typeof ProjetosProjectIdRoute
-  '/projetos/': typeof ProjetosIndexRoute
+  '/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/projetos/': typeof AuthenticatedProjetosIndexRoute
+  '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
+  '/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/arquivados': typeof ArquivadosRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
-  '/projetos/$projectId': typeof ProjetosProjectIdRoute
-  '/projetos': typeof ProjetosIndexRoute
+  '/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/projetos': typeof AuthenticatedProjetosIndexRoute
+  '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
+  '/checklists': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/arquivados': typeof ArquivadosRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/_gestor': typeof AuthenticatedGestorRouteRouteWithChildren
+  '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
-  '/projetos/$projectId': typeof ProjetosProjectIdRoute
-  '/projetos/': typeof ProjetosIndexRoute
+  '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/_authenticated/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
+  '/_authenticated/_gestor/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
+  '/_authenticated/_gestor/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
+    | '/reset-password'
     | '/arquivados'
     | '/api/next-steps'
-    | '/checklists/$checklistId'
+    | '/equipe'
     | '/projetos/$projectId'
     | '/projetos/'
+    | '/checklists/$checklistId'
+    | '/checklists/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
+    | '/reset-password'
     | '/arquivados'
     | '/api/next-steps'
-    | '/checklists/$checklistId'
+    | '/equipe'
     | '/projetos/$projectId'
     | '/projetos'
+    | '/checklists/$checklistId'
+    | '/checklists'
   id:
     | '__root__'
     | '/'
-    | '/arquivados'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/_gestor'
+    | '/_authenticated/arquivados'
     | '/api/next-steps'
-    | '/checklists/$checklistId'
-    | '/projetos/$projectId'
-    | '/projetos/'
+    | '/_authenticated/_gestor/equipe'
+    | '/_authenticated/projetos/$projectId'
+    | '/_authenticated/projetos/'
+    | '/_authenticated/_gestor/checklists/$checklistId'
+    | '/_authenticated/_gestor/checklists/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ArquivadosRoute: typeof ArquivadosRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ApiNextStepsRoute: typeof ApiNextStepsRoute
-  ChecklistsChecklistIdRoute: typeof ChecklistsChecklistIdRoute
-  ProjetosProjectIdRoute: typeof ProjetosProjectIdRoute
-  ProjetosIndexRoute: typeof ProjetosIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -117,12 +184,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/arquivados': {
-      id: '/arquivados'
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_gestor': {
+      id: '/_authenticated/_gestor'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedGestorRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/arquivados': {
+      id: '/_authenticated/arquivados'
       path: '/arquivados'
       fullPath: '/arquivados'
-      preLoaderRoute: typeof ArquivadosRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedArquivadosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/next-steps': {
       id: '/api/next-steps'
@@ -131,37 +226,87 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNextStepsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/checklists/$checklistId': {
-      id: '/checklists/$checklistId'
-      path: '/checklists/$checklistId'
-      fullPath: '/checklists/$checklistId'
-      preLoaderRoute: typeof ChecklistsChecklistIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/_gestor/equipe': {
+      id: '/_authenticated/_gestor/equipe'
+      path: '/equipe'
+      fullPath: '/equipe'
+      preLoaderRoute: typeof AuthenticatedGestorEquipeRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
     }
-    '/projetos/': {
-      id: '/projetos/'
+    '/_authenticated/projetos/': {
+      id: '/_authenticated/projetos/'
       path: '/projetos'
       fullPath: '/projetos/'
-      preLoaderRoute: typeof ProjetosIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedProjetosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/projetos/$projectId': {
-      id: '/projetos/$projectId'
+    '/_authenticated/projetos/$projectId': {
+      id: '/_authenticated/projetos/$projectId'
       path: '/projetos/$projectId'
       fullPath: '/projetos/$projectId'
-      preLoaderRoute: typeof ProjetosProjectIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedProjetosProjectIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_gestor/checklists/': {
+      id: '/_authenticated/_gestor/checklists/'
+      path: '/checklists'
+      fullPath: '/checklists/'
+      preLoaderRoute: typeof AuthenticatedGestorChecklistsIndexRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
+    }
+    '/_authenticated/_gestor/checklists/$checklistId': {
+      id: '/_authenticated/_gestor/checklists/$checklistId'
+      path: '/checklists/$checklistId'
+      fullPath: '/checklists/$checklistId'
+      preLoaderRoute: typeof AuthenticatedGestorChecklistsChecklistIdRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
     }
   }
 }
 
+interface AuthenticatedGestorRouteRouteChildren {
+  AuthenticatedGestorEquipeRoute: typeof AuthenticatedGestorEquipeRoute
+  AuthenticatedGestorChecklistsChecklistIdRoute: typeof AuthenticatedGestorChecklistsChecklistIdRoute
+  AuthenticatedGestorChecklistsIndexRoute: typeof AuthenticatedGestorChecklistsIndexRoute
+}
+
+const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildren =
+  {
+    AuthenticatedGestorEquipeRoute: AuthenticatedGestorEquipeRoute,
+    AuthenticatedGestorChecklistsChecklistIdRoute:
+      AuthenticatedGestorChecklistsChecklistIdRoute,
+    AuthenticatedGestorChecklistsIndexRoute:
+      AuthenticatedGestorChecklistsIndexRoute,
+  }
+
+const AuthenticatedGestorRouteRouteWithChildren =
+  AuthenticatedGestorRouteRoute._addFileChildren(
+    AuthenticatedGestorRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedGestorRouteRoute: typeof AuthenticatedGestorRouteRouteWithChildren
+  AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
+  AuthenticatedProjetosProjectIdRoute: typeof AuthenticatedProjetosProjectIdRoute
+  AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedGestorRouteRoute: AuthenticatedGestorRouteRouteWithChildren,
+  AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
+  AuthenticatedProjetosProjectIdRoute: AuthenticatedProjetosProjectIdRoute,
+  AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ArquivadosRoute: ArquivadosRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ApiNextStepsRoute: ApiNextStepsRoute,
-  ChecklistsChecklistIdRoute: ChecklistsChecklistIdRoute,
-  ProjetosProjectIdRoute: ProjetosProjectIdRoute,
-  ProjetosIndexRoute: ProjetosIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

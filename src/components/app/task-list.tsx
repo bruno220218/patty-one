@@ -11,6 +11,7 @@ export interface TaskListItem {
   id: string;
   title: string;
   completedAt?: string | null;
+  completedBy?: { name: string } | null;
 }
 
 interface TaskListProps {
@@ -19,6 +20,8 @@ interface TaskListProps {
   checkable?: boolean;
   /** Tasks can only be checked; no add/edit/delete/reorder. */
   locked?: boolean;
+  /** Whether completed tasks can be unchecked (management permission). */
+  canUncheck?: boolean;
   emptyText: string;
   onToggle?: (taskId: string, done: boolean) => void;
   onAdd: (title: string) => Promise<unknown>;
@@ -31,6 +34,7 @@ export function TaskList({
   tasks,
   checkable = false,
   locked = false,
+  canUncheck = true,
   emptyText,
   onToggle,
   onAdd,
@@ -78,9 +82,11 @@ export function TaskList({
               {checkable && (
                 <Checkbox
                   checked={done}
+                  disabled={done && !canUncheck}
+                  title={done && !canUncheck ? "Somente gestores podem desmarcar" : undefined}
                   onCheckedChange={(v) => onToggle?.(task.id, v === true)}
                   aria-label={done ? `Desmarcar ${task.title}` : `Concluir ${task.title}`}
-                  className="h-5 w-5 rounded-[5px]"
+                  className="h-5 w-5 rounded-[5px] disabled:cursor-not-allowed disabled:opacity-100"
                 />
               )}
 
@@ -120,7 +126,9 @@ export function TaskList({
                     </p>
                     {task.completedAt && (
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        Concluída em {formatDateTime(task.completedAt)}
+                        Concluída
+                        {task.completedBy ? ` por ${task.completedBy.name}` : ""} em{" "}
+                        {formatDateTime(task.completedAt)}
                       </p>
                     )}
                   </div>

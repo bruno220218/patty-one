@@ -69,7 +69,22 @@ function friendlyError(error: unknown): string {
   return "Não foi possível gerar sugestões agora. Tente novamente em instantes.";
 }
 
+/** Confirms the caller is a signed-in Patty One user before spending AI credits. */
+async function isSignedIn(request: Request): Promise<boolean> {
+  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  if (!token || !url || !key) return false;
+  const res = await fetch(`${url.replace(/\/+$/, "")}/auth/v1/user`, {
+    headers: { apikey: key, Authorization: `Bearer ${token}` },
+  });
+  return res.ok;
+}
+
 export async function handleNextSteps(request: Request): Promise<Response> {
+  if (!(await isSignedIn(request))) {
+    return Response.json({ error: "Entre na sua conta para usar as sugestões." }, { status: 401 });
+  }
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) {
     return Response.json({ error: "A IA não está configurada neste app." }, { status: 500 });

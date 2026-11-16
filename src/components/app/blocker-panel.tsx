@@ -103,7 +103,8 @@ export function BlockerPanel({ project }: { project: Project }) {
               <li key={b.id} className={cn("surface-card p-4", resolved && "opacity-75")}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs text-muted-foreground">
-                    Registrado em {formatDateTime(b.createdAt)}
+                    Registrado{b.createdByName ? ` por ${b.createdByName}` : ""} em{" "}
+                    {formatDateTime(b.createdAt)}
                   </p>
                   {resolved && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-status-done px-2.5 py-0.5 text-xs font-semibold text-status-done-foreground">

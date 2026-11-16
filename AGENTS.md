@@ -31,7 +31,8 @@ use the editor.
 
 ## Project rules
 
-- Persistence goes through repository interfaces in `src/lib/data` (`ChecklistRepository`, `ProjectRepository`), exported from `src/lib/data/index.ts`; UI never touches localStorage directly — why: storage must be swappable for a database without UI changes.
-- Business rules (task copying, progress, status, locks) live in `src/lib/data/rules.ts` and repositories, covered by `src/lib/data/data-rules.test.ts` — why: rules stay testable and storage-agnostic.
-- UI reads data with TanStack Query hooks from `src/hooks/use-data.ts` (client-side only, no route loaders) and mutates through `useDataAction` — why: browser storage is unavailable during SSR.
-- AI next-step suggestions stream from the server route `src/routes/api/next-steps.ts` → `src/lib/ai/next-steps.server.ts` (Lovable AI Gateway, Responses API); the browser sends a project snapshot because data lives client-side — why: keeps the key and prompt on the server.
+- Persistence goes through repository interfaces in `src/lib/data/repositories.ts`, implemented on Lovable Cloud (`cloud-*.ts`) and exported from `src/lib/data/index.ts`; UI never queries the database directly — why: storage stays swappable without UI changes.
+- Security-relevant task rules (copying checklist tasks, fixed-params lock, who/when completed, gestor-only uncheck) are enforced in the database (RPCs `create_project`/`duplicate_project`, trigger `guard_project_tasks`, column grants), checked by `tests/db/task-rules.check.sql`; pure display rules live in `src/lib/data/rules.ts` with `data-rules.test.ts` — why: the UI can't be trusted to enforce permissions.
+- The `gestor` role lives in `user_roles` (checked via `has_role`); gestor-only pages sit under `src/routes/_authenticated/_gestor/` — why: roles must never come from client state.
+- UI reads data with TanStack Query hooks from `src/hooks/use-data.ts` (client-side only, no route loaders) and mutates through `useDataAction` — why: the session lives in the browser and signed-in routes render client-side.
+- AI next-step suggestions stream from the server route `src/routes/api/next-steps.ts` → `src/lib/ai/next-steps.server.ts` (Lovable AI Gateway, Responses API); the route verifies the caller's bearer token and the browser sends a project snapshot — why: keeps the key and prompt on the server and AI use limited to signed-in people.
