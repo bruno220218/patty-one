@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { CurrentUser } from "./types";
+import type { CurrentUser, Funcao } from "./types";
 import { dbError } from "./db-errors";
 import { removeTeamMember, renameTeamMember, setTeamMemberPassword } from "./team.functions";
 
@@ -10,8 +10,20 @@ export interface TeamMember {
   isMember: boolean;
   isGestor: boolean;
   isComercial: boolean;
+  funcoes: Funcao[];
   joinedAt: string;
 }
+
+const FUNCAO_VALUES: Funcao[] = [
+  "gestor",
+  "comercial",
+  "pcp",
+  "direcao",
+  "criacao",
+  "producao",
+  "montagem",
+];
+const asFuncoes = (roles: string[]) => FUNCAO_VALUES.filter((f) => roles.includes(f));
 
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const {
@@ -30,6 +42,7 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
     isMember: list.length > 0,
     isGestor: list.includes("gestor"),
     isComercial: (list as string[]).includes("comercial"),
+    funcoes: asFuncoes(list as string[]),
   };
 }
 
@@ -45,15 +58,17 @@ export const teamRepository = {
     const gestores = new Set(
       (roles.data ?? []).filter((r) => r.role === "gestor").map((r) => r.user_id),
     );
-    const comerciais = new Set(
-      (roles.data ?? []).filter((r) => (r.role as string) === "comercial").map((r) => r.user_id),
-    );
+    const rolesOf = new Map<string, string[]>();
+    for (const r of roles.data ?? []) {
+      rolesOf.set(r.user_id, [...(rolesOf.get(r.user_id) ?? []), r.role as string]);
+    }
     return (profiles.data ?? []).map((p) => ({
       id: p.id,
       name: p.display_name || "Sem nome",
       isMember: members.has(p.id),
       isGestor: gestores.has(p.id),
-      isComercial: comerciais.has(p.id),
+      isComercial: (rolesOf.get(p.id) ?? []).includes("comercial"),
+      funcoes: asFuncoes(rolesOf.get(p.id) ?? []),
       joinedAt: p.created_at,
     }));
   },
@@ -95,11 +110,11 @@ export const teamRepository = {
       .eq("role", "gestor");
     if (error) throw dbError(error);
   },
-  /** Give or take the "comercial" role (can edit liberações). Keeps team access. */
-  async setComercial(userId: string, comercial: boolean): Promise<void> {
-    // "comercial" is newer than the generated database types.
-    const role = "comercial" as unknown as "gestor";
-    if (comercial) {
+  /** Give or take a team function. Keeps basic team access. "gestor" uses setGestor. */
+  async setFuncao(userId: string, funcao: Exclude<Funcao, "gestor">, on: boolean): Promise<void> {
+    // The new functions are newer than the generated database types.
+    const role = funcao as unknown as "gestor";
+    if (on) {
       const keep = await supabase
         .from("user_roles")
         .upsert(

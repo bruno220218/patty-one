@@ -242,11 +242,47 @@ export const LIBERACAO_MODELO_INFO: Record<
   },
 };
 
-/** Gestão and comercial can create/edit liberações (the database enforces the same rule). */
-export function canEditLiberacoes(
-  user: { isGestor: boolean; isComercial: boolean } | null | undefined,
-) {
-  return Boolean(user && (user.isGestor || user.isComercial));
+type WithFuncoes = { funcoes: readonly string[] } | null | undefined;
+const hasFuncao = (user: WithFuncoes, ...funcoes: string[]) =>
+  Boolean(user && user.funcoes.some((f) => funcoes.includes(f)));
+
+/** Comercial and gestão create/edit liberações (the database enforces the same rule). */
+export function canEditLiberacoes(user: WithFuncoes) {
+  return hasFuncao(user, "gestor", "comercial");
+}
+
+/** PCP, direção and gestão approve or reject liberações (also enforced in the database). */
+export function canAprovarLiberacoes(user: WithFuncoes) {
+  return hasFuncao(user, "gestor", "pcp", "direcao");
+}
+
+/** Team functions in display order, with labels and what each one does. */
+export const FUNCOES = [
+  { value: "gestor", label: "Gestão", descricao: "Acesso total" },
+  { value: "comercial", label: "Comercial", descricao: "Cria e edita liberações" },
+  { value: "pcp", label: "PCP", descricao: "Aprova ou reprova liberações" },
+  { value: "direcao", label: "Direção", descricao: "Aprova ou reprova liberações" },
+  { value: "criacao", label: "Criação", descricao: "Executa projetos" },
+  { value: "producao", label: "Produção", descricao: "Executa projetos" },
+  { value: "montagem", label: "Montagem", descricao: "Executa projetos" },
+] as const;
+
+export const LIBERACAO_STATUS_LABEL: Record<"aguardando" | "reprovada" | "aprovada", string> = {
+  aguardando: "Na fila do PCP",
+  reprovada: "Em edição",
+  aprovada: "Aprovada",
+};
+
+/**
+ * Liberações waiting for PCP in queue order (oldest submission first).
+ * A rejected one that is fixed and saved again re-enters at the end.
+ */
+export function filaPcp<T extends { status: string; enviadaEm: string; numero: number }>(
+  liberacoes: T[],
+): T[] {
+  return liberacoes
+    .filter((l) => l.status === "aguardando")
+    .sort((a, b) => a.enviadaEm.localeCompare(b.enviadaEm) || a.numero - b.numero);
 }
 
 export function emptyLiberacaoItem() {

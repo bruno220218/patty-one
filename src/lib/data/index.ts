@@ -13,7 +13,11 @@ export const liberacaoRepository = cloudLiberacaoRepository;
 export type { ChecklistRepository, LiberacaoRepository, ProjectRepository } from "./repositories";
 export * from "./types";
 export {
+  canAprovarLiberacoes,
   canEditLiberacoes,
+  filaPcp,
+  FUNCOES,
+  LIBERACAO_STATUS_LABEL,
   emptyLiberacaoItem,
   formatQuantidade,
   formatTamanho,

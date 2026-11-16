@@ -9,7 +9,13 @@ export interface CurrentUser {
   isGestor: boolean;
   /** Comercial: can create and edit liberações (as can gestores). */
   isComercial: boolean;
+  /** Every function (role) the person has, besides basic access. */
+  funcoes: Funcao[];
 }
+
+/** Team functions. "gestor" = Gestão (everything). */
+export type Funcao =
+  "gestor" | "comercial" | "pcp" | "direcao" | "criacao" | "producao" | "montagem";
 
 export interface ChecklistTask {
   id: string;
@@ -141,9 +147,28 @@ export interface LiberacaoInput {
   itens: LiberacaoItem[];
 }
 
+/** aguardando = na fila do PCP · reprovada = em edição pelo comercial · aprovada = virou projeto */
+export type LiberacaoStatus = "aguardando" | "reprovada" | "aprovada";
+
 export interface Liberacao extends LiberacaoInput {
   id: string;
   numero: number;
+  status: LiberacaoStatus;
+  /** When it (re)entered the PCP queue; the queue is ordered by this. */
+  enviadaEm: string;
+  motivoReprovacao: string;
+  decididoPorNome: string;
+  decididoEm: string | null;
+  /** Project created when it was approved. */
+  projectId: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface LiberacaoEvento {
+  id: string;
+  tipo: "criada" | "reprovada" | "reenviada" | "aprovada";
+  detalhe: string;
+  autorNome: string;
+  createdAt: string;
 }

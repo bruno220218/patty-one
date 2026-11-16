@@ -34,6 +34,12 @@ export const liberacaoQuery = (id: string) =>
 export const useLiberacoes = () => useQuery(liberacoesQuery());
 export const useLiberacao = (id: string) => useQuery(liberacaoQuery(id));
 
+export const useLiberacaoEventos = (id: string) =>
+  useQuery({
+    queryKey: ["liberacoes", id, "eventos"],
+    queryFn: () => liberacaoRepository.eventos(id),
+  });
+
 export const useChecklists = () => useQuery(checklistsQuery());
 export const useChecklist = (id: string) => useQuery(checklistQuery(id));
 export const useProjects = (archived: boolean) => useQuery(projectsQuery(archived));

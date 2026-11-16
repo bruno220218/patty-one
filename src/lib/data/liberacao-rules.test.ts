@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  canAprovarLiberacoes,
   canEditLiberacoes,
+  filaPcp,
   emptyLiberacaoItem,
   formatTamanho,
   isBlankLiberacaoItem,
@@ -14,11 +16,16 @@ import {
 import { MIDIA_OPTIONS } from "./liberacao-options";
 
 describe("liberação rules", () => {
-  it("only gestão and comercial can edit", () => {
-    expect(canEditLiberacoes({ isGestor: true, isComercial: false })).toBe(true);
-    expect(canEditLiberacoes({ isGestor: false, isComercial: true })).toBe(true);
-    expect(canEditLiberacoes({ isGestor: false, isComercial: false })).toBe(false);
+  it("only gestão and comercial edit; PCP, direção and gestão approve", () => {
+    const u = (...funcoes: string[]) => ({ funcoes });
+    expect(canEditLiberacoes(u("gestor"))).toBe(true);
+    expect(canEditLiberacoes(u("comercial"))).toBe(true);
+    expect(canEditLiberacoes(u("pcp", "producao"))).toBe(false);
     expect(canEditLiberacoes(null)).toBe(false);
+    expect(canAprovarLiberacoes(u("pcp"))).toBe(true);
+    expect(canAprovarLiberacoes(u("direcao"))).toBe(true);
+    expect(canAprovarLiberacoes(u("gestor"))).toBe(true);
+    expect(canAprovarLiberacoes(u("comercial", "criacao", "montagem"))).toBe(false);
   });
 
   it("parses sizes in cm with pt-BR decimals", () => {
@@ -88,5 +95,23 @@ describe("multi-pick (Projetos: insumos e acabamento)", () => {
       "ACM FOSCO, pintura, Acrílico",
     );
     expect(joinMultiplos([])).toBe("");
+  });
+});
+
+describe("fila do PCP", () => {
+  it("keeps only waiting ones, oldest submission first (resubmitted go to the end)", () => {
+    const l = (numero: number, status: string, enviadaEm: string) => ({
+      numero,
+      status,
+      enviadaEm,
+    });
+    const fila = filaPcp([
+      l(5, "aguardando", "2026-11-16T10:00:00Z"),
+      l(3, "aprovada", "2026-11-15T09:00:00Z"),
+      l(2, "aguardando", "2026-11-16T15:00:00Z"), // reenviada depois de reprovada
+      l(4, "reprovada", "2026-11-16T08:00:00Z"),
+      l(6, "aguardando", "2026-11-16T11:00:00Z"),
+    ]);
+    expect(fila.map((x) => x.numero)).toEqual([5, 6, 2]);
   });
 });

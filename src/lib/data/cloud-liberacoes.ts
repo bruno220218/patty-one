@@ -1,7 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { LiberacaoRepository } from "./repositories";
-import type { Liberacao, LiberacaoInput, LiberacaoItem, LiberacaoModelo } from "./types";
+import type {
+  Liberacao,
+  LiberacaoEvento,
+  LiberacaoInput,
+  LiberacaoItem,
+  LiberacaoModelo,
+  LiberacaoStatus,
+} from "./types";
 import { dbError } from "./db-errors";
 import { isBlankLiberacaoItem } from "./rules";
 
@@ -11,7 +18,8 @@ const db = supabase as unknown as SupabaseClient;
 
 const SELECT = `id, modelo, numero, cliente, responsavel, contato, endereco, projetista, vendedor,
   classificacao_venda, data_liberacao, data_entrega, bissemana, ponto_energia, horario_instalacao,
-  observacoes, created_at, updated_at,
+  observacoes, status, enviada_em, motivo_reprovacao, decidido_por_nome, decidido_em, project_id,
+  created_at, updated_at,
   liberacao_itens(id, position, referencia, servico, insumos, acabamento, instalacao, detalhes,
     largura_cm, altura_cm, quantidade, local_instalacao)`;
 
@@ -47,6 +55,12 @@ interface Row {
   ponto_energia: string;
   horario_instalacao: string;
   observacoes: string;
+  status: LiberacaoStatus;
+  enviada_em: string;
+  motivo_reprovacao: string;
+  decidido_por_nome: string;
+  decidido_em: string | null;
+  project_id: string | null;
   created_at: string;
   updated_at: string;
   liberacao_itens: ItemRow[] | null;
@@ -72,6 +86,12 @@ function toLiberacao(row: Row): Liberacao {
     pontoEnergia: row.ponto_energia,
     horarioInstalacao: row.horario_instalacao,
     observacoes: row.observacoes,
+    status: row.status,
+    enviadaEm: row.enviada_em,
+    motivoReprovacao: row.motivo_reprovacao,
+    decididoPorNome: row.decidido_por_nome,
+    decididoEm: row.decidido_em,
+    projectId: row.project_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     itens: [...(row.liberacao_itens ?? [])]
@@ -116,6 +136,7 @@ function headerRow(input: LiberacaoInput) {
 
 function friendly(error: { message: string; code?: string }): Error {
   if (error.code === "23505") return new Error("Já existe uma liberação com este número.");
+  if (error.code === "P0001") return new Error(error.message);
   if (error.code === "42P01" || error.code === "PGRST205") {
     return new Error("As liberações ainda não foram ativadas no banco de dados.");
   }
@@ -209,6 +230,48 @@ export const cloudLiberacaoRepository: LiberacaoRepository = {
     const updated = await this.get(id);
     if (!updated) throw new Error("Registro não encontrado.");
     return updated;
+  },
+
+  async aprovar(id, projectId) {
+    const { error } = await db
+      .from("liberacoes")
+      .update({ status: "aprovada", project_id: projectId })
+      .eq("id", id);
+    if (error) throw friendly(error);
+  },
+
+  async reprovar(id, motivo) {
+    const clean = motivo.trim();
+    if (!clean) throw new Error("Informe o motivo da reprovação.");
+    const { error } = await db
+      .from("liberacoes")
+      .update({ status: "reprovada", motivo_reprovacao: clean })
+      .eq("id", id);
+    if (error) throw friendly(error);
+  },
+
+  async eventos(id) {
+    const { data, error } = await db
+      .from("liberacao_eventos")
+      .select("id, tipo, detalhe, autor_nome, created_at")
+      .eq("liberacao_id", id)
+      .order("created_at", { ascending: true });
+    if (error) throw friendly(error);
+    return (
+      (data ?? []) as {
+        id: string;
+        tipo: LiberacaoEvento["tipo"];
+        detalhe: string;
+        autor_nome: string;
+        created_at: string;
+      }[]
+    ).map((e) => ({
+      id: e.id,
+      tipo: e.tipo,
+      detalhe: e.detalhe,
+      autorNome: e.autor_nome,
+      createdAt: e.created_at,
+    }));
   },
 
   async remove(id) {

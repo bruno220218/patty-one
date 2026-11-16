@@ -1,5 +1,6 @@
 import type {
   Liberacao,
+  LiberacaoEvento,
   LiberacaoInput,
   Checklist,
   ChecklistInput,
@@ -51,6 +52,13 @@ export interface LiberacaoRepository {
   /** Suggested number for a new liberação (last + 1). */
   nextNumero(): Promise<number>;
   create(input: LiberacaoInput): Promise<Liberacao>;
+  /** Saving a rejected liberação sends it back to the end of the PCP queue (database rule). */
   update(id: string, input: LiberacaoInput): Promise<Liberacao>;
+  /** PCP/direção/gestão: approve and link the project created for production. */
+  aprovar(id: string, projectId: string): Promise<void>;
+  /** PCP/direção/gestão: reject with a reason; it goes back to comercial for editing. */
+  reprovar(id: string, motivo: string): Promise<void>;
+  /** History: criada, reprovada, reenviada, aprovada. */
+  eventos(id: string): Promise<LiberacaoEvento[]>;
   remove(id: string): Promise<void>;
 }

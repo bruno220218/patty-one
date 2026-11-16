@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Briefcase, KeyRound, LockKeyhole, Pencil, ShieldCheck, Trash2, Users } from "lucide-react";
+import { KeyRound, LockKeyhole, Pencil, Trash2, Users } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
@@ -9,8 +9,15 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { IconAction } from "@/components/app/icon-action";
 import { RenameMemberDialog } from "@/components/app/rename-member-dialog";
 import { SetPasswordDialog } from "@/components/app/set-password-dialog";
+import { FuncoesChips, FuncoesPicker } from "@/components/app/funcoes-picker";
 import { useCurrentUser, useDataAction, useTeam } from "@/hooks/use-data";
-import { groupTeamByRole, teamRepository, type TeamMember, type TeamRole } from "@/lib/data";
+import {
+  FUNCOES,
+  groupTeamByRole,
+  teamRepository,
+  type TeamMember,
+  type TeamRole,
+} from "@/lib/data";
 import { formatDate } from "@/lib/format";
 
 const ROLE_LABEL: Record<TeamRole, string> = {
@@ -46,7 +53,7 @@ function TeamPage() {
     <>
       <PageHeader
         title="Equipe"
-        description="Libere o acesso de quem criou conta. Gestão vê checklists e pode desmarcar tarefas concluídas. Gestão e comercial ajustam liberações."
+        description="Libere o acesso de quem criou conta e defina as funções: Comercial cria liberações, PCP e Direção aprovam, Criação, Produção e Montagem executam. Gestão tem acesso total."
       />
       {isPending ? (
         <CardGridSkeleton />
@@ -82,6 +89,9 @@ function TeamPage() {
                           ? `Entrou em ${formatDate(m.joinedAt)}`
                           : "Aguardando aprovação"}
                       </p>
+                      <div className="mt-1">
+                        <FuncoesChips funcoes={m.funcoes} />
+                      </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <label className="flex items-center gap-2 text-sm">
@@ -101,40 +111,22 @@ function TeamPage() {
                           }
                         />
                       </label>
-                      <label className="flex items-center gap-2 text-sm">
-                        <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        <span className="hidden sm:inline">Comercial</span>
-                        <Switch
-                          checked={m.isComercial}
-                          disabled={!m.isMember}
-                          aria-label={`Função comercial para ${m.name}`}
-                          onCheckedChange={(v) =>
-                            run(
-                              () => teamRepository.setComercial(m.id, v),
-                              v
-                                ? `${m.name} agora é do comercial (pode ajustar liberações).`
-                                : `${m.name} não é mais do comercial.`,
-                            )
-                          }
-                        />
-                      </label>
-                      <label className="flex items-center gap-2 text-sm">
-                        <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                        <span className="hidden sm:inline">Gestão</span>
-                        <Switch
-                          checked={m.isGestor}
-                          disabled={!m.isMember}
-                          aria-label={`Permissão de gestão para ${m.name}`}
-                          onCheckedChange={(v) =>
-                            run(
-                              () => teamRepository.setGestor(m.id, v),
-                              v
-                                ? `${m.name} agora é gestor(a).`
-                                : `${m.name} não é mais gestor(a).`,
-                            )
-                          }
-                        />
-                      </label>
+                      <FuncoesPicker
+                        personName={m.name}
+                        funcoes={m.funcoes}
+                        disabled={!m.isMember}
+                        lockGestor={m.id === me?.id}
+                        onToggle={(funcao, on) => {
+                          const label = FUNCOES.find((f) => f.value === funcao)?.label ?? funcao;
+                          run(
+                            () =>
+                              funcao === "gestor"
+                                ? teamRepository.setGestor(m.id, on)
+                                : teamRepository.setFuncao(m.id, funcao, on),
+                            on ? `${m.name} agora é ${label}.` : `${m.name} não é mais ${label}.`,
+                          );
+                        }}
+                      />
                       <IconAction
                         icon={LockKeyhole}
                         label={`Definir senha de ${m.name}`}

@@ -106,11 +106,14 @@ export function LiberacaoEditor({
   initial,
   readOnly,
   saving,
+  submitLabel = "Salvar liberação",
   onSubmit,
 }: {
   initial: LiberacaoInput;
   readOnly: boolean;
   saving?: boolean;
+  /** Save button text (e.g. "Salvar e reenviar para o PCP"). */
+  submitLabel?: string;
   onSubmit: (input: LiberacaoInput) => void;
 }) {
   const uid = useId();
@@ -602,7 +605,7 @@ export function LiberacaoEditor({
             </p>
           )}
           <Button type="submit" disabled={saving} className="h-10 shadow-card-hover">
-            {saving ? "Salvando…" : "Salvar liberação"}
+            {saving ? "Salvando…" : submitLabel}
           </Button>
         </div>
       )}

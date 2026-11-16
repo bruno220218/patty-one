@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser } from "@/hooks/use-data";
 import { cn } from "@/lib/utils";
+import { FUNCOES } from "@/lib/data";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "./empty-state";
@@ -114,7 +115,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="mb-2 rounded-lg px-3 py-2">
                 <p className="truncate text-sm font-semibold">{me.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {me.isGestor ? "Gestão" : me.isMember ? "Equipe" : "Aguardando aprovação"}
+                  {!me.isMember
+                    ? "Aguardando aprovação"
+                    : FUNCOES.filter((f) => me.funcoes.includes(f.value))
+                        .map((f) => f.label)
+                        .join(" · ") || "Equipe"}
                 </p>
               </div>
             )}

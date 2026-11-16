@@ -62,7 +62,7 @@ function NovaLiberacaoPage() {
         <EmptyState
           icon={Lock}
           title="Sem permissão"
-          description="Somente gestão e comercial podem criar liberações."
+          description="Somente comercial e gestão criam liberações."
         />
       </>
     );
@@ -92,7 +92,7 @@ function NovaLiberacaoPage() {
       {back}
       <PageHeader
         title={`Nova liberação · ${LIBERACAO_MODELO_LABEL[modelo]}`}
-        description="Preencha como na planilha. Os campos sugerem as opções de sempre, mas aceitam qualquer texto. Linhas vazias são ignoradas."
+        description="Preencha como na planilha. Ao salvar, ela entra no fim da fila do PCP para aprovação. Os campos sugerem as opções de sempre, mas aceitam qualquer texto."
       />
       <LiberacaoEditor
         key={modelo}
@@ -101,7 +101,10 @@ function NovaLiberacaoPage() {
         saving={saving}
         onSubmit={async (input) => {
           setSaving(true);
-          const created = await run(() => liberacaoRepository.create(input), "Liberação criada.");
+          const created = await run(
+            () => liberacaoRepository.create(input),
+            "Liberação criada e enviada para a fila do PCP.",
+          );
           setSaving(false);
           if (created) {
             navigate({ to: "/liberacoes/$liberacaoId", params: { liberacaoId: created.id } });
