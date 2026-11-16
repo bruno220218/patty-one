@@ -4,6 +4,8 @@ export interface CurrentUser {
   id: string;
   email: string | null;
   name: string;
+  /** Approved by a gestor to see team data (gestores are always members). */
+  isMember: boolean;
   isGestor: boolean;
 }
 

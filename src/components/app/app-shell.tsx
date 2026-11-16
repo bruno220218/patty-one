@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Archive, FolderOpen, ListChecks, LogOut, Users } from "lucide-react";
+import { Archive, FolderOpen, Hourglass, ListChecks, LogOut, Users } from "lucide-react";
 import logo from "@/assets/patty-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser } from "@/hooks/use-data";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "./empty-state";
 import { ThemeToggle } from "./theme-toggle";
 
 type NavItem = {
@@ -59,7 +61,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const items = NAV.filter((i) => !i.gestorOnly || me?.isGestor);
+  const pending = Boolean(me && !me.isMember);
+  const items = pending ? [] : NAV.filter((i) => !i.gestorOnly || me?.isGestor);
   const isActive = (to: string) => pathname === to || pathname.startsWith(`${to}/`);
 
   return (
@@ -95,7 +98,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             {me && (
               <div className="mb-2 rounded-lg px-3 py-2">
                 <p className="truncate text-sm font-semibold">{me.name}</p>
-                <p className="text-xs text-muted-foreground">{me.isGestor ? "Gestão" : "Equipe"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {me.isGestor ? "Gestão" : me.isMember ? "Equipe" : "Aguardando aprovação"}
+                </p>
               </div>
             )}
             <ThemeToggle />
@@ -132,13 +137,28 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main className="pb-28 md:pb-12 md:pl-60">
           <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 md:px-10 md:py-10">
-            {children}
+            {pending ? (
+              <EmptyState
+                icon={Hourglass}
+                title="Aguardando aprovação"
+                description="Sua conta foi criada. Peça a uma pessoa gestora para liberar seu acesso na área Equipe; depois, é só recarregar a página."
+                action={
+                  <Button variant="outline" onClick={signOut}>
+                    <LogOut className="h-4 w-4" />
+                    Sair
+                  </Button>
+                }
+              />
+            ) : (
+              children
+            )}
           </div>
         </main>
 
         {/* Mobile bottom bar */}
         <nav
           aria-label="Principal"
+          hidden={items.length === 0}
           className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar/95 backdrop-blur md:hidden"
         >
           <div

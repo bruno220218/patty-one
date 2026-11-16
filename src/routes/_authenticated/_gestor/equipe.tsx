@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldCheck, Users } from "lucide-react";
+import { KeyRound, ShieldCheck, Users } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
@@ -32,39 +32,67 @@ function TeamPage() {
     <>
       <PageHeader
         title="Equipe"
-        description="Gestores veem os checklists e podem desmarcar tarefas já concluídas."
+        description="Libere o acesso de quem criou conta. Gestores também veem os checklists e podem desmarcar tarefas já concluídas."
       />
       {isPending ? (
         <CardGridSkeleton />
       ) : !team || team.length === 0 ? (
-        <EmptyState icon={Users} title="Ninguém por aqui" description="As pessoas aparecem aqui ao criar conta." />
+        <EmptyState
+          icon={Users}
+          title="Ninguém por aqui"
+          description="As pessoas aparecem aqui ao criar conta."
+        />
       ) : (
         <ul className="surface-card divide-y divide-border">
-          {team.map((m) => (
-            <li key={m.id} className="flex items-center justify-between gap-4 px-4 py-3">
-              <div className="min-w-0">
-                <p className="flex items-center gap-1.5 truncate text-sm font-medium">
-                  {m.name}
-                  {m.id === me?.id && <span className="text-xs text-muted-foreground">(você)</span>}
-                </p>
-                <p className="text-xs text-muted-foreground">Entrou em {formatDate(m.joinedAt)}</p>
-              </div>
-              <label className="flex items-center gap-2 text-sm">
-                <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                <span className="hidden sm:inline">Gestão</span>
-                <Switch
-                  checked={m.isGestor}
-                  aria-label={`Permissão de gestão para ${m.name}`}
-                  onCheckedChange={(v) =>
-                    run(
-                      () => teamRepository.setGestor(m.id, v),
-                      v ? `${m.name} agora é gestor(a).` : `${m.name} não é mais gestor(a).`,
-                    )
-                  }
-                />
-              </label>
-            </li>
-          ))}
+          {[...team]
+            .sort((a, b) => Number(a.isMember) - Number(b.isMember))
+            .map((m) => (
+              <li key={m.id} className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1.5 truncate text-sm font-medium">
+                    {m.name}
+                    {m.id === me?.id && (
+                      <span className="text-xs text-muted-foreground">(você)</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {m.isMember ? `Entrou em ${formatDate(m.joinedAt)}` : "Aguardando aprovação"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <KeyRound className="h-4 w-4 text-muted-foreground" />
+                    <span className="hidden sm:inline">Acesso</span>
+                    <Switch
+                      checked={m.isMember}
+                      disabled={m.id === me?.id}
+                      aria-label={`Acesso à equipe para ${m.name}`}
+                      onCheckedChange={(v) =>
+                        run(
+                          () => teamRepository.setAccess(m.id, v),
+                          v ? `Acesso liberado para ${m.name}.` : `${m.name} não tem mais acesso.`,
+                        )
+                      }
+                    />
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                    <span className="hidden sm:inline">Gestão</span>
+                    <Switch
+                      checked={m.isGestor}
+                      disabled={!m.isMember}
+                      aria-label={`Permissão de gestão para ${m.name}`}
+                      onCheckedChange={(v) =>
+                        run(
+                          () => teamRepository.setGestor(m.id, v),
+                          v ? `${m.name} agora é gestor(a).` : `${m.name} não é mais gestor(a).`,
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </li>
+            ))}
         </ul>
       )}
     </>
