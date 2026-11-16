@@ -2,7 +2,7 @@
  * Low-level localStorage adapter. Only repositories use this; the UI never touches storage.
  * Safe on the server (returns empty / no-ops) since localStorage only exists in the browser.
  */
-const PREFIX = "trilha:v1:";
+const PREFIX = "pattyone:v1:";
 
 export function readCollection<T>(name: string): T[] {
   if (typeof window === "undefined") return [];
