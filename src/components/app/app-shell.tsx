@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Archive, FolderOpen, ListChecks } from "lucide-react";
 import logo from "@/assets/patty-logo.png.asset.json";
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeToggle } from "./theme-toggle";
 
 const NAV = [
@@ -39,6 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
+    <TooltipProvider delayDuration={300}>
     <div className="min-h-screen w-full">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-sidebar-border bg-sidebar px-3 py-5 md:flex">
@@ -116,5 +118,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </nav>
     </div>
+    </TooltipProvider>
   );
 }
