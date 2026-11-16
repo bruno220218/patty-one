@@ -13,7 +13,7 @@ const SELECT = `id, modelo, numero, cliente, responsavel, contato, endereco, pro
   classificacao_venda, data_liberacao, data_entrega, bissemana, ponto_energia, horario_instalacao,
   observacoes, created_at, updated_at,
   liberacao_itens(id, position, referencia, servico, insumos, acabamento, instalacao, detalhes,
-    largura_cm, altura_cm, quantidade, local_instalacao, checked)`;
+    largura_cm, altura_cm, quantidade, local_instalacao)`;
 
 interface ItemRow {
   id: string;
@@ -28,7 +28,6 @@ interface ItemRow {
   altura_cm: number | string | null;
   quantidade: number | string | null;
   local_instalacao: string;
-  checked: boolean;
 }
 
 interface Row {
@@ -89,7 +88,6 @@ function toLiberacao(row: Row): Liberacao {
         alturaCm: num(i.altura_cm),
         quantidade: num(i.quantidade),
         localInstalacao: i.local_instalacao,
-        checked: i.checked,
       })),
   };
 }
@@ -148,7 +146,6 @@ async function saveItems(liberacaoId: string, itens: LiberacaoItem[]): Promise<v
     altura_cm: i.alturaCm,
     quantidade: i.quantidade,
     local_instalacao: i.localInstalacao.trim(),
-    checked: i.checked,
   }));
   const existing = rows.filter((r) => "id" in r);
   const fresh = rows.filter((r) => !("id" in r));

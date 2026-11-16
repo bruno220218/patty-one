@@ -244,7 +244,6 @@ export function emptyLiberacaoItem() {
     alturaCm: null,
     quantidade: null,
     localInstalacao: "",
-    checked: false,
   };
 }
 
@@ -299,7 +298,7 @@ export function formatQuantidade(n: number | null): string {
   return n === null ? "" : n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 }
 
-/** Checked items over items, e.g. { done: 2, total: 5 }. */
-export function liberacaoProgress(itens: { checked: boolean }[]) {
-  return { done: itens.filter((i) => i.checked).length, total: itens.length };
+/** Filled item rows of a liberação. */
+export function liberacaoItemCount(itens: Parameters<typeof isBlankLiberacaoItem>[0][]) {
+  return itens.filter((i) => !isBlankLiberacaoItem(i)).length;
 }

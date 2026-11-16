@@ -19,7 +19,7 @@ import { useCurrentUser, useLiberacoes } from "@/hooks/use-data";
 import {
   canEditLiberacoes,
   LIBERACAO_MODELO_LABEL,
-  liberacaoProgress,
+  liberacaoItemCount,
   type Liberacao,
   type LiberacaoModelo,
 } from "@/lib/data";
@@ -170,12 +170,12 @@ function LiberacoesPage() {
                 <span>Cliente</span>
                 <span>Vendedor</span>
                 <span>Entrega</span>
-                <span>Check</span>
+                <span>Itens</span>
                 <span className="sr-only">PDF</span>
               </div>
               <ul className="divide-y divide-border">
                 {visible.map((l) => {
-                  const { done, total } = liberacaoProgress(l.itens);
+                  const total = liberacaoItemCount(l.itens);
                   return (
                     <li
                       key={l.id}
@@ -209,7 +209,7 @@ function LiberacoesPage() {
                         {l.dataEntrega ? formatDateOnly(l.dataEntrega) : "Sem entrega"}
                       </span>
                       <span className="text-xs tabular-nums text-muted-foreground">
-                        {done}/{total}
+                        {total} {total === 1 ? "item" : "itens"}
                       </span>
                       <div className="justify-self-end">
                         <IconAction icon={FileDown} label="Baixar PDF" onClick={() => pdf(l)} />

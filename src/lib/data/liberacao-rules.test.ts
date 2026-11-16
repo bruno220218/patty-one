@@ -4,7 +4,7 @@ import {
   emptyLiberacaoItem,
   formatTamanho,
   isBlankLiberacaoItem,
-  liberacaoProgress,
+  liberacaoItemCount,
   parseCm,
 } from "./rules";
 
@@ -31,15 +31,14 @@ describe("liberação rules", () => {
     expect(formatTamanho(null, null)).toBe("");
   });
 
-  it("detects blank rows and counts checks", () => {
+  it("detects blank rows and counts filled items", () => {
     expect(isBlankLiberacaoItem(emptyLiberacaoItem())).toBe(true);
     expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), insumos: "ACM" })).toBe(false);
     expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), referencia: "P-12" })).toBe(false);
     expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), quantidade: 2 })).toBe(false);
     expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), larguraCm: 10 })).toBe(false);
-    expect(liberacaoProgress([{ checked: true }, { checked: false }, { checked: true }])).toEqual({
-      done: 2,
-      total: 3,
-    });
+    expect(
+      liberacaoItemCount([emptyLiberacaoItem(), { ...emptyLiberacaoItem(), servico: "BANNER" }]),
+    ).toBe(1);
   });
 });

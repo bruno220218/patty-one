@@ -47,7 +47,7 @@ create trigger liberacoes_touch before update on public.liberacoes
   for each row execute function public.touch_updated_at();
 
 -- 3) Itens (Nº PAINEL/ORÇAMENTO | SERVIÇO | INSUMOS | ACABAMENTO | INSTALAÇÃO | DETALHES |
---            LARGURA | ALTURA | QTDA | LOCAL DE INSTALAÇÃO | CHECK)
+--            LARGURA | ALTURA | QTDA | LOCAL DE INSTALAÇÃO)
 create table if not exists public.liberacao_itens (
   id uuid primary key default gen_random_uuid(),
   liberacao_id uuid not null references public.liberacoes(id) on delete cascade,
@@ -62,7 +62,6 @@ create table if not exists public.liberacao_itens (
   altura_cm numeric(10, 2),
   quantidade numeric(10, 2),
   local_instalacao text not null default '',
-  checked boolean not null default false,
   created_at timestamptz not null default now()
 );
 create index if not exists liberacao_itens_liberacao_idx

@@ -95,7 +95,7 @@ export type LiberacaoModelo = "projeto" | "midia";
 
 /**
  * One row of a liberação: Nº PAINEL/ORÇAMENTO | SERVIÇO | INSUMOS | ACABAMENTO | INSTALAÇÃO |
- * DETALHES | LARGURA | ALTURA | QTDA | LOCAL DE INSTALAÇÃO | CHECK.
+ * DETALHES | LARGURA | ALTURA | QTDA | LOCAL DE INSTALAÇÃO.
  */
 export interface LiberacaoItem {
   /** Null for rows not saved yet. */
@@ -113,7 +113,6 @@ export interface LiberacaoItem {
   alturaCm: number | null;
   quantidade: number | null;
   localInstalacao: string;
-  checked: boolean;
 }
 
 /** Liberação header + items. Model-specific fields stay blank when not used. */

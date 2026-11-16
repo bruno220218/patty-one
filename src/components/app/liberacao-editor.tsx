@@ -1,14 +1,13 @@
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from "react";
 import { AlertTriangle, Paperclip, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { WrapField } from "@/components/app/wrap-field";
 import {
   BISSEMANAS,
   CLASSIFICACOES_VENDA,
   emptyLiberacaoItem,
   LIBERACAO_MODELO_INFO,
-  liberacaoProgress,
   MIDIA_OPTIONS,
   parseCm,
   PROJETISTAS,
@@ -201,7 +200,6 @@ export function LiberacaoEditor({
         alturaCm,
         quantidade,
         localInstalacao: i.localInstalacao,
-        checked: i.checked,
       });
     }
     setDirty(false);
@@ -226,14 +224,12 @@ export function LiberacaoEditor({
   };
 
   const filled = items.filter((i) => !draftIsBlank(i));
-  const { done, total } = liberacaoProgress(filled);
   const rows = readOnly ? filled : items;
   const id = (name: string) => `${uid}-${name}`;
-  const listId = (name: string) => `${uid}-list-${name}`;
 
   const text = (
     field: keyof typeof header,
-    opts?: { type?: string; list?: string; placeholder?: string },
+    opts?: { type?: "date"; suggestions?: string[]; placeholder?: string; inputMode?: "tel" },
   ) =>
     readOnly ? (
       <ReadValue
@@ -242,16 +238,23 @@ export function LiberacaoEditor({
           opts?.type === "date" && header[field] ? formatDateOnly(header[field]) : header[field]
         }
       />
-    ) : (
+    ) : opts?.type === "date" ? (
       <input
         id={id(field)}
-        type={opts?.type ?? "text"}
-        list={opts?.list}
-        placeholder={opts?.placeholder}
+        type="date"
         value={header[field]}
         onChange={(e) => set(field)(e.target.value)}
         className={cn(cellInput, "h-full min-h-9 px-3")}
-        autoComplete="off"
+      />
+    ) : (
+      <WrapField
+        id={id(field)}
+        value={header[field]}
+        onChange={set(field)}
+        suggestions={opts?.suggestions}
+        placeholder={opts?.placeholder}
+        inputMode={opts?.inputMode}
+        className="h-full min-h-9 px-3"
       />
     );
 
@@ -277,40 +280,22 @@ export function LiberacaoEditor({
       </select>
     );
 
-  const itemColumns: { field: TextField; label: string; width: string; suggest?: boolean }[] = [
-    { field: "servico", label: "Serviço", width: "w-[15%]", suggest: true },
-    { field: "insumos", label: "Insumos", width: "w-[12%]", suggest: true },
-    { field: "acabamento", label: "Acabamento", width: "w-[10%]", suggest: true },
-    { field: "instalacao", label: "Instalação", width: "w-[12%]", suggest: true },
+  const itemColumns: {
+    field: TextField;
+    label: string;
+    width: string;
+    suggestions?: string[];
+  }[] = [
+    { field: "servico", label: "Serviço", width: "w-[16%]", suggestions: options.servico },
+    { field: "insumos", label: "Insumos", width: "w-[13%]", suggestions: options.insumos },
+    { field: "acabamento", label: "Acabamento", width: "w-[11%]", suggestions: options.acabamento },
+    { field: "instalacao", label: "Instalação", width: "w-[13%]", suggestions: options.instalacao },
     { field: "detalhes", label: "Detalhes", width: "w-[10%]" },
   ];
   const th = "border border-primary-foreground/20";
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4">
-      {/* Suggestions from the spreadsheet's APOIO lists; any text is still accepted. */}
-      {!readOnly && (
-        <>
-          {(["servico", "insumos", "acabamento", "instalacao"] as const).map((k) => (
-            <datalist key={k} id={listId(k)}>
-              {options[k].map((v) => (
-                <option key={v} value={v} />
-              ))}
-            </datalist>
-          ))}
-          <datalist id={listId("projetista")}>
-            {PROJETISTAS.map((v) => (
-              <option key={v} value={v} />
-            ))}
-          </datalist>
-          <datalist id={listId("vendedor")}>
-            {VENDEDORES.map((v) => (
-              <option key={v} value={v} />
-            ))}
-          </datalist>
-        </>
-      )}
-
       <div className="surface-card overflow-hidden">
         {/* Title bar */}
         <div className="flex flex-wrap items-center justify-between gap-2 bg-primary px-5 py-3 text-primary-foreground">
@@ -345,7 +330,7 @@ export function LiberacaoEditor({
                 {text("responsavel")}
               </HeaderField>
               <HeaderField label="Contato" htmlFor={id("contato")}>
-                {text("contato", { type: "tel" })}
+                {text("contato", { inputMode: "tel" })}
               </HeaderField>
             </div>
             <HeaderField label="Endereço (referência)" htmlFor={id("endereco")}>
@@ -357,10 +342,10 @@ export function LiberacaoEditor({
               label={projeto ? "Projetista" : "Layoutista / projetista"}
               htmlFor={id("projetista")}
             >
-              {text("projetista", { list: listId("projetista"), placeholder: "Selecione" })}
+              {text("projetista", { suggestions: PROJETISTAS, placeholder: "Selecione" })}
             </HeaderField>
             <HeaderField label="Vendedor" htmlFor={id("vendedor")}>
-              {text("vendedor", { list: listId("vendedor"), placeholder: "Selecione" })}
+              {text("vendedor", { suggestions: VENDEDORES, placeholder: "Selecione" })}
             </HeaderField>
             <HeaderField label="Classificação venda" htmlFor={id("classificacaoVenda")}>
               {select("classificacaoVenda", CLASSIFICACOES_VENDA)}
@@ -387,7 +372,7 @@ export function LiberacaoEditor({
             {info.secao}
           </h3>
           <span className="text-xs font-medium text-accent-foreground/80">
-            {done}/{total} conferidos
+            {filled.length} {filled.length === 1 ? "item" : "itens"}
           </span>
         </div>
 
@@ -398,7 +383,7 @@ export function LiberacaoEditor({
               <tr className="bg-primary text-[11px] font-semibold uppercase tracking-wide text-primary-foreground">
                 <th
                   rowSpan={2}
-                  className="w-[8%] border border-border bg-secondary px-1 py-2 text-[10px] leading-tight text-secondary-foreground"
+                  className="w-[9%] border border-border bg-secondary px-1 py-2 text-[10px] leading-tight text-secondary-foreground"
                 >
                   {info.referencia}
                 </th>
@@ -407,17 +392,14 @@ export function LiberacaoEditor({
                     {c.label}
                   </th>
                 ))}
-                <th colSpan={2} className={cn(th, "w-[11%] px-1 pt-1.5")}>
+                <th colSpan={2} className={cn(th, "w-[12%] px-1 pt-1.5")}>
                   Tamanho (cm)
                 </th>
                 <th rowSpan={2} className={cn(th, "w-[5%] px-1 py-2")}>
                   Qtda
                 </th>
-                <th rowSpan={2} className={cn(th, "w-[12%] px-2 py-2")}>
+                <th rowSpan={2} className={cn(th, "w-[11%] px-2 py-2")}>
                   Local de instalação
-                </th>
-                <th rowSpan={2} className={cn(th, "w-[5%] px-1 py-2")}>
-                  Check
                 </th>
                 {!readOnly && (
                   <th rowSpan={2} className={cn(th, "w-[2.25rem]")} aria-label="Remover" />
@@ -432,7 +414,7 @@ export function LiberacaoEditor({
               {rows.length === 0 && (
                 <tr>
                   <td
-                    colSpan={13}
+                    colSpan={12}
                     className="border border-border px-5 py-6 text-center text-muted-foreground"
                   >
                     Nenhum item.
@@ -441,44 +423,42 @@ export function LiberacaoEditor({
               )}
               {rows.map((item, index) => {
                 const label = (what: string) => `${what}, linha ${index + 1}`;
-                const cellText = (field: TextField, list?: string) =>
+                const cellText = (field: TextField, suggestions?: string[]) =>
                   readOnly ? (
                     <span className="block whitespace-pre-wrap break-words px-2 py-2">
                       {item[field]}
                     </span>
                   ) : (
-                    <input
+                    <WrapField
                       value={item[field]}
-                      list={list}
+                      suggestions={suggestions}
+                      multiline={field === "detalhes" || field === "localInstalacao"}
                       aria-label={label(field)}
-                      onChange={(e) => updateItem(item.key, { [field]: e.target.value })}
-                      className={cellInput}
-                      autoComplete="off"
+                      onChange={(v) => updateItem(item.key, { [field]: v })}
                     />
                   );
                 const cellNum = (field: "largura" | "altura" | "qtd", what: string) =>
                   readOnly ? (
-                    <span className="block px-2 py-2 text-right tabular-nums">{item[field]}</span>
+                    <span className="block break-all px-2 py-2 text-right tabular-nums">
+                      {item[field]}
+                    </span>
                   ) : (
-                    <input
+                    <WrapField
                       value={item[field]}
                       inputMode="decimal"
                       aria-label={label(what)}
-                      onChange={(e) => updateItem(item.key, { [field]: e.target.value })}
-                      className={cn(cellInput, "text-right tabular-nums")}
+                      onChange={(v) => updateItem(item.key, { [field]: v })}
+                      className="break-all px-1.5 text-right tabular-nums"
                     />
                   );
                 return (
-                  <tr
-                    key={item.key}
-                    className={cn("align-top", item.checked && "bg-status-done/40")}
-                  >
+                  <tr key={item.key} className="align-top">
                     <td className="border border-border bg-secondary/50">
                       {cellText("referencia")}
                     </td>
                     {itemColumns.map((c) => (
                       <td key={c.field} className="border border-border">
-                        {cellText(c.field, c.suggest ? listId(c.field) : undefined)}
+                        {cellText(c.field, c.suggestions)}
                       </td>
                     ))}
                     <td className="border border-border">{cellNum("largura", "Largura em cm")}</td>
@@ -490,14 +470,6 @@ export function LiberacaoEditor({
                     </td>
                     <td className="border border-border bg-muted/40">
                       {cellText("localInstalacao")}
-                    </td>
-                    <td className="border border-border text-center align-middle">
-                      <Checkbox
-                        checked={item.checked}
-                        disabled={readOnly}
-                        aria-label={label("Conferido")}
-                        onCheckedChange={(v) => updateItem(item.key, { checked: v === true })}
-                      />
                     </td>
                     {!readOnly && (
                       <td className="border border-border text-center align-middle">

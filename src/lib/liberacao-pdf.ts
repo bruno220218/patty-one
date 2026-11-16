@@ -10,7 +10,6 @@ const PRIMARY_SOFT: RGB = [190, 222, 210];
 const ACCENT: RGB = [218, 242, 232];
 const SECONDARY: RGB = [241, 240, 236];
 const MUTED_TEXT: RGB = [105, 105, 100];
-const DONE: RGB = [222, 245, 232];
 const DANGER: RGB = [190, 35, 35];
 const DANGER_SOFT: RGB = [250, 230, 227];
 const BORDER: RGB = [205, 205, 198];
@@ -166,7 +165,6 @@ export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Pr
         { content: "TAMANHO (CM)", colSpan: 2 },
         span2("Qtda"),
         span2("Local de instalação"),
-        span2("Check"),
       ],
       [
         { content: "LARGURA", styles: { textColor: PRIMARY_SOFT, fontSize: 6.5 } },
@@ -185,9 +183,8 @@ export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Pr
           num(i.alturaCm),
           formatQuantidade(i.quantidade),
           i.localInstalacao,
-          i.checked ? "OK" : "",
         ])
-      : [[{ content: "Nenhum item.", colSpan: 11, styles: { textColor: MUTED_TEXT } }]],
+      : [[{ content: "Nenhum item.", colSpan: 10, styles: { textColor: MUTED_TEXT } }]],
     theme: "grid",
     margin: { left: margin, right: margin },
     styles: {
@@ -210,21 +207,14 @@ export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Pr
     },
     columnStyles: {
       0: { cellWidth: 20, fillColor: [248, 247, 243] },
-      1: { cellWidth: 37 },
-      2: { cellWidth: 31 },
-      3: { cellWidth: 27 },
-      4: { cellWidth: 32 },
-      5: { cellWidth: 27 },
+      1: { cellWidth: 40 },
+      2: { cellWidth: 33 },
+      3: { cellWidth: 28 },
+      4: { cellWidth: 34 },
+      5: { cellWidth: 30 },
       6: { cellWidth: 16, halign: "right" },
       7: { cellWidth: 16, halign: "right" },
       8: { cellWidth: 12, halign: "center" },
-      10: { cellWidth: 14, halign: "center", fontStyle: "bold", textColor: PRIMARY },
-    },
-    didParseCell: (data) => {
-      if (data.section !== "body" || !itens.length) return;
-      if (itens[data.row.index]?.checked && data.column.index !== 0) {
-        data.cell.styles.fillColor = DONE;
-      }
     },
   });
   y = lastY();

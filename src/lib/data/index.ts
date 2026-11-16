@@ -20,7 +20,7 @@ export {
   LIBERACAO_MODELO_INFO,
   isBlankLiberacaoItem,
   LIBERACAO_MODELO_LABEL,
-  liberacaoProgress,
+  liberacaoItemCount,
   parseCm,
   canToggleTask,
   DEFAULT_PROJECT_FILTERS,
