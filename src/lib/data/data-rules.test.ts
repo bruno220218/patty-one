@@ -167,3 +167,32 @@ describe("archive", () => {
     expect((await projectRepository.list({ archived: false })).map((x) => x.id)).toEqual([p.id]);
   });
 });
+
+describe("blockers", () => {
+  it("records blockers with unique ids even on locked projects, newest first", async () => {
+    const c = await checklistWithTasks(["A"], true);
+    const p = await projectRepository.create({
+      name: "P",
+      description: "",
+      dueDate: null,
+      checklistId: c.id,
+    });
+    const first = await projectRepository.addBlocker(p.id, "Falta material");
+    const second = await projectRepository.addBlocker(p.id, "Máquina parada");
+    expect(first.id).not.toBe(second.id);
+    const saved = (await projectRepository.get(p.id))!;
+    expect(saved.blockers.map((b) => b.description)).toEqual(["Máquina parada", "Falta material"]);
+    const withSuggestion = await projectRepository.setBlockerSuggestion(p.id, first.id, "1. Ligar");
+    expect(withSuggestion.blockers.find((b) => b.id === first.id)?.suggestion).toBe("1. Ligar");
+  });
+
+  it("requires a description", async () => {
+    const p = await projectRepository.create({
+      name: "P",
+      description: "",
+      dueDate: null,
+      checklistId: null,
+    });
+    await expect(projectRepository.addBlocker(p.id, "  ")).rejects.toThrow();
+  });
+});

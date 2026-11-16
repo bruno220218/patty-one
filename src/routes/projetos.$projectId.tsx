@@ -9,6 +9,7 @@ import { DetailSkeleton } from "@/components/app/card-grid-skeleton";
 import { StatusBadge } from "@/components/app/status-badge";
 import { EmptyState } from "@/components/app/empty-state";
 import { ProjectProgressBar } from "@/components/app/project-progress";
+import { BlockerPanel } from "@/components/app/blocker-panel";
 import { useDataAction, useProject } from "@/hooks/use-data";
 import { projectProgress, projectRepository, projectStatus } from "@/lib/data";
 import { formatDate, formatDateOnly } from "@/lib/format";
@@ -168,6 +169,8 @@ function ProjectDetailPage() {
           Excluir
         </Button>
       </div>
+
+      <BlockerPanel project={project} />
 
       <ProjectFormDialog
         mode="edit"
