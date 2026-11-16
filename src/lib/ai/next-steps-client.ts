@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import type { Project } from "@/lib/data";
 import type { NextStepsRequest } from "./next-steps-schema";
 
@@ -33,9 +34,13 @@ export async function streamNextSteps(
   payload: NextStepsRequest,
   { signal, onText }: { signal?: AbortSignal; onText: (text: string) => void },
 ): Promise<string> {
+  const { data: auth } = await supabase.auth.getSession();
+  const token = auth.session?.access_token;
+  if (!token) throw new NextStepsError("Sua sessão expirou. Entre novamente.");
+
   const response = await fetch("/api/next-steps", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
     signal: signal ?? null,
   });
