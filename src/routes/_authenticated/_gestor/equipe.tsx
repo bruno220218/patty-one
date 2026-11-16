@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { KeyRound, LockKeyhole, Pencil, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Briefcase, KeyRound, LockKeyhole, Pencil, ShieldCheck, Trash2, Users } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
@@ -46,7 +46,7 @@ function TeamPage() {
     <>
       <PageHeader
         title="Equipe"
-        description="Libere o acesso de quem criou conta. Gestores também veem os checklists e podem desmarcar tarefas já concluídas."
+        description="Libere o acesso de quem criou conta. Gestão vê checklists e pode desmarcar tarefas concluídas. Gestão e comercial ajustam liberações."
       />
       {isPending ? (
         <CardGridSkeleton />
@@ -97,6 +97,23 @@ function TeamPage() {
                               v
                                 ? `Acesso liberado para ${m.name}.`
                                 : `${m.name} não tem mais acesso.`,
+                            )
+                          }
+                        />
+                      </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        <span className="hidden sm:inline">Comercial</span>
+                        <Switch
+                          checked={m.isComercial}
+                          disabled={!m.isMember}
+                          aria-label={`Função comercial para ${m.name}`}
+                          onCheckedChange={(v) =>
+                            run(
+                              () => teamRepository.setComercial(m.id, v),
+                              v
+                                ? `${m.name} agora é do comercial (pode ajustar liberações).`
+                                : `${m.name} não é mais do comercial.`,
                             )
                           }
                         />

@@ -1,7 +1,16 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Archive, BarChart3, FolderOpen, Hourglass, ListChecks, LogOut, Users } from "lucide-react";
+import {
+  Archive,
+  BarChart3,
+  FileCheck2,
+  FolderOpen,
+  Hourglass,
+  ListChecks,
+  LogOut,
+  Users,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser } from "@/hooks/use-data";
 import { cn } from "@/lib/utils";
@@ -14,7 +23,7 @@ import { ThemeToggle } from "./theme-toggle";
 const LOGO_URL = "/patty-logo.png";
 
 type NavItem = {
-  to: "/checklists" | "/projetos" | "/arquivados" | "/equipe" | "/relatorios";
+  to: "/checklists" | "/projetos" | "/liberacoes" | "/arquivados" | "/equipe" | "/relatorios";
   label: string;
   icon: typeof ListChecks;
   gestorOnly?: boolean;
@@ -23,6 +32,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { to: "/checklists", label: "Checklists", icon: ListChecks, gestorOnly: true },
   { to: "/projetos", label: "Projetos", icon: FolderOpen },
+  { to: "/liberacoes", label: "Liberações", icon: FileCheck2 },
   { to: "/arquivados", label: "Arquivados", icon: Archive },
   { to: "/equipe", label: "Equipe", icon: Users, gestorOnly: true },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3, gestorOnly: true },

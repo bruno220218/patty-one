@@ -9,6 +9,7 @@ export interface TeamMember {
   /** Approved to access the team's projects. */
   isMember: boolean;
   isGestor: boolean;
+  isComercial: boolean;
   joinedAt: string;
 }
 
@@ -28,6 +29,7 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
     name: profile.data?.display_name || user.email || "Você",
     isMember: list.length > 0,
     isGestor: list.includes("gestor"),
+    isComercial: (list as string[]).includes("comercial"),
   };
 }
 
@@ -43,11 +45,15 @@ export const teamRepository = {
     const gestores = new Set(
       (roles.data ?? []).filter((r) => r.role === "gestor").map((r) => r.user_id),
     );
+    const comerciais = new Set(
+      (roles.data ?? []).filter((r) => (r.role as string) === "comercial").map((r) => r.user_id),
+    );
     return (profiles.data ?? []).map((p) => ({
       id: p.id,
       name: p.display_name || "Sem nome",
       isMember: members.has(p.id),
       isGestor: gestores.has(p.id),
+      isComercial: comerciais.has(p.id),
       joinedAt: p.created_at,
     }));
   },
@@ -87,6 +93,31 @@ export const teamRepository = {
       .delete()
       .eq("user_id", userId)
       .eq("role", "gestor");
+    if (error) throw dbError(error);
+  },
+  /** Give or take the "comercial" role (can edit liberações). Keeps team access. */
+  async setComercial(userId: string, comercial: boolean): Promise<void> {
+    // "comercial" is newer than the generated database types.
+    const role = "comercial" as unknown as "gestor";
+    if (comercial) {
+      const keep = await supabase
+        .from("user_roles")
+        .upsert(
+          { user_id: userId, role: "membro" },
+          { onConflict: "user_id,role", ignoreDuplicates: true },
+        );
+      if (keep.error) throw dbError(keep.error);
+      const { error } = await supabase
+        .from("user_roles")
+        .upsert({ user_id: userId, role }, { onConflict: "user_id,role", ignoreDuplicates: true });
+      if (error) throw dbError(error);
+      return;
+    }
+    const { error } = await supabase
+      .from("user_roles")
+      .delete()
+      .eq("user_id", userId)
+      .eq("role", role);
     if (error) throw dbError(error);
   },
   /** Remove someone from the team for good (their account is deleted). */

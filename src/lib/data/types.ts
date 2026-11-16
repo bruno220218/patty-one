@@ -7,6 +7,8 @@ export interface CurrentUser {
   /** Approved by a gestor to see team data (gestores are always members). */
   isMember: boolean;
   isGestor: boolean;
+  /** Comercial: can create and edit liberações (as can gestores). */
+  isComercial: boolean;
 }
 
 export interface ChecklistTask {
@@ -88,3 +90,49 @@ export interface NewProjectInput extends ProjectInput {
 export type MoveDirection = "up" | "down";
 
 export type ProjectStatus = "not_started" | "in_progress" | "done";
+
+export type LiberacaoModelo = "projeto" | "midia";
+
+/** One row of a liberação: SERVIÇO | MATERIAL | ACABAMENTO | INSTALAÇÃO | DETALHES | TAMANHO (L x A) | CHECK. */
+export interface LiberacaoItem {
+  /** Null for rows not saved yet. */
+  id: string | null;
+  servico: string;
+  material: string;
+  acabamento: string;
+  instalacao: string;
+  detalhes: string;
+  /** Width in cm, or null. */
+  larguraCm: number | null;
+  /** Height in cm, or null. */
+  alturaCm: number | null;
+  checked: boolean;
+}
+
+/** Header fields shared by both models plus the model-specific ones (blank when not used). */
+export interface LiberacaoInput {
+  modelo: LiberacaoModelo;
+  numero: number | null;
+  cliente: string;
+  vendedor: string;
+  projetista: string;
+  /** YYYY-MM-DD or null. */
+  dataLiberacao: string | null;
+  /** YYYY-MM-DD or null. */
+  dataEntrega: string | null;
+  /** Modelo Projetos. */
+  responsavel: string;
+  telefone: string;
+  endereco: string;
+  /** Modelo Mídia. */
+  bissemana: string;
+  numeroPlaca: string;
+  itens: LiberacaoItem[];
+}
+
+export interface Liberacao extends LiberacaoInput {
+  id: string;
+  numero: number;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -197,3 +197,70 @@ export function localToday(now: Date = new Date()): string {
   const d = String(now.getDate()).padStart(2, "0");
   return `${now.getFullYear()}-${m}-${d}`;
 }
+
+export const LIBERACAO_MODELO_LABEL: Record<"projeto" | "midia", string> = {
+  projeto: "Projetos",
+  midia: "Mídia",
+};
+
+/** Gestão and comercial can create/edit liberações (the database enforces the same rule). */
+export function canEditLiberacoes(
+  user: { isGestor: boolean; isComercial: boolean } | null | undefined,
+) {
+  return Boolean(user && (user.isGestor || user.isComercial));
+}
+
+export function emptyLiberacaoItem() {
+  return {
+    id: null,
+    servico: "",
+    material: "",
+    acabamento: "",
+    instalacao: "",
+    detalhes: "",
+    larguraCm: null,
+    alturaCm: null,
+    checked: false,
+  };
+}
+
+/** "120 x 80" / "120 x —" / "" (sizes in cm, pt-BR decimals). */
+export function formatTamanho(larguraCm: number | null, alturaCm: number | null): string {
+  if (larguraCm === null && alturaCm === null) return "";
+  const f = (n: number | null) =>
+    n === null ? "—" : n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+  return `${f(larguraCm)} x ${f(alturaCm)}`;
+}
+
+/** Parses "120", "120,5" or "1.200,5" into a number of cm; blank → null; invalid → NaN. */
+export function parseCm(value: string): number | null {
+  const clean = value.trim().replace(/\s/g, "");
+  if (!clean) return null;
+  const normalized = clean.includes(",") ? clean.replace(/\./g, "").replace(",", ".") : clean;
+  const n = Number(normalized);
+  return Number.isFinite(n) && n >= 0 ? n : Number.NaN;
+}
+
+/** True when an item row has nothing filled in (it is dropped on save). */
+export function isBlankLiberacaoItem(item: {
+  servico: string;
+  material: string;
+  acabamento: string;
+  instalacao: string;
+  detalhes: string;
+  larguraCm: number | null;
+  alturaCm: number | null;
+}): boolean {
+  return (
+    [item.servico, item.material, item.acabamento, item.instalacao, item.detalhes].every(
+      (v) => v.trim() === "",
+    ) &&
+    item.larguraCm === null &&
+    item.alturaCm === null
+  );
+}
+
+/** Checked items over items, e.g. { done: 2, total: 5 }. */
+export function liberacaoProgress(itens: { checked: boolean }[]) {
+  return { done: itens.filter((i) => i.checked).length, total: itens.length };
+}

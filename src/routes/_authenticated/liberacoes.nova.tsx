@@ -1,0 +1,111 @@
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/app/page-header";
+import { EmptyState } from "@/components/app/empty-state";
+import { DetailSkeleton } from "@/components/app/card-grid-skeleton";
+import { LiberacaoEditor } from "@/components/app/liberacao-editor";
+import { useCurrentUser, useDataAction } from "@/hooks/use-data";
+import {
+  canEditLiberacoes,
+  emptyLiberacaoItem,
+  LIBERACAO_MODELO_LABEL,
+  liberacaoRepository,
+  localToday,
+  type LiberacaoInput,
+  type LiberacaoModelo,
+} from "@/lib/data";
+
+export const Route = createFileRoute("/_authenticated/liberacoes/nova")({
+  validateSearch: (search: Record<string, unknown>): { modelo: LiberacaoModelo } => ({
+    modelo: search["modelo"] === "midia" ? "midia" : "projeto",
+  }),
+  head: () => ({
+    meta: [{ title: "Nova liberação — Patty One" }, { name: "robots", content: "noindex" }],
+  }),
+  component: NovaLiberacaoPage,
+});
+
+function NovaLiberacaoPage() {
+  const { modelo } = Route.useSearch();
+  const { data: me, isPending } = useCurrentUser();
+  const run = useDataAction();
+  const navigate = useNavigate();
+  const [numero, setNumero] = useState<number | null | undefined>(undefined);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    liberacaoRepository
+      .nextNumero()
+      .then((n) => alive && setNumero(n))
+      .catch(() => alive && setNumero(null));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const back = (
+    <Button variant="outline" asChild className="mb-6">
+      <Link to="/liberacoes">
+        <ArrowLeft />
+        Liberações
+      </Link>
+    </Button>
+  );
+
+  if (isPending || numero === undefined) return <DetailSkeleton />;
+  if (!canEditLiberacoes(me)) {
+    return (
+      <>
+        {back}
+        <EmptyState
+          icon={Lock}
+          title="Sem permissão"
+          description="Somente gestão e comercial podem criar liberações."
+        />
+      </>
+    );
+  }
+
+  const initial: LiberacaoInput = {
+    modelo,
+    numero,
+    cliente: "",
+    vendedor: "",
+    projetista: "",
+    dataLiberacao: localToday(),
+    dataEntrega: null,
+    responsavel: "",
+    telefone: "",
+    endereco: "",
+    bissemana: "",
+    numeroPlaca: "",
+    itens: [emptyLiberacaoItem(), emptyLiberacaoItem(), emptyLiberacaoItem()],
+  };
+
+  return (
+    <>
+      {back}
+      <PageHeader
+        title={`Nova liberação · ${LIBERACAO_MODELO_LABEL[modelo]}`}
+        description="Preencha o cabeçalho e os itens. Linhas vazias são ignoradas ao salvar."
+      />
+      <LiberacaoEditor
+        key={modelo}
+        initial={initial}
+        readOnly={false}
+        saving={saving}
+        onSubmit={async (input) => {
+          setSaving(true);
+          const created = await run(() => liberacaoRepository.create(input), "Liberação criada.");
+          setSaving(false);
+          if (created) {
+            navigate({ to: "/liberacoes/$liberacaoId", params: { liberacaoId: created.id } });
+          }
+        }}
+      />
+    </>
+  );
+}

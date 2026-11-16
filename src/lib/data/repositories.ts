@@ -1,4 +1,6 @@
 import type {
+  Liberacao,
+  LiberacaoInput,
   Checklist,
   ChecklistInput,
   MoveDirection,
@@ -40,4 +42,15 @@ export interface ProjectRepository {
   setBlockerSuggestion(projectId: string, blockerId: string, suggestion: string): Promise<Project>;
   setBlockerResolved(projectId: string, blockerId: string, resolved: boolean): Promise<Project>;
   removeBlocker(projectId: string, blockerId: string): Promise<Project>;
+}
+
+/** Contract for liberação persistence (models Projetos and Mídia). */
+export interface LiberacaoRepository {
+  list(): Promise<Liberacao[]>;
+  get(id: string): Promise<Liberacao | null>;
+  /** Suggested number for a new liberação (last + 1). */
+  nextNumero(): Promise<number>;
+  create(input: LiberacaoInput): Promise<Liberacao>;
+  update(id: string, input: LiberacaoInput): Promise<Liberacao>;
+  remove(id: string): Promise<void>;
 }

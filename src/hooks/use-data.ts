@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   checklistRepository,
   fetchCurrentUser,
+  liberacaoRepository,
   projectRepository,
   teamRepository,
 } from "@/lib/data";
@@ -23,6 +24,15 @@ export const projectsQuery = (archived: boolean) =>
 
 export const projectQuery = (id: string) =>
   queryOptions({ queryKey: ["projects", id], queryFn: () => projectRepository.get(id) });
+
+export const liberacoesQuery = () =>
+  queryOptions({ queryKey: ["liberacoes"], queryFn: () => liberacaoRepository.list() });
+
+export const liberacaoQuery = (id: string) =>
+  queryOptions({ queryKey: ["liberacoes", id], queryFn: () => liberacaoRepository.get(id) });
+
+export const useLiberacoes = () => useQuery(liberacoesQuery());
+export const useLiberacao = (id: string) => useQuery(liberacaoQuery(id));
 
 export const useChecklists = () => useQuery(checklistsQuery());
 export const useChecklist = (id: string) => useQuery(checklistQuery(id));

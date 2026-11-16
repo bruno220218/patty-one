@@ -18,6 +18,9 @@ import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authentic
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorRelatoriosRouteImport } from './routes/_authenticated/_gestor/relatorios'
+import { Route as AuthenticatedLiberacoesIndexRouteImport } from './routes/_authenticated/liberacoes.index'
+import { Route as AuthenticatedLiberacoesLiberacaoIdRouteImport } from './routes/_authenticated/liberacoes.$liberacaoId'
+import { Route as AuthenticatedLiberacoesNovaRouteImport } from './routes/_authenticated/liberacoes.nova'
 import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
 import { Route as AuthenticatedProjetosProjectIdRouteImport } from './routes/_authenticated/projetos.$projectId'
 import { Route as AuthenticatedGestorChecklistsIndexRouteImport } from './routes/_authenticated/_gestor/checklists.index'
@@ -69,6 +72,24 @@ const AuthenticatedGestorRelatoriosRoute =
     path: '/relatorios',
     getParentRoute: () => AuthenticatedGestorRouteRoute,
   } as any)
+const AuthenticatedLiberacoesIndexRoute =
+  AuthenticatedLiberacoesIndexRouteImport.update({
+    id: '/liberacoes/',
+    path: '/liberacoes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLiberacoesLiberacaoIdRoute =
+  AuthenticatedLiberacoesLiberacaoIdRouteImport.update({
+    id: '/liberacoes/$liberacaoId',
+    path: '/liberacoes/$liberacaoId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLiberacoesNovaRoute =
+  AuthenticatedLiberacoesNovaRouteImport.update({
+    id: '/liberacoes/nova',
+    path: '/liberacoes/nova',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjetosIndexRoute =
   AuthenticatedProjetosIndexRouteImport.update({
     id: '/projetos/',
@@ -102,7 +123,10 @@ export interface FileRoutesByFullPath {
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
+  '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
+  '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
   '/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
@@ -115,7 +139,10 @@ export interface FileRoutesByTo {
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
+  '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
+  '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/liberacoes': typeof AuthenticatedLiberacoesIndexRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
   '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
   '/checklists': typeof AuthenticatedGestorChecklistsIndexRoute
@@ -131,7 +158,10 @@ export interface FileRoutesById {
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/relatorios': typeof AuthenticatedGestorRelatoriosRoute
+  '/_authenticated/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
+  '/_authenticated/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/_authenticated/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/_authenticated/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/_authenticated/_gestor/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
   '/_authenticated/_gestor/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
@@ -146,7 +176,10 @@ export interface FileRouteTypes {
     | '/api/next-steps'
     | '/equipe'
     | '/relatorios'
+    | '/liberacoes/$liberacaoId'
+    | '/liberacoes/nova'
     | '/projetos/$projectId'
+    | '/liberacoes/'
     | '/projetos/'
     | '/checklists/$checklistId'
     | '/checklists/'
@@ -159,7 +192,10 @@ export interface FileRouteTypes {
     | '/api/next-steps'
     | '/equipe'
     | '/relatorios'
+    | '/liberacoes/$liberacaoId'
+    | '/liberacoes/nova'
     | '/projetos/$projectId'
+    | '/liberacoes'
     | '/projetos'
     | '/checklists/$checklistId'
     | '/checklists'
@@ -174,7 +210,10 @@ export interface FileRouteTypes {
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/relatorios'
+    | '/_authenticated/liberacoes/$liberacaoId'
+    | '/_authenticated/liberacoes/nova'
     | '/_authenticated/projetos/$projectId'
+    | '/_authenticated/liberacoes/'
     | '/_authenticated/projetos/'
     | '/_authenticated/_gestor/checklists/$checklistId'
     | '/_authenticated/_gestor/checklists/'
@@ -253,6 +292,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGestorRelatoriosRouteImport
       parentRoute: typeof AuthenticatedGestorRouteRoute
     }
+    '/_authenticated/liberacoes/': {
+      id: '/_authenticated/liberacoes/'
+      path: '/liberacoes'
+      fullPath: '/liberacoes/'
+      preLoaderRoute: typeof AuthenticatedLiberacoesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/liberacoes/$liberacaoId': {
+      id: '/_authenticated/liberacoes/$liberacaoId'
+      path: '/liberacoes/$liberacaoId'
+      fullPath: '/liberacoes/$liberacaoId'
+      preLoaderRoute: typeof AuthenticatedLiberacoesLiberacaoIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/liberacoes/nova': {
+      id: '/_authenticated/liberacoes/nova'
+      path: '/liberacoes/nova'
+      fullPath: '/liberacoes/nova'
+      preLoaderRoute: typeof AuthenticatedLiberacoesNovaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projetos/': {
       id: '/_authenticated/projetos/'
       path: '/projetos'
@@ -309,14 +369,21 @@ const AuthenticatedGestorRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedGestorRouteRoute: typeof AuthenticatedGestorRouteRouteWithChildren
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
+  AuthenticatedLiberacoesLiberacaoIdRoute: typeof AuthenticatedLiberacoesLiberacaoIdRoute
+  AuthenticatedLiberacoesNovaRoute: typeof AuthenticatedLiberacoesNovaRoute
   AuthenticatedProjetosProjectIdRoute: typeof AuthenticatedProjetosProjectIdRoute
+  AuthenticatedLiberacoesIndexRoute: typeof AuthenticatedLiberacoesIndexRoute
   AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGestorRouteRoute: AuthenticatedGestorRouteRouteWithChildren,
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
+  AuthenticatedLiberacoesLiberacaoIdRoute:
+    AuthenticatedLiberacoesLiberacaoIdRoute,
+  AuthenticatedLiberacoesNovaRoute: AuthenticatedLiberacoesNovaRoute,
   AuthenticatedProjetosProjectIdRoute: AuthenticatedProjetosProjectIdRoute,
+  AuthenticatedLiberacoesIndexRoute: AuthenticatedLiberacoesIndexRoute,
   AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,
 }
 
