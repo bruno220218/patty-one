@@ -7,8 +7,13 @@ export function dbError(error: { message: string; code?: string } | null | undef
   return new Error(error.message || "Algo deu errado. Tente novamente.");
 }
 
-export function unwrap<T>(result: { data: T | null; error: { message: string; code?: string } | null }): T {
+export function unwrap<T>(result: {
+  data: T;
+  error: { message: string; code?: string } | null;
+}): NonNullable<T> {
   if (result.error) throw dbError(result.error);
-  if (result.data === null) throw new Error("Registro não encontrado.");
-  return result.data;
+  if (result.data === null || result.data === undefined) {
+    throw new Error("Registro não encontrado.");
+  }
+  return result.data as NonNullable<T>;
 }
