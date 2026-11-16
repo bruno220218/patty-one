@@ -9,7 +9,6 @@ import { LiberacaoEditor } from "@/components/app/liberacao-editor";
 import { useCurrentUser, useDataAction } from "@/hooks/use-data";
 import {
   canEditLiberacoes,
-  emptyLiberacaoItem,
   LIBERACAO_MODELO_LABEL,
   liberacaoRepository,
   localToday,
@@ -73,16 +72,19 @@ function NovaLiberacaoPage() {
     modelo,
     numero,
     cliente: "",
-    vendedor: "",
+    responsavel: "",
+    contato: "",
+    endereco: "",
     projetista: "",
+    vendedor: "",
+    classificacaoVenda: "",
     dataLiberacao: localToday(),
     dataEntrega: null,
-    responsavel: "",
-    telefone: "",
-    endereco: "",
     bissemana: "",
-    numeroPlaca: "",
-    itens: [emptyLiberacaoItem(), emptyLiberacaoItem(), emptyLiberacaoItem()],
+    pontoEnergia: "",
+    horarioInstalacao: "",
+    observacoes: "",
+    itens: [],
   };
 
   return (
@@ -90,7 +92,7 @@ function NovaLiberacaoPage() {
       {back}
       <PageHeader
         title={`Nova liberação · ${LIBERACAO_MODELO_LABEL[modelo]}`}
-        description="Preencha o cabeçalho e os itens. Linhas vazias são ignoradas ao salvar."
+        description="Preencha como na planilha. Os campos sugerem as opções de sempre, mas aceitam qualquer texto. Linhas vazias são ignoradas."
       />
       <LiberacaoEditor
         key={modelo}

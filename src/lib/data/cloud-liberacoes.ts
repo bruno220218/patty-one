@@ -9,21 +9,25 @@ import { isBlankLiberacaoItem } from "./rules";
 // talks to them through an untyped client and maps rows by hand.
 const db = supabase as unknown as SupabaseClient;
 
-const SELECT = `id, modelo, numero, cliente, vendedor, projetista, data_liberacao, data_entrega,
-  responsavel, telefone, endereco, bissemana, numero_placa, created_at, updated_at,
-  liberacao_itens(id, position, servico, material, acabamento, instalacao, detalhes,
-    largura_cm, altura_cm, checked)`;
+const SELECT = `id, modelo, numero, cliente, responsavel, contato, endereco, projetista, vendedor,
+  classificacao_venda, data_liberacao, data_entrega, bissemana, ponto_energia, horario_instalacao,
+  observacoes, created_at, updated_at,
+  liberacao_itens(id, position, referencia, servico, insumos, acabamento, instalacao, detalhes,
+    largura_cm, altura_cm, quantidade, local_instalacao, checked)`;
 
 interface ItemRow {
   id: string;
   position: number;
+  referencia: string;
   servico: string;
-  material: string;
+  insumos: string;
   acabamento: string;
   instalacao: string;
   detalhes: string;
   largura_cm: number | string | null;
   altura_cm: number | string | null;
+  quantidade: number | string | null;
+  local_instalacao: string;
   checked: boolean;
 }
 
@@ -32,15 +36,18 @@ interface Row {
   modelo: LiberacaoModelo;
   numero: number;
   cliente: string;
-  vendedor: string;
+  responsavel: string;
+  contato: string;
+  endereco: string;
   projetista: string;
+  vendedor: string;
+  classificacao_venda: string;
   data_liberacao: string | null;
   data_entrega: string | null;
-  responsavel: string;
-  telefone: string;
-  endereco: string;
   bissemana: string;
-  numero_placa: string;
+  ponto_energia: string;
+  horario_instalacao: string;
+  observacoes: string;
   created_at: string;
   updated_at: string;
   liberacao_itens: ItemRow[] | null;
@@ -54,28 +61,34 @@ function toLiberacao(row: Row): Liberacao {
     modelo: row.modelo,
     numero: row.numero,
     cliente: row.cliente,
-    vendedor: row.vendedor,
+    responsavel: row.responsavel,
+    contato: row.contato,
+    endereco: row.endereco,
     projetista: row.projetista,
+    vendedor: row.vendedor,
+    classificacaoVenda: row.classificacao_venda,
     dataLiberacao: row.data_liberacao,
     dataEntrega: row.data_entrega,
-    responsavel: row.responsavel,
-    telefone: row.telefone,
-    endereco: row.endereco,
     bissemana: row.bissemana,
-    numeroPlaca: row.numero_placa,
+    pontoEnergia: row.ponto_energia,
+    horarioInstalacao: row.horario_instalacao,
+    observacoes: row.observacoes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     itens: [...(row.liberacao_itens ?? [])]
       .sort((a, b) => a.position - b.position)
       .map((i): LiberacaoItem => ({
         id: i.id,
+        referencia: i.referencia,
         servico: i.servico,
-        material: i.material,
+        insumos: i.insumos,
         acabamento: i.acabamento,
         instalacao: i.instalacao,
         detalhes: i.detalhes,
         larguraCm: num(i.largura_cm),
         alturaCm: num(i.altura_cm),
+        quantidade: num(i.quantidade),
+        localInstalacao: i.local_instalacao,
         checked: i.checked,
       })),
   };
@@ -86,15 +99,18 @@ function headerRow(input: LiberacaoInput) {
   const row: Record<string, unknown> = {
     modelo: input.modelo,
     cliente: input.cliente.trim(),
-    vendedor: input.vendedor.trim(),
+    responsavel: input.responsavel.trim(),
+    contato: input.contato.trim(),
+    endereco: input.endereco.trim(),
     projetista: input.projetista.trim(),
+    vendedor: input.vendedor.trim(),
+    classificacao_venda: input.classificacaoVenda.trim(),
     data_liberacao: input.dataLiberacao || null,
     data_entrega: input.dataEntrega || null,
-    responsavel: projeto ? input.responsavel.trim() : "",
-    telefone: projeto ? input.telefone.trim() : "",
-    endereco: projeto ? input.endereco.trim() : "",
     bissemana: projeto ? "" : input.bissemana.trim(),
-    numero_placa: projeto ? "" : input.numeroPlaca.trim(),
+    ponto_energia: projeto ? input.pontoEnergia.trim() : "",
+    horario_instalacao: projeto ? input.horarioInstalacao.trim() : "",
+    observacoes: input.observacoes.trim(),
   };
   if (input.numero !== null) row["numero"] = input.numero;
   return row;
@@ -122,13 +138,16 @@ async function saveItems(liberacaoId: string, itens: LiberacaoItem[]): Promise<v
     ...(i.id ? { id: i.id } : {}),
     liberacao_id: liberacaoId,
     position,
+    referencia: i.referencia.trim(),
     servico: i.servico.trim(),
-    material: i.material.trim(),
+    insumos: i.insumos.trim(),
     acabamento: i.acabamento.trim(),
     instalacao: i.instalacao.trim(),
     detalhes: i.detalhes.trim(),
     largura_cm: i.larguraCm,
     altura_cm: i.alturaCm,
+    quantidade: i.quantidade,
+    local_instalacao: i.localInstalacao.trim(),
     checked: i.checked,
   }));
   const existing = rows.filter((r) => "id" in r);

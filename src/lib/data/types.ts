@@ -93,12 +93,17 @@ export type ProjectStatus = "not_started" | "in_progress" | "done";
 
 export type LiberacaoModelo = "projeto" | "midia";
 
-/** One row of a liberação: SERVIÇO | MATERIAL | ACABAMENTO | INSTALAÇÃO | DETALHES | TAMANHO (L x A) | CHECK. */
+/**
+ * One row of a liberação: Nº PAINEL/ORÇAMENTO | SERVIÇO | INSUMOS | ACABAMENTO | INSTALAÇÃO |
+ * DETALHES | LARGURA | ALTURA | QTDA | LOCAL DE INSTALAÇÃO | CHECK.
+ */
 export interface LiberacaoItem {
   /** Null for rows not saved yet. */
   id: string | null;
+  /** Nº do painel (Mídia) ou Nº do orçamento (Projetos). */
+  referencia: string;
   servico: string;
-  material: string;
+  insumos: string;
   acabamento: string;
   instalacao: string;
   detalhes: string;
@@ -106,27 +111,34 @@ export interface LiberacaoItem {
   larguraCm: number | null;
   /** Height in cm, or null. */
   alturaCm: number | null;
+  quantidade: number | null;
+  localInstalacao: string;
   checked: boolean;
 }
 
-/** Header fields shared by both models plus the model-specific ones (blank when not used). */
+/** Liberação header + items. Model-specific fields stay blank when not used. */
 export interface LiberacaoInput {
   modelo: LiberacaoModelo;
   numero: number | null;
   cliente: string;
-  vendedor: string;
+  responsavel: string;
+  contato: string;
+  /** Endereço com local de referência. */
+  endereco: string;
+  /** Layoutista / projetista. */
   projetista: string;
+  vendedor: string;
+  classificacaoVenda: string;
   /** YYYY-MM-DD or null. */
   dataLiberacao: string | null;
   /** YYYY-MM-DD or null. */
   dataEntrega: string | null;
-  /** Modelo Projetos. */
-  responsavel: string;
-  telefone: string;
-  endereco: string;
   /** Modelo Mídia. */
   bissemana: string;
-  numeroPlaca: string;
+  /** Modelo Projetos (observações). */
+  pontoEnergia: string;
+  horarioInstalacao: string;
+  observacoes: string;
   itens: LiberacaoItem[];
 }
 

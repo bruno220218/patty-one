@@ -23,17 +23,20 @@ create table if not exists public.liberacoes (
   modelo text not null check (modelo in ('projeto', 'midia')),
   numero integer not null unique default nextval('public.liberacoes_numero_seq'),
   cliente text not null default '',
-  vendedor text not null default '',
+  responsavel text not null default '',
+  contato text not null default '',
+  endereco text not null default '',
   projetista text not null default '',
+  vendedor text not null default '',
+  classificacao_venda text not null default '',
   data_liberacao date,
   data_entrega date,
-  -- Modelo Projetos
-  responsavel text not null default '',
-  telefone text not null default '',
-  endereco text not null default '',
   -- Modelo Mídia
   bissemana text not null default '',
-  numero_placa text not null default '',
+  -- Observações (Projetos usa ponto de energia e horário de instalação)
+  ponto_energia text not null default '',
+  horario_instalacao text not null default '',
+  observacoes text not null default '',
   created_by uuid references auth.users(id) on delete set null default auth.uid(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -43,18 +46,22 @@ alter sequence public.liberacoes_numero_seq owned by public.liberacoes.numero;
 create trigger liberacoes_touch before update on public.liberacoes
   for each row execute function public.touch_updated_at();
 
--- 3) Itens (SERVIÇO | MATERIAL | ACABAMENTO | INSTALAÇÃO | DETALHES | TAMANHO (CM) L x A | CHECK)
+-- 3) Itens (Nº PAINEL/ORÇAMENTO | SERVIÇO | INSUMOS | ACABAMENTO | INSTALAÇÃO | DETALHES |
+--            LARGURA | ALTURA | QTDA | LOCAL DE INSTALAÇÃO | CHECK)
 create table if not exists public.liberacao_itens (
   id uuid primary key default gen_random_uuid(),
   liberacao_id uuid not null references public.liberacoes(id) on delete cascade,
   position integer not null default 0,
+  referencia text not null default '',
   servico text not null default '',
-  material text not null default '',
+  insumos text not null default '',
   acabamento text not null default '',
   instalacao text not null default '',
   detalhes text not null default '',
   largura_cm numeric(10, 2),
   altura_cm numeric(10, 2),
+  quantidade numeric(10, 2),
+  local_instalacao text not null default '',
   checked boolean not null default false,
   created_at timestamptz not null default now()
 );

@@ -203,6 +203,27 @@ export const LIBERACAO_MODELO_LABEL: Record<"projeto" | "midia", string> = {
   midia: "Mídia",
 };
 
+/** Form titles and section names, as in the spreadsheets. */
+export const LIBERACAO_MODELO_INFO: Record<
+  "projeto" | "midia",
+  { titulo: string; secao: string; referencia: string; aviso: string | null; anexo: string }
+> = {
+  projeto: {
+    titulo: "Formulário de liberação de projetos especiais",
+    secao: "Projeto especial",
+    referencia: "Nº orçamento",
+    aviso: "Não esqueça de colocar a cor do ACM / pintura / iluminação",
+    anexo: "Obrigatório anexo no e-mail: escopo do serviço e foto do local (projetos)",
+  },
+  midia: {
+    titulo: "Formulário de liberação de mídia e impressões",
+    secao: "Mídias e impressões",
+    referencia: "Nº painel",
+    aviso: null,
+    anexo: "Obrigatório anexo no e-mail: foto do local (mídia) / layout (mídias)",
+  },
+};
+
 /** Gestão and comercial can create/edit liberações (the database enforces the same rule). */
 export function canEditLiberacoes(
   user: { isGestor: boolean; isComercial: boolean } | null | undefined,
@@ -213,13 +234,16 @@ export function canEditLiberacoes(
 export function emptyLiberacaoItem() {
   return {
     id: null,
+    referencia: "",
     servico: "",
-    material: "",
+    insumos: "",
     acabamento: "",
     instalacao: "",
     detalhes: "",
     larguraCm: null,
     alturaCm: null,
+    quantidade: null,
+    localInstalacao: "",
     checked: false,
   };
 }
@@ -243,21 +267,36 @@ export function parseCm(value: string): number | null {
 
 /** True when an item row has nothing filled in (it is dropped on save). */
 export function isBlankLiberacaoItem(item: {
+  referencia: string;
   servico: string;
-  material: string;
+  insumos: string;
   acabamento: string;
   instalacao: string;
   detalhes: string;
+  localInstalacao: string;
   larguraCm: number | null;
   alturaCm: number | null;
+  quantidade: number | null;
 }): boolean {
   return (
-    [item.servico, item.material, item.acabamento, item.instalacao, item.detalhes].every(
-      (v) => v.trim() === "",
-    ) &&
+    [
+      item.referencia,
+      item.servico,
+      item.insumos,
+      item.acabamento,
+      item.instalacao,
+      item.detalhes,
+      item.localInstalacao,
+    ].every((v) => v.trim() === "") &&
     item.larguraCm === null &&
-    item.alturaCm === null
+    item.alturaCm === null &&
+    item.quantidade === null
   );
+}
+
+/** Number in pt-BR without trailing zeros ("1", "2,5"); null → "". */
+export function formatQuantidade(n: number | null): string {
+  return n === null ? "" : n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 }
 
 /** Checked items over items, e.g. { done: 2, total: 5 }. */

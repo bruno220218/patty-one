@@ -33,7 +33,9 @@ describe("liberação rules", () => {
 
   it("detects blank rows and counts checks", () => {
     expect(isBlankLiberacaoItem(emptyLiberacaoItem())).toBe(true);
-    expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), material: "ACM" })).toBe(false);
+    expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), insumos: "ACM" })).toBe(false);
+    expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), referencia: "P-12" })).toBe(false);
+    expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), quantidade: 2 })).toBe(false);
     expect(isBlankLiberacaoItem({ ...emptyLiberacaoItem(), larguraCm: 10 })).toBe(false);
     expect(liberacaoProgress([{ checked: true }, { checked: false }, { checked: true }])).toEqual({
       done: 2,

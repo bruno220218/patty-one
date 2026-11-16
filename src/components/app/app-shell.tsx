@@ -63,6 +63,8 @@ function useSignOut() {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const bare = BARE_PATHS.some((p) => pathname.startsWith(p));
+  // Liberação forms mirror a 12-column spreadsheet, so they get a wider page.
+  const wide = pathname.startsWith("/liberacoes/");
   const { data: me } = useCurrentUser();
   const signOut = useSignOut();
 
@@ -149,7 +151,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         <main className="pb-28 md:pb-12 md:pl-60">
-          <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 md:px-10 md:py-10">
+          <div
+            className={cn(
+              "mx-auto w-full px-4 py-6 sm:px-6 md:px-10 md:py-10",
+              wide ? "max-w-[96rem]" : "max-w-5xl",
+            )}
+          >
             {pending ? (
               <EmptyState
                 icon={Hourglass}

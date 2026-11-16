@@ -84,7 +84,7 @@ function LiberacoesPage() {
           String(l.numero).includes(q) ||
           fold(l.vendedor).includes(q) ||
           fold(l.projetista).includes(q) ||
-          fold(l.numeroPlaca).includes(q)),
+          l.itens.some((i) => fold(i.referencia).includes(q) || fold(i.servico).includes(q))),
     );
   }, [liberacoes, query, modelo]);
 
@@ -132,7 +132,7 @@ function LiberacoesPage() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por cliente, número, vendedor, placa…"
+                placeholder="Buscar por cliente, número, vendedor, painel, serviço…"
                 aria-label="Buscar liberação"
                 className="h-9 pl-9"
               />

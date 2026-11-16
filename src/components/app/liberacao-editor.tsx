@@ -1,29 +1,43 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { useEffect, useId, useState, type FormEvent, type ReactNode } from "react";
+import { AlertTriangle, Paperclip, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
+  BISSEMANAS,
+  CLASSIFICACOES_VENDA,
   emptyLiberacaoItem,
-  formatTamanho,
-  LIBERACAO_MODELO_LABEL,
+  LIBERACAO_MODELO_INFO,
   liberacaoProgress,
+  MIDIA_OPTIONS,
   parseCm,
+  PROJETISTAS,
+  PROJETO_OPTIONS,
+  VENDEDORES,
   type LiberacaoInput,
   type LiberacaoItem,
 } from "@/lib/data";
 import { formatDateOnly } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-/** Item row as edited on screen: sizes stay as typed text until saving. */
-type DraftItem = Omit<LiberacaoItem, "larguraCm" | "alturaCm"> & {
+/** Item row as edited on screen: numbers stay as typed text until saving. */
+type DraftItem = Omit<LiberacaoItem, "larguraCm" | "alturaCm" | "quantidade"> & {
   key: string;
   largura: string;
   altura: string;
+  qtd: string;
 };
 
-const cmText = (n: number | null) =>
+type TextField =
+  | "referencia"
+  | "servico"
+  | "insumos"
+  | "acabamento"
+  | "instalacao"
+  | "detalhes"
+  | "localInstalacao";
+
+const numText = (n: number | null) =>
   n === null ? "" : n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 
 let keySeq = 0;
@@ -32,65 +46,57 @@ const nextKey = () => `item-${++keySeq}`;
 const toDraft = (i: LiberacaoItem): DraftItem => ({
   ...i,
   key: i.id ?? nextKey(),
-  largura: cmText(i.larguraCm),
-  altura: cmText(i.alturaCm),
+  largura: numText(i.larguraCm),
+  altura: numText(i.alturaCm),
+  qtd: numText(i.quantidade),
 });
 
-const ITEM_COLUMNS: {
-  field: "servico" | "material" | "acabamento" | "instalacao" | "detalhes";
-  label: string;
-  width: string;
-}[] = [
-  { field: "servico", label: "Serviço", width: "w-[17%]" },
-  { field: "material", label: "Material", width: "w-[13%]" },
-  { field: "acabamento", label: "Acabamento", width: "w-[13%]" },
-  { field: "instalacao", label: "Instalação", width: "w-[11%]" },
-  { field: "detalhes", label: "Detalhes", width: "w-[18%]" },
-];
+const draftIsBlank = (i: DraftItem) =>
+  [
+    i.referencia,
+    i.servico,
+    i.insumos,
+    i.acabamento,
+    i.instalacao,
+    i.detalhes,
+    i.localInstalacao,
+    i.largura,
+    i.altura,
+    i.qtd,
+  ].every((v) => v.trim() === "");
 
-function Field({
-  id,
+/** Spreadsheet-like cell input: borderless inside the bordered table cell. */
+const cellInput =
+  "block h-9 w-full min-w-0 bg-transparent px-2 text-sm outline-none placeholder:text-muted-foreground/60 focus:bg-accent/60";
+
+/** Header field: label on the left, value on the right (like the spreadsheet). */
+function HeaderField({
   label,
-  value,
-  onChange,
-  readOnly,
-  type = "text",
-  className,
-  placeholder,
+  htmlFor,
+  children,
 }: {
-  id: string;
   label: string;
-  value: string;
-  onChange: (v: string) => void;
-  readOnly: boolean;
-  type?: "text" | "date" | "tel" | "number";
-  className?: string;
-  placeholder?: string;
+  htmlFor: string;
+  children: ReactNode;
 }) {
-  const shown = readOnly && type === "date" && value ? formatDateOnly(value) : value;
   return (
-    <div className={cn("space-y-1.5", className)}>
-      <Label
-        htmlFor={id}
-        className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+    <div className="grid grid-cols-[6.75rem_minmax(0,1fr)] items-stretch overflow-hidden rounded-md border border-border">
+      <label
+        htmlFor={htmlFor}
+        className="flex items-center bg-secondary px-2.5 py-1.5 text-[10px] font-semibold uppercase leading-tight tracking-wide text-muted-foreground"
       >
         {label}
-      </Label>
-      {readOnly ? (
-        <p id={id} className="min-h-9 rounded-md border border-transparent py-1.5 text-sm">
-          {shown || <span className="text-muted-foreground">—</span>}
-        </p>
-      ) : (
-        <Input
-          id={id}
-          type={type}
-          value={value}
-          placeholder={placeholder}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-9"
-        />
-      )}
+      </label>
+      <div className="min-w-0 bg-card">{children}</div>
     </div>
+  );
+}
+
+function ReadValue({ id, value }: { id: string; value: string }) {
+  return (
+    <p id={id} className="flex min-h-9 items-center px-3 py-1.5 text-sm font-medium">
+      {value || <span className="font-normal text-muted-foreground">—</span>}
+    </p>
   );
 }
 
@@ -99,61 +105,73 @@ export function LiberacaoEditor({
   readOnly,
   saving,
   onSubmit,
-  onDirtyChange,
 }: {
   initial: LiberacaoInput;
   readOnly: boolean;
   saving?: boolean;
   onSubmit: (input: LiberacaoInput) => void;
-  onDirtyChange?: (dirty: boolean) => void;
 }) {
+  const uid = useId();
+  const projeto = initial.modelo === "projeto";
+  const info = LIBERACAO_MODELO_INFO[initial.modelo];
+  const options = projeto ? PROJETO_OPTIONS : MIDIA_OPTIONS;
+
   const [header, setHeader] = useState(() => ({
     numero: initial.numero === null ? "" : String(initial.numero),
     cliente: initial.cliente,
-    vendedor: initial.vendedor,
+    responsavel: initial.responsavel,
+    contato: initial.contato,
+    endereco: initial.endereco,
     projetista: initial.projetista,
+    vendedor: initial.vendedor,
+    classificacaoVenda: initial.classificacaoVenda,
     dataLiberacao: initial.dataLiberacao ?? "",
     dataEntrega: initial.dataEntrega ?? "",
-    responsavel: initial.responsavel,
-    telefone: initial.telefone,
-    endereco: initial.endereco,
     bissemana: initial.bissemana,
-    numeroPlaca: initial.numeroPlaca,
+    pontoEnergia: initial.pontoEnergia,
+    horarioInstalacao: initial.horarioInstalacao,
+    observacoes: initial.observacoes,
   }));
-  const [items, setItems] = useState<DraftItem[]>(() =>
-    (initial.itens.length ? initial.itens : [emptyLiberacaoItem()]).map(toDraft),
-  );
+  const [items, setItems] = useState<DraftItem[]>(() => {
+    const rows = initial.itens.map(toDraft);
+    const minRows = projeto ? 4 : 9;
+    while (!readOnly && rows.length < minRows) rows.push(toDraft(emptyLiberacaoItem()));
+    return rows;
+  });
   const [error, setError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
-  useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
+  // Warn before closing the tab with unsaved changes.
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty]);
 
-  const projeto = initial.modelo === "projeto";
   const set = (field: keyof typeof header) => (v: string) => {
     setHeader((h) => ({ ...h, [field]: v }));
     setDirty(true);
     setError(null);
   };
   const updateItem = (key: string, patch: Partial<DraftItem>) => {
-    setItems((list) => list.map((i) => (i.key === key ? { ...i, ...patch } : i)));
+    setItems((rows) => rows.map((i) => (i.key === key ? { ...i, ...patch } : i)));
     setDirty(true);
     setError(null);
   };
   const addItem = () => {
-    setItems((list) => [...list, toDraft(emptyLiberacaoItem())]);
+    setItems((rows) => [...rows, toDraft(emptyLiberacaoItem())]);
     setDirty(true);
   };
   const removeItem = (key: string) => {
-    setItems((list) => {
-      const next = list.filter((i) => i.key !== key);
-      return next.length ? next : [toDraft(emptyLiberacaoItem())];
-    });
+    setItems((rows) => rows.filter((i) => i.key !== key));
     setDirty(true);
   };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!header.cliente.trim()) {
-      setError("Informe o nome do cliente.");
+      setError("Informe o cliente.");
       return;
     }
     const numero = header.numero.trim() ? Number(header.numero) : null;
@@ -163,21 +181,26 @@ export function LiberacaoEditor({
     }
     const itens: LiberacaoItem[] = [];
     for (const [index, i] of items.entries()) {
+      if (draftIsBlank(i)) continue;
       const larguraCm = parseCm(i.largura);
       const alturaCm = parseCm(i.altura);
-      if (Number.isNaN(larguraCm) || Number.isNaN(alturaCm)) {
-        setError(`Tamanho inválido no item ${index + 1}. Use números em cm, ex.: 120 ou 80,5.`);
+      const quantidade = parseCm(i.qtd);
+      if ([larguraCm, alturaCm, quantidade].some((n) => Number.isNaN(n))) {
+        setError(`Número inválido na linha ${index + 1}. Use só números, ex.: 120 ou 80,5.`);
         return;
       }
       itens.push({
         id: i.id,
+        referencia: i.referencia,
         servico: i.servico,
-        material: i.material,
+        insumos: i.insumos,
         acabamento: i.acabamento,
         instalacao: i.instalacao,
         detalhes: i.detalhes,
         larguraCm,
         alturaCm,
+        quantidade,
+        localInstalacao: i.localInstalacao,
         checked: i.checked,
       });
     }
@@ -186,257 +209,387 @@ export function LiberacaoEditor({
       modelo: initial.modelo,
       numero,
       cliente: header.cliente,
-      vendedor: header.vendedor,
+      responsavel: header.responsavel,
+      contato: header.contato,
+      endereco: header.endereco,
       projetista: header.projetista,
+      vendedor: header.vendedor,
+      classificacaoVenda: header.classificacaoVenda,
       dataLiberacao: header.dataLiberacao || null,
       dataEntrega: header.dataEntrega || null,
-      responsavel: header.responsavel,
-      telefone: header.telefone,
-      endereco: header.endereco,
       bissemana: header.bissemana,
-      numeroPlaca: header.numeroPlaca,
+      pontoEnergia: header.pontoEnergia,
+      horarioInstalacao: header.horarioInstalacao,
+      observacoes: header.observacoes,
       itens,
     });
   };
 
-  const { done, total } = liberacaoProgress(items);
-  const visibleItems = readOnly
-    ? items.filter((i) =>
-        [i.servico, i.material, i.acabamento, i.instalacao, i.detalhes, i.largura, i.altura].some(
-          (v) => v.trim() !== "",
-        ),
-      )
-    : items;
+  const filled = items.filter((i) => !draftIsBlank(i));
+  const { done, total } = liberacaoProgress(filled);
+  const rows = readOnly ? filled : items;
+  const id = (name: string) => `${uid}-${name}`;
+  const listId = (name: string) => `${uid}-list-${name}`;
+
+  const text = (
+    field: keyof typeof header,
+    opts?: { type?: string; list?: string; placeholder?: string },
+  ) =>
+    readOnly ? (
+      <ReadValue
+        id={id(field)}
+        value={
+          opts?.type === "date" && header[field] ? formatDateOnly(header[field]) : header[field]
+        }
+      />
+    ) : (
+      <input
+        id={id(field)}
+        type={opts?.type ?? "text"}
+        list={opts?.list}
+        placeholder={opts?.placeholder}
+        value={header[field]}
+        onChange={(e) => set(field)(e.target.value)}
+        className={cn(cellInput, "h-full min-h-9 px-3")}
+        autoComplete="off"
+      />
+    );
+
+  const select = (field: "classificacaoVenda" | "bissemana", values: string[]) =>
+    readOnly ? (
+      <ReadValue id={id(field)} value={header[field]} />
+    ) : (
+      <select
+        id={id(field)}
+        value={header[field]}
+        onChange={(e) => set(field)(e.target.value)}
+        className={cn(cellInput, "h-full min-h-9 cursor-pointer px-2")}
+      >
+        <option value="">Selecione</option>
+        {header[field] && !values.includes(header[field]) && (
+          <option value={header[field]}>{header[field]}</option>
+        )}
+        {values.map((v) => (
+          <option key={v} value={v}>
+            {v}
+          </option>
+        ))}
+      </select>
+    );
+
+  const itemColumns: { field: TextField; label: string; width: string; suggest?: boolean }[] = [
+    { field: "servico", label: "Serviço", width: "w-[15%]", suggest: true },
+    { field: "insumos", label: "Insumos", width: "w-[12%]", suggest: true },
+    { field: "acabamento", label: "Acabamento", width: "w-[10%]", suggest: true },
+    { field: "instalacao", label: "Instalação", width: "w-[12%]", suggest: true },
+    { field: "detalhes", label: "Detalhes", width: "w-[10%]" },
+  ];
+  const th = "border border-primary-foreground/20";
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-6">
-      <section className="surface-card p-5">
-        <div className="mb-4 flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold">
-            Cabeçalho · modelo {LIBERACAO_MODELO_LABEL[initial.modelo]}
-          </h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Field
-            id="lib-numero"
-            label="Número da liberação"
-            type="number"
-            value={header.numero}
-            onChange={set("numero")}
-            readOnly={readOnly}
-            placeholder="Automático"
-          />
-          <Field
-            id="lib-cliente"
-            label="Nome do cliente *"
-            value={header.cliente}
-            onChange={set("cliente")}
-            readOnly={readOnly}
-            className="sm:col-span-1 lg:col-span-3"
-          />
-          <Field
-            id="lib-vendedor"
-            label="Vendedor"
-            value={header.vendedor}
-            onChange={set("vendedor")}
-            readOnly={readOnly}
-          />
-          <Field
-            id="lib-projetista"
-            label="Projetista"
-            value={header.projetista}
-            onChange={set("projetista")}
-            readOnly={readOnly}
-          />
-          <Field
-            id="lib-data-liberacao"
-            label="Data da liberação"
-            type="date"
-            value={header.dataLiberacao}
-            onChange={set("dataLiberacao")}
-            readOnly={readOnly}
-          />
-          <Field
-            id="lib-data-entrega"
-            label="Data da entrega"
-            type="date"
-            value={header.dataEntrega}
-            onChange={set("dataEntrega")}
-            readOnly={readOnly}
-          />
-          {projeto ? (
-            <>
-              <Field
-                id="lib-responsavel"
-                label="Responsável (cliente)"
-                value={header.responsavel}
-                onChange={set("responsavel")}
-                readOnly={readOnly}
-              />
-              <Field
-                id="lib-telefone"
-                label="Telefone (cliente)"
-                type="tel"
-                value={header.telefone}
-                onChange={set("telefone")}
-                readOnly={readOnly}
-              />
-              <Field
-                id="lib-endereco"
-                label="Endereço"
-                value={header.endereco}
-                onChange={set("endereco")}
-                readOnly={readOnly}
-                className="sm:col-span-2"
-              />
-            </>
-          ) : (
-            <>
-              <Field
-                id="lib-bissemana"
-                label="Bissemana"
-                value={header.bissemana}
-                onChange={set("bissemana")}
-                readOnly={readOnly}
-              />
-              <Field
-                id="lib-placa"
-                label="Número da placa"
-                value={header.numeroPlaca}
-                onChange={set("numeroPlaca")}
-                readOnly={readOnly}
-              />
-            </>
-          )}
-        </div>
-      </section>
+    <form onSubmit={submit} noValidate className="space-y-4">
+      {/* Suggestions from the spreadsheet's APOIO lists; any text is still accepted. */}
+      {!readOnly && (
+        <>
+          {(["servico", "insumos", "acabamento", "instalacao"] as const).map((k) => (
+            <datalist key={k} id={listId(k)}>
+              {options[k].map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
+          ))}
+          <datalist id={listId("projetista")}>
+            {PROJETISTAS.map((v) => (
+              <option key={v} value={v} />
+            ))}
+          </datalist>
+          <datalist id={listId("vendedor")}>
+            {VENDEDORES.map((v) => (
+              <option key={v} value={v} />
+            ))}
+          </datalist>
+        </>
+      )}
 
-      <section className="surface-card overflow-hidden">
-        <div className="flex items-center justify-between gap-2 border-b border-border px-5 py-3">
-          <h2 className="text-sm font-semibold">Itens</h2>
-          <span className="text-xs text-muted-foreground">
+      <div className="surface-card overflow-hidden">
+        {/* Title bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-primary px-5 py-3 text-primary-foreground">
+          <h2 className="text-sm font-bold uppercase tracking-wide sm:text-base">{info.titulo}</h2>
+          <div className="flex items-center gap-2 text-sm font-bold">
+            <label htmlFor={id("numero")}>Nº</label>
+            {readOnly ? (
+              <span id={id("numero")} className="tabular-nums">
+                {header.numero}
+              </span>
+            ) : (
+              <input
+                id={id("numero")}
+                inputMode="numeric"
+                value={header.numero}
+                placeholder="Auto"
+                onChange={(e) => set("numero")(e.target.value.replace(/\D/g, ""))}
+                className="h-8 w-24 rounded-md bg-primary-foreground/15 px-2 text-right tabular-nums text-primary-foreground outline-none placeholder:text-primary-foreground/60 focus:bg-primary-foreground/25"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Header fields */}
+        <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-12">
+          <div className="grid content-start gap-3 md:col-span-2 xl:col-span-6">
+            <HeaderField label="Cliente *" htmlFor={id("cliente")}>
+              {text("cliente")}
+            </HeaderField>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <HeaderField label="Responsável" htmlFor={id("responsavel")}>
+                {text("responsavel")}
+              </HeaderField>
+              <HeaderField label="Contato" htmlFor={id("contato")}>
+                {text("contato", { type: "tel" })}
+              </HeaderField>
+            </div>
+            <HeaderField label="Endereço (referência)" htmlFor={id("endereco")}>
+              {text("endereco")}
+            </HeaderField>
+          </div>
+          <div className="grid content-start gap-3 xl:col-span-3">
+            <HeaderField
+              label={projeto ? "Projetista" : "Layoutista / projetista"}
+              htmlFor={id("projetista")}
+            >
+              {text("projetista", { list: listId("projetista"), placeholder: "Selecione" })}
+            </HeaderField>
+            <HeaderField label="Vendedor" htmlFor={id("vendedor")}>
+              {text("vendedor", { list: listId("vendedor"), placeholder: "Selecione" })}
+            </HeaderField>
+            <HeaderField label="Classificação venda" htmlFor={id("classificacaoVenda")}>
+              {select("classificacaoVenda", CLASSIFICACOES_VENDA)}
+            </HeaderField>
+          </div>
+          <div className="grid content-start gap-3 xl:col-span-3">
+            <HeaderField label="Data liberação" htmlFor={id("dataLiberacao")}>
+              {text("dataLiberacao", { type: "date" })}
+            </HeaderField>
+            <HeaderField label="Data entrega" htmlFor={id("dataEntrega")}>
+              {text("dataEntrega", { type: "date" })}
+            </HeaderField>
+            {!projeto && (
+              <HeaderField label="Bissemana" htmlFor={id("bissemana")}>
+                {select("bissemana", BISSEMANAS)}
+              </HeaderField>
+            )}
+          </div>
+        </div>
+
+        {/* Section band */}
+        <div className="flex items-center justify-between border-y border-border bg-accent px-5 py-2">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-accent-foreground">
+            {info.secao}
+          </h3>
+          <span className="text-xs font-medium text-accent-foreground/80">
             {done}/{total} conferidos
           </span>
         </div>
+
+        {/* Items */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[50rem] table-fixed text-sm">
-            <thead className="bg-muted/40 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              <tr>
-                <th className="w-8 px-2 py-2 text-center">#</th>
-                {ITEM_COLUMNS.map((c) => (
-                  <th key={c.field} className={cn("px-2 py-2", c.width)}>
+          <table className="w-full min-w-[58rem] table-fixed border-collapse text-sm">
+            <thead>
+              <tr className="bg-primary text-[11px] font-semibold uppercase tracking-wide text-primary-foreground">
+                <th
+                  rowSpan={2}
+                  className="w-[8%] border border-border bg-secondary px-1 py-2 text-[10px] leading-tight text-secondary-foreground"
+                >
+                  {info.referencia}
+                </th>
+                {itemColumns.map((c) => (
+                  <th key={c.field} rowSpan={2} className={cn(th, "px-2 py-2", c.width)}>
                     {c.label}
                   </th>
                 ))}
-                <th className="w-[8.5rem] px-2 py-2">Tamanho (cm) L x A</th>
-                <th className="w-14 px-1 py-2 text-center">Check</th>
-                {!readOnly && <th className="w-10 px-1 py-2" aria-label="Ações" />}
+                <th colSpan={2} className={cn(th, "w-[11%] px-1 pt-1.5")}>
+                  Tamanho (cm)
+                </th>
+                <th rowSpan={2} className={cn(th, "w-[5%] px-1 py-2")}>
+                  Qtda
+                </th>
+                <th rowSpan={2} className={cn(th, "w-[12%] px-2 py-2")}>
+                  Local de instalação
+                </th>
+                <th rowSpan={2} className={cn(th, "w-[5%] px-1 py-2")}>
+                  Check
+                </th>
+                {!readOnly && (
+                  <th rowSpan={2} className={cn(th, "w-[2.25rem]")} aria-label="Remover" />
+                )}
+              </tr>
+              <tr className="bg-primary text-[9px] font-semibold uppercase text-primary-foreground/80">
+                <th className={cn(th, "px-1 pb-1")}>Largura</th>
+                <th className={cn(th, "px-1 pb-1")}>Altura</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
-              {visibleItems.length === 0 && (
+            <tbody>
+              {rows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-5 py-6 text-center text-sm text-muted-foreground">
+                  <td
+                    colSpan={13}
+                    className="border border-border px-5 py-6 text-center text-muted-foreground"
+                  >
                     Nenhum item.
                   </td>
                 </tr>
               )}
-              {visibleItems.map((item, index) => (
-                <tr key={item.key} className={cn(item.checked && "bg-status-done/30")}>
-                  <td className="px-2 py-2.5 text-center align-top text-xs tabular-nums text-muted-foreground">
-                    {index + 1}
-                  </td>
-                  {ITEM_COLUMNS.map((c) => (
-                    <td key={c.field} className="px-1 py-1.5 align-top">
-                      {readOnly ? (
-                        <span className="block whitespace-pre-wrap break-words px-1 py-1">
-                          {item[c.field] || "—"}
-                        </span>
-                      ) : (
-                        <Input
-                          value={item[c.field]}
-                          aria-label={`${c.label} do item ${index + 1}`}
-                          onChange={(e) => updateItem(item.key, { [c.field]: e.target.value })}
-                          className="h-8 px-2"
-                        />
-                      )}
-                    </td>
-                  ))}
-                  <td className="px-2 py-1.5 align-top">
-                    {readOnly ? (
-                      <span className="block px-1 py-1 tabular-nums">
-                        {formatTamanho(parseCm(item.largura), parseCm(item.altura)) || "—"}
-                      </span>
-                    ) : (
-                      <div className="flex items-center gap-0.5">
-                        <Input
-                          value={item.largura}
-                          inputMode="decimal"
-                          placeholder="L"
-                          aria-label={`Largura em cm do item ${index + 1}`}
-                          onChange={(e) => updateItem(item.key, { largura: e.target.value })}
-                          className="h-8 w-14 px-2 text-right tabular-nums"
-                        />
-                        <span className="text-xs text-muted-foreground">x</span>
-                        <Input
-                          value={item.altura}
-                          inputMode="decimal"
-                          placeholder="A"
-                          aria-label={`Altura em cm do item ${index + 1}`}
-                          onChange={(e) => updateItem(item.key, { altura: e.target.value })}
-                          className="h-8 w-14 px-2 text-right tabular-nums"
-                        />
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-2 py-1.5 text-center align-middle">
-                    <Checkbox
-                      checked={item.checked}
-                      disabled={readOnly}
-                      aria-label={`Conferido: item ${index + 1}`}
-                      onCheckedChange={(v) => updateItem(item.key, { checked: v === true })}
+              {rows.map((item, index) => {
+                const label = (what: string) => `${what}, linha ${index + 1}`;
+                const cellText = (field: TextField, list?: string) =>
+                  readOnly ? (
+                    <span className="block whitespace-pre-wrap break-words px-2 py-2">
+                      {item[field]}
+                    </span>
+                  ) : (
+                    <input
+                      value={item[field]}
+                      list={list}
+                      aria-label={label(field)}
+                      onChange={(e) => updateItem(item.key, { [field]: e.target.value })}
+                      className={cellInput}
+                      autoComplete="off"
                     />
-                  </td>
-                  {!readOnly && (
-                    <td className="px-1 py-1.5 align-top">
-                      <div className="flex items-center justify-center">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                          aria-label={`Remover item ${index + 1}`}
-                          onClick={() => removeItem(item.key)}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </div>
+                  );
+                const cellNum = (field: "largura" | "altura" | "qtd", what: string) =>
+                  readOnly ? (
+                    <span className="block px-2 py-2 text-right tabular-nums">{item[field]}</span>
+                  ) : (
+                    <input
+                      value={item[field]}
+                      inputMode="decimal"
+                      aria-label={label(what)}
+                      onChange={(e) => updateItem(item.key, { [field]: e.target.value })}
+                      className={cn(cellInput, "text-right tabular-nums")}
+                    />
+                  );
+                return (
+                  <tr
+                    key={item.key}
+                    className={cn("align-top", item.checked && "bg-status-done/40")}
+                  >
+                    <td className="border border-border bg-secondary/50">
+                      {cellText("referencia")}
                     </td>
-                  )}
-                </tr>
-              ))}
+                    {itemColumns.map((c) => (
+                      <td key={c.field} className="border border-border">
+                        {cellText(c.field, c.suggest ? listId(c.field) : undefined)}
+                      </td>
+                    ))}
+                    <td className="border border-border">{cellNum("largura", "Largura em cm")}</td>
+                    <td className="border border-border bg-muted/40">
+                      {cellNum("altura", "Altura em cm")}
+                    </td>
+                    <td className="border border-border bg-muted/40">
+                      {cellNum("qtd", "Quantidade")}
+                    </td>
+                    <td className="border border-border bg-muted/40">
+                      {cellText("localInstalacao")}
+                    </td>
+                    <td className="border border-border text-center align-middle">
+                      <Checkbox
+                        checked={item.checked}
+                        disabled={readOnly}
+                        aria-label={label("Conferido")}
+                        onCheckedChange={(v) => updateItem(item.key, { checked: v === true })}
+                      />
+                    </td>
+                    {!readOnly && (
+                      <td className="border border-border text-center align-middle">
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.key)}
+                          aria-label={label("Remover")}
+                          className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
         {!readOnly && (
-          <div className="border-t border-border px-5 py-3">
-            <Button type="button" variant="outline" size="sm" onClick={addItem}>
+          <div className="border-b border-border px-4 py-2">
+            <Button type="button" variant="ghost" size="sm" onClick={addItem}>
               <Plus />
-              Adicionar item
+              Adicionar linha
             </Button>
           </div>
         )}
-      </section>
+
+        {info.aviso && (
+          <p className="flex items-center justify-center gap-2 bg-destructive/10 px-5 py-2 text-center text-sm font-bold uppercase tracking-wide text-destructive">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            {info.aviso}
+          </p>
+        )}
+
+        {/* Observações */}
+        <div className="border-t border-border bg-primary px-5 py-2">
+          <h3 className="text-center text-sm font-bold uppercase tracking-wide text-primary-foreground">
+            Observações
+          </h3>
+        </div>
+        <div className="grid gap-3 p-4">
+          {projeto && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <HeaderField label="Ponto de energia" htmlFor={id("pontoEnergia")}>
+                {text("pontoEnergia")}
+              </HeaderField>
+              <HeaderField label="Horário de instalação" htmlFor={id("horarioInstalacao")}>
+                {text("horarioInstalacao")}
+              </HeaderField>
+            </div>
+          )}
+          {readOnly ? (
+            <p className="min-h-16 whitespace-pre-wrap rounded-md border border-border px-3 py-2 text-sm">
+              {header.observacoes || (
+                <span className="text-muted-foreground">Sem observações.</span>
+              )}
+            </p>
+          ) : (
+            <Textarea
+              id={id("observacoes")}
+              aria-label="Observações"
+              value={header.observacoes}
+              onChange={(e) => set("observacoes")(e.target.value)}
+              placeholder={
+                projeto
+                  ? "Cor do ACM, pintura, iluminação, detalhes da execução…"
+                  : "Detalhes da execução…"
+              }
+              rows={4}
+            />
+          )}
+        </div>
+
+        <p className="flex items-center justify-center gap-2 bg-destructive px-5 py-2 text-center text-xs font-bold uppercase tracking-wide text-destructive-foreground">
+          <Paperclip className="h-3.5 w-3.5 shrink-0" />
+          {info.anexo}
+        </p>
+      </div>
 
       {!readOnly && (
-        <div className="sticky bottom-20 z-20 flex items-center justify-end gap-3 md:bottom-4">
+        <div className="flex items-center justify-end gap-3 pb-4">
           {error && (
-            <p role="alert" className="text-sm font-medium text-destructive">
+            <p
+              role="alert"
+              className="rounded-md bg-card px-3 py-2 text-sm font-medium text-destructive shadow-card"
+            >
               {error}
             </p>
           )}
           <Button type="submit" disabled={saving} className="h-10 shadow-card-hover">
-            {saving ? "Salvando…" : dirty ? "Salvar liberação" : "Salvar"}
+            {saving ? "Salvando…" : "Salvar liberação"}
           </Button>
         </div>
       )}

@@ -15,7 +15,9 @@ export * from "./types";
 export {
   canEditLiberacoes,
   emptyLiberacaoItem,
+  formatQuantidade,
   formatTamanho,
+  LIBERACAO_MODELO_INFO,
   isBlankLiberacaoItem,
   LIBERACAO_MODELO_LABEL,
   liberacaoProgress,
@@ -36,3 +38,12 @@ export {
   type TeamRole,
 } from "./rules";
 export { fetchCurrentUser, teamRepository, type TeamMember } from "./team";
+export {
+  BISSEMANAS,
+  CLASSIFICACOES_VENDA,
+  MIDIA_OPTIONS,
+  PROJETISTAS,
+  PROJETO_OPTIONS,
+  VENDEDORES,
+  type LiberacaoOptionLists,
+} from "./liberacao-options";
