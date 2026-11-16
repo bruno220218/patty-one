@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ArquivadosRouteImport } from './routes/arquivados'
+import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as ChecklistsChecklistIdRouteImport } from './routes/checklists.$checklistId'
 import { Route as ProjetosIndexRouteImport } from './routes/projetos.index'
 import { Route as ProjetosProjectIdRouteImport } from './routes/projetos.$projectId'
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
 const ArquivadosRoute = ArquivadosRouteImport.update({
   id: '/arquivados',
   path: '/arquivados',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
+  id: '/api/next-steps',
+  path: '/api/next-steps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChecklistsChecklistIdRoute = ChecklistsChecklistIdRouteImport.update({
@@ -44,6 +50,7 @@ const ProjetosProjectIdRoute = ProjetosProjectIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/arquivados': typeof ArquivadosRoute
+  '/api/next-steps': typeof ApiNextStepsRoute
   '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
   '/projetos/$projectId': typeof ProjetosProjectIdRoute
   '/projetos/': typeof ProjetosIndexRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/arquivados': typeof ArquivadosRoute
+  '/api/next-steps': typeof ApiNextStepsRoute
   '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
   '/projetos/$projectId': typeof ProjetosProjectIdRoute
   '/projetos': typeof ProjetosIndexRoute
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/arquivados': typeof ArquivadosRoute
+  '/api/next-steps': typeof ApiNextStepsRoute
   '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
   '/projetos/$projectId': typeof ProjetosProjectIdRoute
   '/projetos/': typeof ProjetosIndexRoute
@@ -68,6 +77,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/arquivados'
+    | '/api/next-steps'
     | '/checklists/$checklistId'
     | '/projetos/$projectId'
     | '/projetos/'
@@ -75,6 +85,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/arquivados'
+    | '/api/next-steps'
     | '/checklists/$checklistId'
     | '/projetos/$projectId'
     | '/projetos'
@@ -82,6 +93,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/arquivados'
+    | '/api/next-steps'
     | '/checklists/$checklistId'
     | '/projetos/$projectId'
     | '/projetos/'
@@ -90,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArquivadosRoute: typeof ArquivadosRoute
+  ApiNextStepsRoute: typeof ApiNextStepsRoute
   ChecklistsChecklistIdRoute: typeof ChecklistsChecklistIdRoute
   ProjetosProjectIdRoute: typeof ProjetosProjectIdRoute
   ProjetosIndexRoute: typeof ProjetosIndexRoute
@@ -109,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/arquivados'
       fullPath: '/arquivados'
       preLoaderRoute: typeof ArquivadosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/next-steps': {
+      id: '/api/next-steps'
+      path: '/api/next-steps'
+      fullPath: '/api/next-steps'
+      preLoaderRoute: typeof ApiNextStepsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checklists/$checklistId': {
@@ -138,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArquivadosRoute: ArquivadosRoute,
+  ApiNextStepsRoute: ApiNextStepsRoute,
   ChecklistsChecklistIdRoute: ChecklistsChecklistIdRoute,
   ProjetosProjectIdRoute: ProjetosProjectIdRoute,
   ProjetosIndexRoute: ProjetosIndexRoute,
