@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Copy, Pencil, Play, Trash2 } from "lucide-react";
+import { ArrowLeft, Copy, Pencil, Play, SearchX, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaskList } from "@/components/app/task-list";
 import { ChecklistFormDialog } from "@/components/app/checklist-form-dialog";
@@ -12,7 +12,6 @@ import { EmptyState } from "@/components/app/empty-state";
 import { useChecklist, useChecklists, useDataAction } from "@/hooks/use-data";
 import { checklistRepository, projectRepository } from "@/lib/data";
 import { pluralTasks } from "@/lib/format";
-import { SearchX } from "lucide-react";
 
 export const Route = createFileRoute("/checklists/$checklistId")({
   head: () => ({
@@ -151,11 +150,8 @@ function ChecklistDetailPage() {
         description={`"${checklist.name}" será excluído permanentemente. Projetos já criados a partir dele não serão afetados.`}
         onConfirm={async () => {
           setDeleteOpen(false);
-          const ok = await run(async () => {
-            await checklistRepository.remove(checklist.id);
-            return true;
-          }, "Checklist excluído.");
-          if (ok) navigate({ to: "/" });
+          await navigate({ to: "/" });
+          run(() => checklistRepository.remove(checklist.id), "Checklist excluído.");
         }}
       />
     </div>

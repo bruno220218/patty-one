@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ChecklistsChecklistIdRouteImport } from './routes/checklists.$checklistId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChecklistsChecklistIdRoute = ChecklistsChecklistIdRouteImport.update({
+  id: '/checklists/$checklistId',
+  path: '/checklists/$checklistId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/checklists/$checklistId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/checklists/$checklistId'
+  id: '__root__' | '/' | '/checklists/$checklistId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChecklistsChecklistIdRoute: typeof ChecklistsChecklistIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checklists/$checklistId': {
+      id: '/checklists/$checklistId'
+      path: '/checklists/$checklistId'
+      fullPath: '/checklists/$checklistId'
+      preLoaderRoute: typeof ChecklistsChecklistIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChecklistsChecklistIdRoute: ChecklistsChecklistIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
