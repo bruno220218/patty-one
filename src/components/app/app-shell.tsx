@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Archive, FolderOpen, Hourglass, ListChecks, LogOut, Users } from "lucide-react";
-import logo from "@/assets/patty-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser } from "@/hooks/use-data";
 import { cn } from "@/lib/utils";
@@ -10,6 +9,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "./empty-state";
 import { ThemeToggle } from "./theme-toggle";
+
+/** Served from public/ so it works on any host (not only Lovable). */
+const LOGO_URL = "/patty-logo.png";
 
 type NavItem = {
   to: "/checklists" | "/projetos" | "/arquivados" | "/equipe";
@@ -30,7 +32,7 @@ const BARE_PATHS = ["/auth", "/reset-password"];
 function Brand() {
   return (
     <Link to="/projetos" className="flex items-center gap-2.5">
-      <img src={logo.url} alt="Patty" className="h-9 w-9 rounded-full" />
+      <img src={LOGO_URL} alt="Patty" className="h-9 w-9 rounded-full" />
       <span className="text-base font-bold tracking-tight text-foreground">Patty One</span>
     </Link>
   );
