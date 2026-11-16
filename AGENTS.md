@@ -28,3 +28,9 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- Persistence goes through repository interfaces in `src/lib/data` (`ChecklistRepository`, `ProjectRepository`), exported from `src/lib/data/index.ts`; UI never touches localStorage directly — why: storage must be swappable for a database without UI changes.
+- Business rules (task copying, progress, status, locks) live in `src/lib/data/rules.ts` and repositories, covered by `src/lib/data/data-rules.test.ts` — why: rules stay testable and storage-agnostic.
+- UI reads data with TanStack Query hooks from `src/hooks/use-data.ts` (client-side only, no route loaders) and mutates through `useDataAction` — why: browser storage is unavailable during SSR.
