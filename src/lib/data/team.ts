@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { CurrentUser } from "./types";
 import { dbError } from "./db-errors";
+import { removeTeamMember } from "./team.functions";
 
 export interface TeamMember {
   id: string;
@@ -87,6 +88,10 @@ export const teamRepository = {
       .eq("user_id", userId)
       .eq("role", "gestor");
     if (error) throw dbError(error);
+  },
+  /** Remove someone from the team for good (their account is deleted). */
+  async remove(userId: string): Promise<void> {
+    await removeTeamMember({ data: { userId } });
   },
   async updateMyName(userId: string, name: string): Promise<void> {
     const clean = name.trim();

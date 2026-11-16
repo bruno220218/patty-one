@@ -10,9 +10,9 @@ const BLOCKER_REQUIRED = "Descreva o bloqueio.";
 const LOCKED = "Este projeto tem parâmetros fixos: as tarefas não podem ser alteradas.";
 
 const SELECT = `id, name, description, due_date, source_checklist_id, locked, archived, archived_at, created_at, updated_at,
-  project_tasks(id, title, position, completed_at, completed_by, created_at,
+  project_tasks(id, title, position, completed_at, completed_by, completed_by_name, created_at,
     completer:profiles!project_tasks_completed_by_fkey(display_name)),
-  project_blockers(id, description, suggestion, created_at, resolved_at,
+  project_blockers(id, description, suggestion, created_at, resolved_at, created_by_name,
     author:profiles!project_blockers_created_by_fkey(display_name))`;
 
 interface Row {
@@ -32,6 +32,7 @@ interface Row {
     position: number;
     completed_at: string | null;
     completed_by: string | null;
+    completed_by_name: string | null;
     created_at: string;
     completer: { display_name: string } | null;
   }[];
@@ -41,6 +42,7 @@ interface Row {
     suggestion: string | null;
     created_at: string;
     resolved_at: string | null;
+    created_by_name: string | null;
     author: { display_name: string } | null;
   }[];
 }
@@ -67,15 +69,19 @@ function toProject(row: Row): Project {
       id: t.id,
       title: t.title,
       completedAt: t.completed_at,
-      completedBy: t.completed_by
-        ? { id: t.completed_by, name: t.completer?.display_name || "Alguém da equipe" }
-        : null,
+      completedBy:
+        t.completed_by || t.completed_by_name
+          ? {
+              id: t.completed_by,
+              name: t.completer?.display_name || t.completed_by_name || "Alguém da equipe",
+            }
+          : null,
     })),
     blockers: blockers.map((b) => ({
       id: b.id,
       description: b.description,
       suggestion: b.suggestion,
-      createdByName: b.author?.display_name ?? null,
+      createdByName: b.author?.display_name || b.created_by_name || null,
       createdAt: b.created_at,
       resolvedAt: b.resolved_at,
     })),
