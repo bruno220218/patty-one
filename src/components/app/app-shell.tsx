@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Archive, FolderOpen, Hourglass, ListChecks, LogOut, Users } from "lucide-react";
+import { Archive, BarChart3, FolderOpen, Hourglass, ListChecks, LogOut, Users } from "lucide-react";
 import logo from "@/assets/patty-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser, useNotifications } from "@/hooks/use-data";
@@ -13,7 +13,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { NotificationBell } from "./notification-bell";
 
 type NavItem = {
-  to: "/checklists" | "/projetos" | "/arquivados" | "/equipe";
+  to: "/checklists" | "/projetos" | "/arquivados" | "/equipe" | "/relatorios";
   label: string;
   icon: typeof ListChecks;
   gestorOnly?: boolean;
@@ -24,6 +24,7 @@ const NAV: NavItem[] = [
   { to: "/projetos", label: "Projetos", icon: FolderOpen },
   { to: "/arquivados", label: "Arquivados", icon: Archive },
   { to: "/equipe", label: "Equipe", icon: Users, gestorOnly: true },
+  { to: "/relatorios", label: "Relatórios", icon: BarChart3, gestorOnly: true },
 ];
 
 const BARE_PATHS = ["/auth", "/reset-password"];
