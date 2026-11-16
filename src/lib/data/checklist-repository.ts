@@ -37,7 +37,7 @@ function mutate(id: string, fn: (c: Checklist) => Checklist): Checklist {
   const items = load();
   const index = items.findIndex((c) => c.id === id);
   if (index === -1) throw new Error("Checklist não encontrado.");
-  const updated = { ...fn(items[index]), updatedAt: new Date().toISOString() };
+  const updated = { ...fn(items[index]!), updatedAt: new Date().toISOString() };
   items[index] = updated;
   save(items);
   return structuredClone(updated);

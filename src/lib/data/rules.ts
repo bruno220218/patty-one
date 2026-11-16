@@ -25,7 +25,9 @@ export function moveItem<T>(items: T[], index: number, direction: MoveDirection)
   const target = direction === "up" ? index - 1 : index + 1;
   if (index < 0 || index >= items.length || target < 0 || target >= items.length) return items;
   const next = [...items];
-  [next[index], next[target]] = [next[target], next[index]];
+  const item = next[index] as T;
+  next[index] = next[target] as T;
+  next[target] = item;
   return next;
 }
 

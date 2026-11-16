@@ -45,7 +45,7 @@ export function createLocalProjectRepository(checklists: ChecklistRepository): P
     const items = load();
     const index = items.findIndex((p) => p.id === id);
     if (index === -1) throw new Error("Projeto não encontrado.");
-    const updated = { ...fn(items[index]), updatedAt: new Date().toISOString() };
+    const updated = { ...fn(items[index]!), updatedAt: new Date().toISOString() };
     items[index] = updated;
     save(items);
     return structuredClone(updated);

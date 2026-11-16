@@ -28,7 +28,7 @@ describe("checklists", () => {
 
   it("reorders tasks up and down", async () => {
     const c = await checklistWithTasks(["A", "B", "C"]);
-    const moved = await checklistRepository.moveTask(c.id, c.tasks[2].id, "up");
+    const moved = await checklistRepository.moveTask(c.id, c.tasks[2]!.id, "up");
     expect(moved.tasks.map((t) => t.title)).toEqual(["A", "C", "B"]);
     expect(moveItem(["A", "B"], 0, "up")).toEqual(["A", "B"]);
   });
@@ -58,11 +58,11 @@ describe("projects created from a checklist", () => {
       checklistId: c.id,
     });
     await checklistRepository.addTask(c.id, "B");
-    await checklistRepository.updateTask(c.id, c.tasks[0].id, "A2");
+    await checklistRepository.updateTask(c.id, c.tasks[0]!.id, "A2");
     expect((await projectRepository.get(p.id))!.tasks.map((t) => t.title)).toEqual(["A"]);
 
     await projectRepository.addTask(p.id, "X");
-    await projectRepository.toggleTask(p.id, p.tasks[0].id, true);
+    await projectRepository.toggleTask(p.id, p.tasks[0]!.id, true);
     expect((await checklistRepository.get(c.id))!.tasks.map((t) => t.title)).toEqual(["A2", "B"]);
   });
 
@@ -84,12 +84,12 @@ describe("fixed parameters", () => {
     });
     expect(p.locked).toBe(true);
     await expect(projectRepository.addTask(p.id, "X")).rejects.toThrow();
-    await expect(projectRepository.updateTask(p.id, p.tasks[0].id, "Y")).rejects.toThrow();
-    await expect(projectRepository.removeTask(p.id, p.tasks[0].id)).rejects.toThrow();
-    await expect(projectRepository.moveTask(p.id, p.tasks[1].id, "up")).rejects.toThrow();
+    await expect(projectRepository.updateTask(p.id, p.tasks[0]!.id, "Y")).rejects.toThrow();
+    await expect(projectRepository.removeTask(p.id, p.tasks[0]!.id)).rejects.toThrow();
+    await expect(projectRepository.moveTask(p.id, p.tasks[1]!.id, "up")).rejects.toThrow();
 
-    const toggled = await projectRepository.toggleTask(p.id, p.tasks[0].id, true);
-    expect(toggled.tasks[0].completedAt).not.toBeNull();
+    const toggled = await projectRepository.toggleTask(p.id, p.tasks[0]!.id, true);
+    expect(toggled.tasks[0]!.completedAt).not.toBeNull();
     const edited = await projectRepository.update(p.id, {
       name: "Novo",
       description: "Desc",
@@ -145,10 +145,10 @@ describe("progress and status", () => {
       checklistId: null,
     });
     const withTask = await projectRepository.addTask(p.id, "A");
-    const checked = await projectRepository.toggleTask(p.id, withTask.tasks[0].id, true);
-    expect(Number.isNaN(Date.parse(checked.tasks[0].completedAt!))).toBe(false);
-    const unchecked = await projectRepository.toggleTask(p.id, withTask.tasks[0].id, false);
-    expect(unchecked.tasks[0].completedAt).toBeNull();
+    const checked = await projectRepository.toggleTask(p.id, withTask.tasks[0]!.id, true);
+    expect(Number.isNaN(Date.parse(checked.tasks[0]!.completedAt!))).toBe(false);
+    const unchecked = await projectRepository.toggleTask(p.id, withTask.tasks[0]!.id, false);
+    expect(unchecked.tasks[0]!.completedAt).toBeNull();
   });
 });
 
