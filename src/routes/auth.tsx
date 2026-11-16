@@ -1,13 +1,10 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LovableMark } from "@lovable.dev/cloud-auth-js/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GoogleMark } from "@/components/app/google-mark";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { safeRedirectPath } from "@/lib/safe-redirect";
 import logo from "@/assets/patty-logo.png.asset.json";
 
@@ -75,20 +72,6 @@ function AuthPage() {
     }
   };
 
-  const social = async (provider: "google" | "lovable") => {
-    setError(null);
-    rememberRedirect();
-    const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin + "/auth",
-    });
-    if (result.error) {
-      setError("Não foi possível entrar agora. Tente novamente.");
-      return;
-    }
-    if (result.redirected) return;
-    goNext();
-  };
-
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -135,7 +118,9 @@ function AuthPage() {
         if (data.session) {
           goNext();
         } else {
-          setNotice("Conta criada! Confira seu e-mail e clique no link para confirmar.");
+          setNotice(
+            'Conta criada! Confira seu e-mail e clique no link para confirmar. Se você já entrava com Google, use "Esqueci minha senha" na aba Entrar para criar uma senha.',
+          );
         }
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -185,7 +170,12 @@ function AuthPage() {
               <Button type="submit" className="w-full" disabled={busy || !email}>
                 Enviar link
               </Button>
-              <Button type="button" variant="ghost" className="w-full" onClick={() => setMode("signin")}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => setMode("signin")}
+              >
                 Voltar para entrar
               </Button>
             </form>
@@ -203,22 +193,7 @@ function AuthPage() {
                 <TabsTrigger value="signup">Criar conta</TabsTrigger>
               </TabsList>
 
-              <div className="mt-4 space-y-2">
-                <Button type="button" variant="outline" className="w-full" onClick={() => social("google")}>
-                  <GoogleMark />
-                  Continuar com Google
-                </Button>
-                <Button type="button" variant="outline" className="w-full" onClick={() => social("lovable")}>
-                  <LovableMark />
-                  Continuar com Lovable
-                </Button>
-              </div>
-
-              <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="h-px flex-1 bg-border" />
-                ou com e-mail
-                <span className="h-px flex-1 bg-border" />
-              </div>
+              <div className="mt-4" />
 
               <form onSubmit={submit} className="space-y-4" noValidate>
                 <TabsContent value="signup" className="m-0 space-y-2">
@@ -282,4 +257,3 @@ function AuthPage() {
     </div>
   );
 }
-
