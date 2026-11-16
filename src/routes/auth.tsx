@@ -6,7 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { safeRedirectPath } from "@/lib/safe-redirect";
-import logo from "@/assets/patty-logo.png.asset.json";
+
+/** Served from public/ so it works on any host (not only Lovable). */
+const LOGO_URL = "/patty-logo.png";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -141,7 +143,7 @@ function AuthPage() {
     <div className="flex min-h-[80vh] items-center justify-center">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <img src={logo.url} alt="Patty" className="h-14 w-14 rounded-full" />
+          <img src={LOGO_URL} alt="Patty" className="h-14 w-14 rounded-full" />
           <h1 className="mt-3 text-xl font-bold tracking-tight">Patty One</h1>
           <p className="mt-1 text-sm text-muted-foreground">Checklists e projetos da equipe.</p>
         </div>
