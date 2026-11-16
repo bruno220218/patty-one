@@ -74,6 +74,7 @@ export function NotificationBell({
       <PopoverContent
         side={variant === "sidebar" ? "right" : "bottom"}
         align="end"
+        collisionPadding={12}
         className="w-[min(22rem,calc(100vw-2rem))] p-0"
       >
         <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
