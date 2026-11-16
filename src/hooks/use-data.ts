@@ -1,9 +1,14 @@
 import { useCallback } from "react";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { checklistRepository, projectRepository } from "@/lib/data";
+import {
+  checklistRepository,
+  fetchCurrentUser,
+  projectRepository,
+  teamRepository,
+} from "@/lib/data";
 
-// Data lives in the browser, so queries run client-side only (never during SSR).
+// Queries run client-side only: the signed-in session lives in the browser.
 export const checklistsQuery = () =>
   queryOptions({ queryKey: ["checklists"], queryFn: () => checklistRepository.list() });
 
@@ -42,3 +47,12 @@ export function useDataAction() {
     [queryClient],
   );
 }
+
+export const currentUserQuery = () =>
+  queryOptions({ queryKey: ["me"], queryFn: () => fetchCurrentUser(), staleTime: 60_000 });
+
+export const teamQuery = () =>
+  queryOptions({ queryKey: ["team"], queryFn: () => teamRepository.list() });
+
+export const useCurrentUser = () => useQuery(currentUserQuery());
+export const useTeam = () => useQuery(teamQuery());
