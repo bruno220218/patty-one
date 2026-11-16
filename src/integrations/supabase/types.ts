@@ -84,6 +84,57 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          actor_name: string
+          created_at: string
+          id: string
+          project_id: string | null
+          project_name: string
+          read_at: string | null
+          recipient_id: string
+          task_id: string | null
+          task_title: string
+        }
+        Insert: {
+          actor_name?: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          project_name?: string
+          read_at?: string | null
+          recipient_id: string
+          task_id?: string | null
+          task_title?: string
+        }
+        Update: {
+          actor_name?: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          project_name?: string
+          read_at?: string | null
+          recipient_id?: string
+          task_id?: string | null
+          task_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -200,6 +251,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          adhesive_type: string
           archived: boolean
           archived_at: string | null
           created_at: string
@@ -207,12 +259,17 @@ export type Database = {
           description: string
           due_date: string | null
           id: string
+          lamination: boolean | null
+          led_color: string
           locked: boolean
           name: string
+          paint_colors: string
+          service_type: string
           source_checklist_id: string | null
           updated_at: string
         }
         Insert: {
+          adhesive_type?: string
           archived?: boolean
           archived_at?: string | null
           created_at?: string
@@ -220,12 +277,17 @@ export type Database = {
           description?: string
           due_date?: string | null
           id?: string
+          lamination?: boolean | null
+          led_color?: string
           locked?: boolean
           name: string
+          paint_colors?: string
+          service_type?: string
           source_checklist_id?: string | null
           updated_at?: string
         }
         Update: {
+          adhesive_type?: string
           archived?: boolean
           archived_at?: string | null
           created_at?: string
@@ -233,8 +295,12 @@ export type Database = {
           description?: string
           due_date?: string | null
           id?: string
+          lamination?: boolean | null
+          led_color?: string
           locked?: boolean
           name?: string
+          paint_colors?: string
+          service_type?: string
           source_checklist_id?: string | null
           updated_at?: string
         }

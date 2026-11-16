@@ -36,6 +36,9 @@ export function ProjectCard({
         </h2>
         <StatusBadge status={projectStatus(project.tasks)} />
       </div>
+      {project.clientInfo.serviceType && (
+        <p className="mt-1 text-xs font-medium text-primary">{project.clientInfo.serviceType}</p>
+      )}
       <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
         {project.description || "Sem descrição"}
       </p>

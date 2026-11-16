@@ -1,4 +1,5 @@
 import type {
+  AppNotification,
   Checklist,
   ChecklistInput,
   MoveDirection,
@@ -40,4 +41,13 @@ export interface ProjectRepository {
   setBlockerSuggestion(projectId: string, blockerId: string, suggestion: string): Promise<Project>;
   setBlockerResolved(projectId: string, blockerId: string, resolved: boolean): Promise<Project>;
   removeBlocker(projectId: string, blockerId: string): Promise<Project>;
+}
+
+/** Contract for in-app notifications of the signed-in person. */
+export interface NotificationRepository {
+  list(limit?: number): Promise<AppNotification[]>;
+  markRead(id: string): Promise<void>;
+  markAllRead(): Promise<void>;
+  /** Calls `onChange` when the person's notifications change. Returns an unsubscribe function. */
+  subscribe(userId: string, onChange: () => void): () => void;
 }

@@ -1,4 +1,4 @@
-import type { MoveDirection, ProjectStatus } from "./types";
+import type { MoveDirection, ProjectClientInfo, ProjectStatus } from "./types";
 
 type TaskLike = { completedAt: string | null };
 
@@ -36,4 +36,23 @@ export function requireText(value: string, message: string): string {
 /** A completed task can only be unchecked by someone with management permission. */
 export function canToggleTask(task: TaskLike, isGestor: boolean): boolean {
   return task.completedAt === null || isGestor;
+}
+
+export const EMPTY_CLIENT_INFO: ProjectClientInfo = {
+  serviceType: "",
+  ledColor: "",
+  paintColors: "",
+  adhesiveType: "",
+  lamination: null,
+};
+
+/** Trims text fields so blanks are stored as empty strings. */
+export function normalizeClientInfo(info: ProjectClientInfo): ProjectClientInfo {
+  return {
+    serviceType: info.serviceType.trim(),
+    ledColor: info.ledColor.trim(),
+    paintColors: info.paintColors.trim(),
+    adhesiveType: info.adhesiveType.trim(),
+    lamination: info.lamination,
+  };
 }

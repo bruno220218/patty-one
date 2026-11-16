@@ -1,9 +1,10 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   checklistRepository,
   fetchCurrentUser,
+  notificationRepository,
   projectRepository,
   teamRepository,
 } from "@/lib/data";
@@ -56,3 +57,21 @@ export const teamQuery = () =>
 
 export const useCurrentUser = () => useQuery(currentUserQuery());
 export const useTeam = () => useQuery(teamQuery());
+
+export const notificationsQuery = () =>
+  queryOptions({ queryKey: ["notifications"], queryFn: () => notificationRepository.list() });
+
+/** The signed-in person's notifications, kept live via Realtime (with polling as a fallback). */
+export function useNotifications(userId: string | undefined, enabled: boolean) {
+  const queryClient = useQueryClient();
+  const active = Boolean(userId) && enabled;
+
+  useEffect(() => {
+    if (!active || !userId) return;
+    return notificationRepository.subscribe(userId, () => {
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    });
+  }, [active, userId, queryClient]);
+
+  return useQuery({ ...notificationsQuery(), enabled: active, refetchInterval: 60_000 });
+}

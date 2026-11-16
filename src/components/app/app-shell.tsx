@@ -4,12 +4,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Archive, FolderOpen, Hourglass, ListChecks, LogOut, Users } from "lucide-react";
 import logo from "@/assets/patty-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
-import { useCurrentUser } from "@/hooks/use-data";
+import { useCurrentUser, useNotifications } from "@/hooks/use-data";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "./empty-state";
 import { ThemeToggle } from "./theme-toggle";
+import { NotificationBell } from "./notification-bell";
 
 type NavItem = {
   to: "/checklists" | "/projetos" | "/arquivados" | "/equipe";
@@ -52,6 +53,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const bare = BARE_PATHS.some((p) => pathname.startsWith(p));
   const { data: me } = useCurrentUser();
   const signOut = useSignOut();
+  const showNotifications = !bare && Boolean(me?.isGestor);
+  const { data: notifications = [] } = useNotifications(me?.id, showNotifications);
 
   if (bare) {
     return (
@@ -103,6 +106,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </p>
               </div>
             )}
+            {showNotifications && (
+              <NotificationBell notifications={notifications} variant="sidebar" />
+            )}
             <ThemeToggle />
             {me && (
               <button
@@ -121,6 +127,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-sidebar-border bg-sidebar/95 px-4 backdrop-blur md:hidden">
           <Brand />
           <div className="flex items-center gap-1">
+            {showNotifications && <NotificationBell notifications={notifications} variant="icon" />}
             <ThemeToggle compact />
             {me && (
               <button
