@@ -23,6 +23,15 @@ export interface ProjectTask {
   completedAt: string | null;
 }
 
+export interface ProjectBlocker {
+  id: string;
+  description: string;
+  /** AI-suggested next steps, or null when not generated yet / failed. */
+  suggestion: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -36,6 +45,7 @@ export interface Project {
   archived: boolean;
   archivedAt: string | null;
   tasks: ProjectTask[];
+  blockers: ProjectBlocker[];
   createdAt: string;
   updatedAt: string;
 }

@@ -1,4 +1,10 @@
-import type { MoveDirection, NewProjectInput, Project, ProjectInput } from "./types";
+import type {
+  MoveDirection,
+  NewProjectInput,
+  Project,
+  ProjectBlocker,
+  ProjectInput,
+} from "./types";
 import type { ChecklistRepository } from "./checklist-repository";
 import { generateId } from "./ids";
 import { readCollection, writeCollection } from "./local-store";
@@ -18,11 +24,16 @@ export interface ProjectRepository {
   removeTask(projectId: string, taskId: string): Promise<Project>;
   moveTask(projectId: string, taskId: string, direction: MoveDirection): Promise<Project>;
   toggleTask(projectId: string, taskId: string, done: boolean): Promise<Project>;
+  addBlocker(projectId: string, description: string): Promise<ProjectBlocker>;
+  setBlockerSuggestion(projectId: string, blockerId: string, suggestion: string): Promise<Project>;
+  setBlockerResolved(projectId: string, blockerId: string, resolved: boolean): Promise<Project>;
+  removeBlocker(projectId: string, blockerId: string): Promise<Project>;
 }
 
 const COLLECTION = "projects";
 const NAME_REQUIRED = "O nome do projeto é obrigatório.";
 const TASK_REQUIRED = "O título da tarefa é obrigatório.";
+const BLOCKER_REQUIRED = "Descreva o bloqueio.";
 const LOCKED = "Este projeto tem parâmetros fixos: as tarefas não podem ser alteradas.";
 
 function normalizeDueDate(value: string | null): string | null {
@@ -36,6 +47,7 @@ export function createLocalProjectRepository(checklists: ChecklistRepository): P
       ...p,
       locked: Boolean(p.locked),
       tasks: p.tasks ?? [],
+      blockers: p.blockers ?? [],
     }));
   }
   function save(items: Project[]) {
@@ -91,6 +103,7 @@ export function createLocalProjectRepository(checklists: ChecklistRepository): P
         archived: false,
         archivedAt: null,
         tasks,
+        blockers: [],
         createdAt: now,
         updatedAt: now,
       };
@@ -118,6 +131,7 @@ export function createLocalProjectRepository(checklists: ChecklistRepository): P
         archived: false,
         archivedAt: null,
         tasks: source.tasks.map((t) => ({ ...t, id: generateId() })),
+        blockers: [],
         createdAt: now,
         updatedAt: now,
       };
@@ -171,6 +185,39 @@ export function createLocalProjectRepository(checklists: ChecklistRepository): P
         tasks: p.tasks.map((t) =>
           t.id === taskId ? { ...t, completedAt: done ? new Date().toISOString() : null } : t,
         ),
+      }));
+    },
+    async addBlocker(projectId, description) {
+      const blocker: ProjectBlocker = {
+        id: generateId(),
+        description: requireText(description, BLOCKER_REQUIRED),
+        suggestion: null,
+        createdAt: new Date().toISOString(),
+        resolvedAt: null,
+      };
+      mutate(projectId, (p) => ({ ...p, blockers: [blocker, ...p.blockers] }));
+      return blocker;
+    },
+    async setBlockerSuggestion(projectId, blockerId, suggestion) {
+      return mutate(projectId, (p) => ({
+        ...p,
+        blockers: p.blockers.map((b) => (b.id === blockerId ? { ...b, suggestion } : b)),
+      }));
+    },
+    async setBlockerResolved(projectId, blockerId, resolved) {
+      return mutate(projectId, (p) => ({
+        ...p,
+        blockers: p.blockers.map((b) =>
+          b.id === blockerId
+            ? { ...b, resolvedAt: resolved ? new Date().toISOString() : null }
+            : b,
+        ),
+      }));
+    },
+    async removeBlocker(projectId, blockerId) {
+      return mutate(projectId, (p) => ({
+        ...p,
+        blockers: p.blockers.filter((b) => b.id !== blockerId),
       }));
     },
   };
