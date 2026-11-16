@@ -17,6 +17,7 @@ import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenti
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
+import { Route as AuthenticatedGestorRelatoriosRouteImport } from './routes/_authenticated/_gestor/relatorios'
 import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
 import { Route as AuthenticatedProjetosProjectIdRouteImport } from './routes/_authenticated/projetos.$projectId'
 import { Route as AuthenticatedGestorChecklistsIndexRouteImport } from './routes/_authenticated/_gestor/checklists.index'
@@ -62,6 +63,12 @@ const AuthenticatedGestorEquipeRoute =
     path: '/equipe',
     getParentRoute: () => AuthenticatedGestorRouteRoute,
   } as any)
+const AuthenticatedGestorRelatoriosRoute =
+  AuthenticatedGestorRelatoriosRouteImport.update({
+    id: '/relatorios',
+    path: '/relatorios',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
 const AuthenticatedProjetosIndexRoute =
   AuthenticatedProjetosIndexRouteImport.update({
     id: '/projetos/',
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
   '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
@@ -121,6 +130,7 @@ export interface FileRoutesById {
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/_authenticated/_gestor/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/_authenticated/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/_authenticated/_gestor/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/api/next-steps'
     | '/equipe'
+    | '/relatorios'
     | '/projetos/$projectId'
     | '/projetos/'
     | '/checklists/$checklistId'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/api/next-steps'
     | '/equipe'
+    | '/relatorios'
     | '/projetos/$projectId'
     | '/projetos'
     | '/checklists/$checklistId'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/arquivados'
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
+    | '/_authenticated/_gestor/relatorios'
     | '/_authenticated/projetos/$projectId'
     | '/_authenticated/projetos/'
     | '/_authenticated/_gestor/checklists/$checklistId'
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGestorEquipeRouteImport
       parentRoute: typeof AuthenticatedGestorRouteRoute
     }
+    '/_authenticated/_gestor/relatorios': {
+      id: '/_authenticated/_gestor/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof AuthenticatedGestorRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
+    }
     '/_authenticated/projetos/': {
       id: '/_authenticated/projetos/'
       path: '/projetos'
@@ -266,6 +286,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedGestorRouteRouteChildren {
   AuthenticatedGestorEquipeRoute: typeof AuthenticatedGestorEquipeRoute
+  AuthenticatedGestorRelatoriosRoute: typeof AuthenticatedGestorRelatoriosRoute
   AuthenticatedGestorChecklistsChecklistIdRoute: typeof AuthenticatedGestorChecklistsChecklistIdRoute
   AuthenticatedGestorChecklistsIndexRoute: typeof AuthenticatedGestorChecklistsIndexRoute
 }
@@ -273,6 +294,7 @@ interface AuthenticatedGestorRouteRouteChildren {
 const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildren =
   {
     AuthenticatedGestorEquipeRoute: AuthenticatedGestorEquipeRoute,
+    AuthenticatedGestorRelatoriosRoute: AuthenticatedGestorRelatoriosRoute,
     AuthenticatedGestorChecklistsChecklistIdRoute:
       AuthenticatedGestorChecklistsChecklistIdRoute,
     AuthenticatedGestorChecklistsIndexRoute:

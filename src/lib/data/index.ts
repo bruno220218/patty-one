@@ -10,5 +10,19 @@ export const projectRepository = cloudProjectRepository;
 
 export type { ChecklistRepository, ProjectRepository } from "./repositories";
 export * from "./types";
-export { canToggleTask, projectProgress, projectStatus } from "./rules";
+export {
+  canToggleTask,
+  DEFAULT_PROJECT_FILTERS,
+  filterAndSortProjects,
+  groupTeamByRole,
+  isOverdue,
+  localToday,
+  projectProgress,
+  projectStatus,
+  type DueFilter,
+  type ProgressFilter,
+  type ProjectFilters,
+  type ProjectSort,
+  type TeamRole,
+} from "./rules";
 export { fetchCurrentUser, teamRepository, type TeamMember } from "./team";
