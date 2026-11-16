@@ -65,3 +65,43 @@ export const renameTeamMember = createServerFn({ method: "POST" })
     if (!updated || updated.length === 0) throw new Error("Pessoa não encontrada.");
     return { ok: true };
   });
+
+/**
+ * Sets a password on a team member's existing account (e.g. people who signed up with
+ * Google and have no password), so they can sign in with e-mail + password on any host.
+ * Gestor-only; also marks the e-mail as confirmed. Needs SUPABASE_SERVICE_ROLE_KEY on the server.
+ */
+export const setTeamMemberPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        password: z.string().min(6, "A senha precisa ter pelo menos 6 caracteres.").max(72),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isGestor, error } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "gestor",
+    });
+    if (error) throw new Error("Não foi possível confirmar sua permissão. Tente novamente.");
+    if (!isGestor) throw new Error("Somente gestores podem definir senhas.");
+
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      throw new Error(
+        "Este endereço não tem permissão para definir senhas. Faça isso pelo site do Lovable (servicospatty.lovable.app).",
+      );
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      password: data.password,
+      email_confirm: true,
+    });
+    if (updateError) {
+      console.error("setTeamMemberPassword failed", updateError);
+      throw new Error("Não foi possível definir a senha. Tente novamente.");
+    }
+    return { ok: true };
+  });
