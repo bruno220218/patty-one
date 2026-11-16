@@ -11,3 +11,4 @@
 - [ ] Tests for the business rules
 - [ ] Checklist option "Parâmetros fixos": projects created from it inherit a lock (tasks only checkable; name/description/due date still editable); badge on checklist card; toggling later doesn't affect existing projects
 - [ ] App name is "Patty One" (replaces Trilha) everywhere
+- [ ] Use Patty logo (uploaded PDF) in sidebar/mobile header + favicon
