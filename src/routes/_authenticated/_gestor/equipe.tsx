@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { KeyRound, Pencil, ShieldCheck, Trash2, Users } from "lucide-react";
+import { KeyRound, LockKeyhole, Pencil, ShieldCheck, Trash2, Users } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
@@ -8,6 +8,7 @@ import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { IconAction } from "@/components/app/icon-action";
 import { RenameMemberDialog } from "@/components/app/rename-member-dialog";
+import { SetPasswordDialog } from "@/components/app/set-password-dialog";
 import { useCurrentUser, useDataAction, useTeam } from "@/hooks/use-data";
 import { groupTeamByRole, teamRepository, type TeamMember, type TeamRole } from "@/lib/data";
 import { formatDate } from "@/lib/format";
@@ -39,6 +40,7 @@ function TeamPage() {
   const run = useDataAction();
   const [removing, setRemoving] = useState<TeamMember | null>(null);
   const [renaming, setRenaming] = useState<TeamMember | null>(null);
+  const [settingPassword, setSettingPassword] = useState<TeamMember | null>(null);
 
   return (
     <>
@@ -117,6 +119,11 @@ function TeamPage() {
                         />
                       </label>
                       <IconAction
+                        icon={LockKeyhole}
+                        label={`Definir senha de ${m.name}`}
+                        onClick={() => setSettingPassword(m)}
+                      />
+                      <IconAction
                         icon={Pencil}
                         label={`Renomear ${m.name}`}
                         onClick={() => setRenaming(m)}
@@ -139,6 +146,19 @@ function TeamPage() {
           ))}
         </div>
       )}
+      <SetPasswordDialog
+        open={settingPassword !== null}
+        onOpenChange={(open) => !open && setSettingPassword(null)}
+        personName={settingPassword?.name ?? ""}
+        onSubmit={(password) => {
+          const target = settingPassword;
+          if (!target) return Promise.resolve(undefined);
+          return run(
+            () => teamRepository.setPassword(target.id, password),
+            `Senha de ${target.name} definida. Passe a senha para a pessoa.`,
+          );
+        }}
+      />
       <RenameMemberDialog
         open={renaming !== null}
         onOpenChange={(open) => !open && setRenaming(null)}

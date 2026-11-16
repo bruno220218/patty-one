@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { CurrentUser } from "./types";
 import { dbError } from "./db-errors";
-import { removeTeamMember, renameTeamMember } from "./team.functions";
+import { removeTeamMember, renameTeamMember, setTeamMemberPassword } from "./team.functions";
 
 export interface TeamMember {
   id: string;
@@ -98,6 +98,11 @@ export const teamRepository = {
     const clean = name.trim();
     if (!clean) throw new Error("Informe o nome.");
     await renameTeamMember({ data: { userId, name: clean } });
+  },
+  /** Set a password on someone's account (gestor only, checked on the server). */
+  async setPassword(userId: string, password: string): Promise<void> {
+    if (password.length < 6) throw new Error("A senha precisa ter pelo menos 6 caracteres.");
+    await setTeamMemberPassword({ data: { userId, password } });
   },
   async updateMyName(userId: string, name: string): Promise<void> {
     const clean = name.trim();
