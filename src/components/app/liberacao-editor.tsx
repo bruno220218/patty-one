@@ -9,6 +9,7 @@ import {
   emptyLiberacaoItem,
   LIBERACAO_MODELO_INFO,
   MIDIA_OPTIONS,
+  onlyDigits,
   parseCm,
   PROJETISTAS,
   PROJETO_OPTIONS,
@@ -183,7 +184,7 @@ export function LiberacaoEditor({
       if (draftIsBlank(i)) continue;
       const larguraCm = parseCm(i.largura);
       const alturaCm = parseCm(i.altura);
-      const quantidade = parseCm(i.qtd);
+      const quantidade = i.qtd.trim() ? Number(onlyDigits(i.qtd)) : null;
       if ([larguraCm, alturaCm, quantidade].some((n) => Number.isNaN(n))) {
         setError(`Número inválido na linha ${index + 1}. Use só números, ex.: 120 ou 80,5.`);
         return;
@@ -286,11 +287,25 @@ export function LiberacaoEditor({
     width: string;
     suggestions?: string[];
   }[] = [
-    { field: "servico", label: "Serviço", width: "w-[16%]", suggestions: options.servico },
-    { field: "insumos", label: "Insumos", width: "w-[13%]", suggestions: options.insumos },
+    {
+      field: "servico",
+      label: "Serviço",
+      width: info.localInstalacao ? "w-[16%]" : "w-[20%]",
+      suggestions: options.servico,
+    },
+    { field: "insumos", label: info.insumos, width: "w-[13%]", suggestions: options.insumos },
     { field: "acabamento", label: "Acabamento", width: "w-[11%]", suggestions: options.acabamento },
-    { field: "instalacao", label: "Instalação", width: "w-[13%]", suggestions: options.instalacao },
-    { field: "detalhes", label: "Detalhes", width: "w-[10%]" },
+    {
+      field: "instalacao",
+      label: "Instalação",
+      width: info.localInstalacao ? "w-[13%]" : "w-[12%]",
+      suggestions: options.instalacao,
+    },
+    {
+      field: "detalhes",
+      label: "Detalhes",
+      width: info.localInstalacao ? "w-[10%]" : "w-[18%]",
+    },
   ];
   const th = "border border-primary-foreground/20";
 
@@ -398,9 +413,11 @@ export function LiberacaoEditor({
                 <th rowSpan={2} className={cn(th, "w-[5%] px-1 py-2")}>
                   Qtda
                 </th>
-                <th rowSpan={2} className={cn(th, "w-[11%] px-2 py-2")}>
-                  Local de instalação
-                </th>
+                {info.localInstalacao && (
+                  <th rowSpan={2} className={cn(th, "w-[11%] px-2 py-2")}>
+                    Local de instalação
+                  </th>
+                )}
                 {!readOnly && (
                   <th rowSpan={2} className={cn(th, "w-[2.25rem]")} aria-label="Remover" />
                 )}
@@ -414,7 +431,7 @@ export function LiberacaoEditor({
               {rows.length === 0 && (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={info.localInstalacao ? 12 : 11}
                     className="border border-border px-5 py-6 text-center text-muted-foreground"
                   >
                     Nenhum item.
@@ -445,9 +462,11 @@ export function LiberacaoEditor({
                   ) : (
                     <WrapField
                       value={item[field]}
-                      inputMode="decimal"
+                      inputMode={field === "qtd" ? "numeric" : "decimal"}
                       aria-label={label(what)}
-                      onChange={(v) => updateItem(item.key, { [field]: v })}
+                      onChange={(v) =>
+                        updateItem(item.key, { [field]: field === "qtd" ? onlyDigits(v) : v })
+                      }
                       className="break-all px-1.5 text-right tabular-nums"
                     />
                   );
@@ -468,9 +487,11 @@ export function LiberacaoEditor({
                     <td className="border border-border bg-muted/40">
                       {cellNum("qtd", "Quantidade")}
                     </td>
-                    <td className="border border-border bg-muted/40">
-                      {cellText("localInstalacao")}
-                    </td>
+                    {info.localInstalacao && (
+                      <td className="border border-border bg-muted/40">
+                        {cellText("localInstalacao")}
+                      </td>
+                    )}
                     {!readOnly && (
                       <td className="border border-border text-center align-middle">
                         <button

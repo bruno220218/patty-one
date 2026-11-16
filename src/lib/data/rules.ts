@@ -206,12 +206,24 @@ export const LIBERACAO_MODELO_LABEL: Record<"projeto" | "midia", string> = {
 /** Form titles and section names, as in the spreadsheets. */
 export const LIBERACAO_MODELO_INFO: Record<
   "projeto" | "midia",
-  { titulo: string; secao: string; referencia: string; aviso: string | null; anexo: string }
+  {
+    titulo: string;
+    secao: string;
+    referencia: string;
+    /** Label of the "insumos" column ("Mídia" in the mídia model). */
+    insumos: string;
+    /** Whether the model has the "Local de instalação" column. */
+    localInstalacao: boolean;
+    aviso: string | null;
+    anexo: string;
+  }
 > = {
   projeto: {
     titulo: "Formulário de liberação de projetos especiais",
     secao: "Projeto especial",
     referencia: "Nº orçamento",
+    insumos: "Insumos",
+    localInstalacao: true,
     aviso: "Não esqueça de colocar a cor do ACM / pintura / iluminação",
     anexo: "Obrigatório anexo no e-mail: escopo do serviço e foto do local (projetos)",
   },
@@ -219,6 +231,8 @@ export const LIBERACAO_MODELO_INFO: Record<
     titulo: "Formulário de liberação de mídia e impressões",
     secao: "Mídias e impressões",
     referencia: "Nº painel",
+    insumos: "Mídia",
+    localInstalacao: false,
     aviso: null,
     anexo: "Obrigatório anexo no e-mail: foto do local (mídia) / layout (mídias)",
   },
@@ -301,4 +315,9 @@ export function formatQuantidade(n: number | null): string {
 /** Filled item rows of a liberação. */
 export function liberacaoItemCount(itens: Parameters<typeof isBlankLiberacaoItem>[0][]) {
   return itens.filter((i) => !isBlankLiberacaoItem(i)).length;
+}
+
+/** Keeps only digits (quantity accepts whole numbers only). */
+export function onlyDigits(value: string): string {
+  return value.replace(/\D/g, "");
 }

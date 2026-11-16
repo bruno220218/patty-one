@@ -21,6 +21,7 @@ export {
   isBlankLiberacaoItem,
   LIBERACAO_MODELO_LABEL,
   liberacaoItemCount,
+  onlyDigits,
   parseCm,
   canToggleTask,
   DEFAULT_PROJECT_FILTERS,

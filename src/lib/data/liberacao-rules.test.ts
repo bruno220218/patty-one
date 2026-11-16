@@ -5,8 +5,11 @@ import {
   formatTamanho,
   isBlankLiberacaoItem,
   liberacaoItemCount,
+  LIBERACAO_MODELO_INFO,
+  onlyDigits,
   parseCm,
 } from "./rules";
+import { MIDIA_OPTIONS } from "./liberacao-options";
 
 describe("liberação rules", () => {
   it("only gestão and comercial can edit", () => {
@@ -40,5 +43,33 @@ describe("liberação rules", () => {
     expect(
       liberacaoItemCount([emptyLiberacaoItem(), { ...emptyLiberacaoItem(), servico: "BANNER" }]),
     ).toBe(1);
+  });
+});
+
+describe("modelo mídia", () => {
+  it("names the insumos column Mídia and has no local de instalação", () => {
+    expect(LIBERACAO_MODELO_INFO.midia.insumos).toBe("Mídia");
+    expect(LIBERACAO_MODELO_INFO.midia.localInstalacao).toBe(false);
+    expect(LIBERACAO_MODELO_INFO.projeto.localInstalacao).toBe(true);
+  });
+
+  it("uses the adjusted lists", () => {
+    expect(MIDIA_OPTIONS.instalacao).toEqual([
+      "PAREDE",
+      "PLACA",
+      "PORTA",
+      "VIDRO",
+      "PERSONALIZADOS",
+      "SOMENTE ENTREGAR",
+    ]);
+    expect(MIDIA_OPTIONS.insumos).not.toContain("ABRAÇADEIRA");
+    expect(MIDIA_OPTIONS.insumos).not.toContain("ADESIVO INFLEX 2000");
+    expect(MIDIA_OPTIONS.acabamento).not.toContain("DUPLA FACE");
+    expect(MIDIA_OPTIONS.acabamento).not.toContain("DUPLA FACE TRANSPARENTE");
+  });
+
+  it("quantity keeps digits only", () => {
+    expect(onlyDigits("12a,5")).toBe("125");
+    expect(onlyDigits("abc")).toBe("");
   });
 });

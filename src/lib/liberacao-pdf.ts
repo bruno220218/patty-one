@@ -158,13 +158,13 @@ export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Pr
           styles: { fillColor: SECONDARY, textColor: MUTED_TEXT },
         },
         span2("Serviço"),
-        span2("Insumos"),
+        span2(info.insumos),
         span2("Acabamento"),
         span2("Instalação"),
         span2("Detalhes"),
         { content: "TAMANHO (CM)", colSpan: 2 },
         span2("Qtda"),
-        span2("Local de instalação"),
+        ...(info.localInstalacao ? [span2("Local de instalação")] : []),
       ],
       [
         { content: "LARGURA", styles: { textColor: PRIMARY_SOFT, fontSize: 6.5 } },
@@ -182,9 +182,17 @@ export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Pr
           num(i.larguraCm),
           num(i.alturaCm),
           formatQuantidade(i.quantidade),
-          i.localInstalacao,
+          ...(info.localInstalacao ? [i.localInstalacao] : []),
         ])
-      : [[{ content: "Nenhum item.", colSpan: 10, styles: { textColor: MUTED_TEXT } }]],
+      : [
+          [
+            {
+              content: "Nenhum item.",
+              colSpan: info.localInstalacao ? 10 : 9,
+              styles: { textColor: MUTED_TEXT },
+            },
+          ],
+        ],
     theme: "grid",
     margin: { left: margin, right: margin },
     styles: {
@@ -207,11 +215,12 @@ export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Pr
     },
     columnStyles: {
       0: { cellWidth: 20, fillColor: [248, 247, 243] },
-      1: { cellWidth: 40 },
+      1: { cellWidth: info.localInstalacao ? 40 : 55 },
       2: { cellWidth: 33 },
       3: { cellWidth: 28 },
-      4: { cellWidth: 34 },
-      5: { cellWidth: 30 },
+      4: { cellWidth: info.localInstalacao ? 34 : 32 },
+      // 5 (detalhes) takes the rest when there is no "local de instalação"
+      ...(info.localInstalacao ? { 5: { cellWidth: 30 } } : {}),
       6: { cellWidth: 16, halign: "right" },
       7: { cellWidth: 16, halign: "right" },
       8: { cellWidth: 12, halign: "center" },
