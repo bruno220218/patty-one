@@ -9,20 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ArquivadosRouteImport } from './routes/arquivados'
+import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
-import { Route as ChecklistsChecklistIdRouteImport } from './routes/checklists.$checklistId'
-import { Route as ProjetosIndexRouteImport } from './routes/projetos.index'
-import { Route as ProjetosProjectIdRouteImport } from './routes/projetos.$projectId'
+import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
+import { Route as AuthenticatedProjetosProjectIdRouteImport } from './routes/_authenticated/projetos.$projectId'
+import { Route as AuthenticatedGestorChecklistsIndexRouteImport } from './routes/_authenticated/_gestor/checklists.index'
+import { Route as AuthenticatedGestorChecklistsChecklistIdRouteImport } from './routes/_authenticated/_gestor/checklists.$checklistId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArquivadosRoute = ArquivadosRouteImport.update({
-  id: '/arquivados',
+const AuthenticatedArquivadosRoute = AuthenticatedArquivadosRouteImport.update({
+  id: '/_authenticated/arquivados',
   path: '/arquivados',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -31,97 +26,99 @@ const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
   path: '/api/next-steps',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChecklistsChecklistIdRoute = ChecklistsChecklistIdRouteImport.update({
-  id: '/checklists/$checklistId',
-  path: '/checklists/$checklistId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjetosIndexRoute = ProjetosIndexRouteImport.update({
-  id: '/projetos/',
-  path: '/projetos/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjetosProjectIdRoute = ProjetosProjectIdRouteImport.update({
-  id: '/projetos/$projectId',
-  path: '/projetos/$projectId',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedProjetosIndexRoute =
+  AuthenticatedProjetosIndexRouteImport.update({
+    id: '/_authenticated/projetos/',
+    path: '/projetos/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedProjetosProjectIdRoute =
+  AuthenticatedProjetosProjectIdRouteImport.update({
+    id: '/_authenticated/projetos/$projectId',
+    path: '/projetos/$projectId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedGestorChecklistsIndexRoute =
+  AuthenticatedGestorChecklistsIndexRouteImport.update({
+    id: '/_authenticated/_gestor/checklists/',
+    path: '/checklists/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedGestorChecklistsChecklistIdRoute =
+  AuthenticatedGestorChecklistsChecklistIdRouteImport.update({
+    id: '/_authenticated/_gestor/checklists/$checklistId',
+    path: '/checklists/$checklistId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/arquivados': typeof ArquivadosRoute
+  '/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
-  '/projetos/$projectId': typeof ProjetosProjectIdRoute
-  '/projetos/': typeof ProjetosIndexRoute
+  '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/projetos/': typeof AuthenticatedProjetosIndexRoute
+  '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
+  '/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/arquivados': typeof ArquivadosRoute
+  '/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
-  '/projetos/$projectId': typeof ProjetosProjectIdRoute
-  '/projetos': typeof ProjetosIndexRoute
+  '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/projetos': typeof AuthenticatedProjetosIndexRoute
+  '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
+  '/checklists': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/arquivados': typeof ArquivadosRoute
+  '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
-  '/projetos/$projectId': typeof ProjetosProjectIdRoute
-  '/projetos/': typeof ProjetosIndexRoute
+  '/_authenticated/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
+  '/_authenticated/_gestor/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
+  '/_authenticated/_gestor/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/arquivados'
     | '/api/next-steps'
-    | '/checklists/$checklistId'
     | '/projetos/$projectId'
     | '/projetos/'
+    | '/checklists/$checklistId'
+    | '/checklists/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/arquivados'
     | '/api/next-steps'
-    | '/checklists/$checklistId'
     | '/projetos/$projectId'
     | '/projetos'
+    | '/checklists/$checklistId'
+    | '/checklists'
   id:
     | '__root__'
-    | '/'
-    | '/arquivados'
+    | '/_authenticated/arquivados'
     | '/api/next-steps'
-    | '/checklists/$checklistId'
-    | '/projetos/$projectId'
-    | '/projetos/'
+    | '/_authenticated/projetos/$projectId'
+    | '/_authenticated/projetos/'
+    | '/_authenticated/_gestor/checklists/$checklistId'
+    | '/_authenticated/_gestor/checklists/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ArquivadosRoute: typeof ArquivadosRoute
+  AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
   ApiNextStepsRoute: typeof ApiNextStepsRoute
-  ChecklistsChecklistIdRoute: typeof ChecklistsChecklistIdRoute
-  ProjetosProjectIdRoute: typeof ProjetosProjectIdRoute
-  ProjetosIndexRoute: typeof ProjetosIndexRoute
+  AuthenticatedProjetosProjectIdRoute: typeof AuthenticatedProjetosProjectIdRoute
+  AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
+  AuthenticatedGestorChecklistsChecklistIdRoute: typeof AuthenticatedGestorChecklistsChecklistIdRoute
+  AuthenticatedGestorChecklistsIndexRoute: typeof AuthenticatedGestorChecklistsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/arquivados': {
-      id: '/arquivados'
+    '/_authenticated/arquivados': {
+      id: '/_authenticated/arquivados'
       path: '/arquivados'
       fullPath: '/arquivados'
-      preLoaderRoute: typeof ArquivadosRouteImport
+      preLoaderRoute: typeof AuthenticatedArquivadosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/next-steps': {
@@ -131,37 +128,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNextStepsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/checklists/$checklistId': {
-      id: '/checklists/$checklistId'
-      path: '/checklists/$checklistId'
-      fullPath: '/checklists/$checklistId'
-      preLoaderRoute: typeof ChecklistsChecklistIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projetos/': {
-      id: '/projetos/'
+    '/_authenticated/projetos/': {
+      id: '/_authenticated/projetos/'
       path: '/projetos'
       fullPath: '/projetos/'
-      preLoaderRoute: typeof ProjetosIndexRouteImport
+      preLoaderRoute: typeof AuthenticatedProjetosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projetos/$projectId': {
-      id: '/projetos/$projectId'
+    '/_authenticated/projetos/$projectId': {
+      id: '/_authenticated/projetos/$projectId'
       path: '/projetos/$projectId'
       fullPath: '/projetos/$projectId'
-      preLoaderRoute: typeof ProjetosProjectIdRouteImport
+      preLoaderRoute: typeof AuthenticatedProjetosProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_gestor/checklists/': {
+      id: '/_authenticated/_gestor/checklists/'
+      path: '/checklists'
+      fullPath: '/checklists/'
+      preLoaderRoute: typeof AuthenticatedGestorChecklistsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_gestor/checklists/$checklistId': {
+      id: '/_authenticated/_gestor/checklists/$checklistId'
+      path: '/checklists/$checklistId'
+      fullPath: '/checklists/$checklistId'
+      preLoaderRoute: typeof AuthenticatedGestorChecklistsChecklistIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ArquivadosRoute: ArquivadosRoute,
+  AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
   ApiNextStepsRoute: ApiNextStepsRoute,
-  ChecklistsChecklistIdRoute: ChecklistsChecklistIdRoute,
-  ProjetosProjectIdRoute: ProjetosProjectIdRoute,
-  ProjetosIndexRoute: ProjetosIndexRoute,
+  AuthenticatedProjetosProjectIdRoute: AuthenticatedProjetosProjectIdRoute,
+  AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,
+  AuthenticatedGestorChecklistsChecklistIdRoute:
+    AuthenticatedGestorChecklistsChecklistIdRoute,
+  AuthenticatedGestorChecklistsIndexRoute:
+    AuthenticatedGestorChecklistsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
