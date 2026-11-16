@@ -1,14 +1,14 @@
 /**
- * Single swap point for persistence. To move to a database, provide new
- * implementations of ChecklistRepository / ProjectRepository and export them here.
+ * Single swap point for persistence. The UI depends on the repository interfaces;
+ * the current implementations store data in Lovable Cloud.
  */
-import { localChecklistRepository } from "./checklist-repository";
-import { createLocalProjectRepository } from "./project-repository";
+import { cloudChecklistRepository } from "./cloud-checklists";
+import { cloudProjectRepository } from "./cloud-projects";
 
-export const checklistRepository = localChecklistRepository;
-export const projectRepository = createLocalProjectRepository(checklistRepository);
+export const checklistRepository = cloudChecklistRepository;
+export const projectRepository = cloudProjectRepository;
 
-export type { ChecklistRepository } from "./checklist-repository";
-export type { ProjectRepository } from "./project-repository";
+export type { ChecklistRepository, ProjectRepository } from "./repositories";
 export * from "./types";
-export { projectProgress, projectStatus } from "./rules";
+export { canToggleTask, projectProgress, projectStatus } from "./rules";
+export { fetchCurrentUser, teamRepository, type TeamMember } from "./team";

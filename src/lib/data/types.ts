@@ -1,5 +1,12 @@
 /** Domain types. These describe the records; storage details live in the repositories. */
 
+export interface CurrentUser {
+  id: string;
+  email: string | null;
+  name: string;
+  isGestor: boolean;
+}
+
 export interface ChecklistTask {
   id: string;
   title: string;
@@ -16,11 +23,18 @@ export interface Checklist {
   updatedAt: string;
 }
 
+export interface PersonRef {
+  id: string;
+  name: string;
+}
+
 export interface ProjectTask {
   id: string;
   title: string;
-  /** ISO timestamp of completion, or null when not done. */
+  /** ISO timestamp of completion, or null when not done (set by the server). */
   completedAt: string | null;
+  /** Who completed the task (set by the server), or null. */
+  completedBy: PersonRef | null;
 }
 
 export interface ProjectBlocker {
@@ -28,6 +42,7 @@ export interface ProjectBlocker {
   description: string;
   /** AI-suggested next steps, or null when not generated yet / failed. */
   suggestion: string | null;
+  createdByName: string | null;
   createdAt: string;
   resolvedAt: string | null;
 }
