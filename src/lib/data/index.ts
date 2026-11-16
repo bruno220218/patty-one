@@ -16,5 +16,12 @@ export type {
   ProjectRepository,
 } from "./repositories";
 export * from "./types";
-export { canToggleTask, EMPTY_CLIENT_INFO, projectProgress, projectStatus } from "./rules";
+export {
+  canToggleTask,
+  EMPTY_CLIENT_INFO,
+  groupTeamByRole,
+  projectProgress,
+  projectStatus,
+  type TeamRole,
+} from "./rules";
 export { fetchCurrentUser, teamRepository, type TeamMember } from "./team";

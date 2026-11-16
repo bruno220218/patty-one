@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canToggleTask,
+  groupTeamByRole,
   moveItem,
   normalizeClientInfo,
   projectProgress,
@@ -83,5 +84,30 @@ describe("formatRelative", () => {
   it("uses minutes and hours", () => {
     expect(formatRelative("2026-11-16T11:55:00Z", now)).toBe("há 5 minutos");
     expect(formatRelative("2026-11-16T09:00:00Z", now)).toBe("há 3 horas");
+  });
+});
+
+describe("team grouping", () => {
+  const p = (name: string, isMember: boolean, isGestor: boolean) => ({ name, isMember, isGestor });
+
+  it("groups pending, then gestores, then membros, each alphabetically", () => {
+    const groups = groupTeamByRole([
+      p("Projetos Patty", true, false),
+      p("bruno Henrique", true, true),
+      p("Zé Novo", false, false),
+      p("Atendimento Patty", true, true),
+      p("Irauan Brum", true, false),
+      p("Ágata", false, false),
+    ]);
+    expect(groups.map((g) => g.role)).toEqual(["pendente", "gestor", "membro"]);
+    expect(groups.map((g) => g.people.map((x) => x.name))).toEqual([
+      ["Ágata", "Zé Novo"],
+      ["Atendimento Patty", "bruno Henrique"],
+      ["Irauan Brum", "Projetos Patty"],
+    ]);
+  });
+
+  it("omits empty groups", () => {
+    expect(groupTeamByRole([p("Ana", true, false)]).map((g) => g.role)).toEqual(["membro"]);
   });
 });

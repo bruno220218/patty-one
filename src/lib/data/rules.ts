@@ -56,3 +56,28 @@ export function normalizeClientInfo(info: ProjectClientInfo): ProjectClientInfo 
     lamination: info.lamination,
   };
 }
+
+export type TeamRole = "pendente" | "gestor" | "membro";
+
+type TeamLike = { name: string; isMember: boolean; isGestor: boolean };
+
+/** Role shown in Equipe: people awaiting approval first (they need action), then gestores, then membros. */
+export function teamRole(person: Omit<TeamLike, "name">): TeamRole {
+  if (!person.isMember) return "pendente";
+  return person.isGestor ? "gestor" : "membro";
+}
+
+const TEAM_ROLE_ORDER: TeamRole[] = ["pendente", "gestor", "membro"];
+
+/** Groups people by role (in display order), each group sorted alphabetically (pt-BR, accent/case-insensitive). Empty groups are omitted. */
+export function groupTeamByRole<T extends TeamLike>(
+  people: T[],
+): { role: TeamRole; people: T[] }[] {
+  const collator = new Intl.Collator("pt-BR", { sensitivity: "base", numeric: true });
+  return TEAM_ROLE_ORDER.map((role) => ({
+    role,
+    people: people
+      .filter((p) => teamRole(p) === role)
+      .sort((a, b) => collator.compare(a.name.trim(), b.name.trim())),
+  })).filter((g) => g.people.length > 0);
+}

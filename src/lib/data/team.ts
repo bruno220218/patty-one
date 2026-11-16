@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { CurrentUser } from "./types";
 import { dbError } from "./db-errors";
-import { removeTeamMember } from "./team.functions";
+import { removeTeamMember, renameTeamMember } from "./team.functions";
 
 export interface TeamMember {
   id: string;
@@ -92,6 +92,12 @@ export const teamRepository = {
   /** Remove someone from the team for good (their account is deleted). */
   async remove(userId: string): Promise<void> {
     await removeTeamMember({ data: { userId } });
+  },
+  /** Rename a team member (gestor only, checked on the server). */
+  async rename(userId: string, name: string): Promise<void> {
+    const clean = name.trim();
+    if (!clean) throw new Error("Informe o nome.");
+    await renameTeamMember({ data: { userId, name: clean } });
   },
   async updateMyName(userId: string, name: string): Promise<void> {
     const clean = name.trim();
