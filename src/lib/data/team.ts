@@ -55,7 +55,10 @@ export const teamRepository = {
     const { error } = allowed
       ? await supabase
           .from("user_roles")
-          .upsert({ user_id: userId, role: "membro" }, { onConflict: "user_id,role", ignoreDuplicates: true })
+          .upsert(
+            { user_id: userId, role: "membro" },
+            { onConflict: "user_id,role", ignoreDuplicates: true },
+          )
       : await supabase.from("user_roles").delete().eq("user_id", userId);
     if (error) throw dbError(error);
   },
@@ -63,22 +66,35 @@ export const teamRepository = {
     if (gestor) {
       const { error } = await supabase
         .from("user_roles")
-        .upsert({ user_id: userId, role: "gestor" }, { onConflict: "user_id,role", ignoreDuplicates: true });
+        .upsert(
+          { user_id: userId, role: "gestor" },
+          { onConflict: "user_id,role", ignoreDuplicates: true },
+        );
       if (error) throw dbError(error);
       return;
     }
     // Keep team access when management permission is removed.
     const keep = await supabase
       .from("user_roles")
-      .upsert({ user_id: userId, role: "membro" }, { onConflict: "user_id,role", ignoreDuplicates: true });
+      .upsert(
+        { user_id: userId, role: "membro" },
+        { onConflict: "user_id,role", ignoreDuplicates: true },
+      );
     if (keep.error) throw dbError(keep.error);
-    const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "gestor");
+    const { error } = await supabase
+      .from("user_roles")
+      .delete()
+      .eq("user_id", userId)
+      .eq("role", "gestor");
     if (error) throw dbError(error);
   },
   async updateMyName(userId: string, name: string): Promise<void> {
     const clean = name.trim();
     if (!clean) throw new Error("Informe seu nome.");
-    const { error } = await supabase.from("profiles").update({ display_name: clean }).eq("id", userId);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ display_name: clean })
+      .eq("id", userId);
     if (error) throw dbError(error);
   },
 };
