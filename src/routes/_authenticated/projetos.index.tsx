@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { FolderOpen, Plus } from "lucide-react";
+import { FolderOpen, Plus, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
@@ -8,8 +8,37 @@ import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ProjectCard } from "@/components/app/project-card";
 import { ProjectFormDialog } from "@/components/app/project-form-dialog";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
+import { ProjectFiltersBar, type ProjectView } from "@/components/app/project-filters-bar";
+import { ProjectList } from "@/components/app/project-list";
 import { useChecklists, useDataAction, useProjects } from "@/hooks/use-data";
-import { projectRepository, type Project } from "@/lib/data";
+import {
+  DEFAULT_PROJECT_FILTERS,
+  filterAndSortProjects,
+  localToday,
+  projectRepository,
+  type Project,
+  type ProjectFilters,
+  type ProjectSort,
+} from "@/lib/data";
+
+const VIEW_KEY = "patty.projetos.view";
+const SORT_KEY = "patty.projetos.sort";
+
+function readStored(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function store(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage unavailable (private mode etc.): the choice just isn't remembered.
+  }
+}
 
 export const Route = createFileRoute("/_authenticated/projetos/")({
   head: () => ({
@@ -39,6 +68,30 @@ function ProjectsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState<Project | null>(null);
+  const [view, setView] = useState<ProjectView>("kanban");
+  const [filters, setFilters] = useState<ProjectFilters>(DEFAULT_PROJECT_FILTERS);
+  const today = localToday();
+
+  // Remember the chosen view and sort on this browser.
+  useEffect(() => {
+    const v = readStored(VIEW_KEY);
+    if (v === "kanban" || v === "lista") setView(v);
+    const sort = readStored(SORT_KEY);
+    if (sort) setFilters((f) => ({ ...f, sort: sort as ProjectSort }));
+  }, []);
+
+  const visible = useMemo(
+    () => filterAndSortProjects(projects ?? [], filters, today),
+    [projects, filters, today],
+  );
+
+  const actions = {
+    onEdit: (p: Project) => setEditing(p),
+    onDuplicate: (p: Project) => run(() => projectRepository.duplicate(p.id), "Projeto duplicado."),
+    onArchive: (p: Project) =>
+      run(() => projectRepository.setArchived(p.id, true), "Projeto arquivado."),
+    onDelete: (p: Project) => setDeleting(p),
+  };
 
   return (
     <>
@@ -68,20 +121,52 @@ function ProjectsPage() {
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p) => (
-            <ProjectCard
-              key={p.id}
-              project={p}
-              onEdit={() => setEditing(p)}
-              onDuplicate={() => run(() => projectRepository.duplicate(p.id), "Projeto duplicado.")}
-              onArchive={() =>
-                run(() => projectRepository.setArchived(p.id, true), "Projeto arquivado.")
+        <>
+          <ProjectFiltersBar
+            filters={filters}
+            onChange={(next) => {
+              setFilters(next);
+              if (next.sort !== filters.sort) store(SORT_KEY, next.sort);
+            }}
+            view={view}
+            onViewChange={(v) => {
+              setView(v);
+              store(VIEW_KEY, v);
+            }}
+            shown={visible.length}
+            total={projects.length}
+          />
+          {visible.length === 0 ? (
+            <EmptyState
+              icon={SearchX}
+              title="Nenhum projeto encontrado"
+              description="Ajuste a busca ou os filtros para ver outros projetos."
+              action={
+                <Button
+                  variant="outline"
+                  onClick={() => setFilters({ ...DEFAULT_PROJECT_FILTERS, sort: filters.sort })}
+                >
+                  Limpar filtros
+                </Button>
               }
-              onDelete={() => setDeleting(p)}
             />
-          ))}
-        </div>
+          ) : view === "lista" ? (
+            <ProjectList projects={visible} today={today} {...actions} />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {visible.map((p) => (
+                <ProjectCard
+                  key={p.id}
+                  project={p}
+                  onEdit={() => actions.onEdit(p)}
+                  onDuplicate={() => actions.onDuplicate(p)}
+                  onArchive={() => actions.onArchive(p)}
+                  onDelete={() => actions.onDelete(p)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <ProjectFormDialog

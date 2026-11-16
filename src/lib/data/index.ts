@@ -18,10 +18,18 @@ export type {
 export * from "./types";
 export {
   canToggleTask,
+  DEFAULT_PROJECT_FILTERS,
   EMPTY_CLIENT_INFO,
+  filterAndSortProjects,
+  isOverdue,
+  localToday,
   groupTeamByRole,
   projectProgress,
   projectStatus,
+  type DueFilter,
+  type ProgressFilter,
+  type ProjectFilters,
+  type ProjectSort,
   type TeamRole,
 } from "./rules";
 export { fetchCurrentUser, teamRepository, type TeamMember } from "./team";

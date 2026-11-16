@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   canToggleTask,
+  DEFAULT_PROJECT_FILTERS,
+  filterAndSortProjects,
   groupTeamByRole,
   moveItem,
   normalizeClientInfo,
@@ -109,5 +111,63 @@ describe("team grouping", () => {
 
   it("omits empty groups", () => {
     expect(groupTeamByRole([p("Ana", true, false)]).map((g) => g.role)).toEqual(["membro"]);
+  });
+});
+
+describe("project filters", () => {
+  const today = "2026-11-16";
+  const tasks = (done: number, total: number) =>
+    Array.from({ length: total }, (_, i) => task(i < done));
+  const proj = (
+    name: string,
+    dueDate: string | null,
+    done: number,
+    total: number,
+    serviceType = "",
+  ) => ({
+    name,
+    dueDate,
+    tasks: tasks(done, total),
+    clientInfo: { serviceType },
+  });
+  const all = [
+    proj("USIPA", "2026-11-27", 3, 13),
+    proj("GNV", "2026-11-30", 2, 8, "Fachada ACM"),
+    proj("Marq Acessórios", "2026-11-20", 2, 6),
+    proj("Atrasado", "2026-11-10", 1, 4),
+    proj("Entregue", "2026-11-01", 4, 4),
+    proj("Sem prazo", null, 0, 3),
+  ];
+  const names = (f: Partial<typeof DEFAULT_PROJECT_FILTERS>) =>
+    filterAndSortProjects(all, { ...DEFAULT_PROJECT_FILTERS, ...f }, today).map((p) => p.name);
+
+  it("sorts by nearest due date by default, no due date last", () => {
+    expect(names({})).toEqual([
+      "Entregue",
+      "Atrasado",
+      "Marq Acessórios",
+      "USIPA",
+      "GNV",
+      "Sem prazo",
+    ]);
+    expect(names({ sort: "prazo_desc" }).at(-1)).toBe("Sem prazo");
+  });
+
+  it("searches name and service type ignoring accents and case", () => {
+    expect(names({ query: "acessorios" })).toEqual(["Marq Acessórios"]);
+    expect(names({ query: "acm" })).toEqual(["GNV"]);
+  });
+
+  it("filters by due window; overdue excludes finished projects", () => {
+    expect(names({ due: "atrasados" })).toEqual(["Atrasado"]);
+    expect(names({ due: "7dias" })).toEqual(["Marq Acessórios"]);
+    expect(names({ due: "sem_prazo" })).toEqual(["Sem prazo"]);
+  });
+
+  it("filters and sorts by production %", () => {
+    expect(names({ progress: "0-25" })).toEqual(["USIPA", "Sem prazo"]);
+    expect(names({ progress: "100" })).toEqual(["Entregue"]);
+    expect(names({ sort: "producao_desc" }).slice(0, 2)).toEqual(["Entregue", "Marq Acessórios"]);
+    expect(names({ sort: "nome_asc" })[0]).toBe("Atrasado");
   });
 });
