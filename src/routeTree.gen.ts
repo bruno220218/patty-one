@@ -10,11 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArquivadosRouteImport } from './routes/arquivados'
 import { Route as ChecklistsChecklistIdRouteImport } from './routes/checklists.$checklistId'
+import { Route as ProjetosIndexRouteImport } from './routes/projetos.index'
+import { Route as ProjetosProjectIdRouteImport } from './routes/projetos.$projectId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArquivadosRoute = ArquivadosRouteImport.update({
+  id: '/arquivados',
+  path: '/arquivados',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChecklistsChecklistIdRoute = ChecklistsChecklistIdRouteImport.update({
@@ -22,31 +30,69 @@ const ChecklistsChecklistIdRoute = ChecklistsChecklistIdRouteImport.update({
   path: '/checklists/$checklistId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjetosIndexRoute = ProjetosIndexRouteImport.update({
+  id: '/projetos/',
+  path: '/projetos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjetosProjectIdRoute = ProjetosProjectIdRouteImport.update({
+  id: '/projetos/$projectId',
+  path: '/projetos/$projectId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/arquivados': typeof ArquivadosRoute
   '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
+  '/projetos/$projectId': typeof ProjetosProjectIdRoute
+  '/projetos/': typeof ProjetosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/arquivados': typeof ArquivadosRoute
   '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
+  '/projetos/$projectId': typeof ProjetosProjectIdRoute
+  '/projetos': typeof ProjetosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/arquivados': typeof ArquivadosRoute
   '/checklists/$checklistId': typeof ChecklistsChecklistIdRoute
+  '/projetos/$projectId': typeof ProjetosProjectIdRoute
+  '/projetos/': typeof ProjetosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/checklists/$checklistId'
+  fullPaths:
+    | '/'
+    | '/arquivados'
+    | '/checklists/$checklistId'
+    | '/projetos/$projectId'
+    | '/projetos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/checklists/$checklistId'
-  id: '__root__' | '/' | '/checklists/$checklistId'
+  to:
+    | '/'
+    | '/arquivados'
+    | '/checklists/$checklistId'
+    | '/projetos/$projectId'
+    | '/projetos'
+  id:
+    | '__root__'
+    | '/'
+    | '/arquivados'
+    | '/checklists/$checklistId'
+    | '/projetos/$projectId'
+    | '/projetos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ArquivadosRoute: typeof ArquivadosRoute
   ChecklistsChecklistIdRoute: typeof ChecklistsChecklistIdRoute
+  ProjetosProjectIdRoute: typeof ProjetosProjectIdRoute
+  ProjetosIndexRoute: typeof ProjetosIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +104,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/arquivados': {
+      id: '/arquivados'
+      path: '/arquivados'
+      fullPath: '/arquivados'
+      preLoaderRoute: typeof ArquivadosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checklists/$checklistId': {
       id: '/checklists/$checklistId'
       path: '/checklists/$checklistId'
@@ -65,12 +118,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChecklistsChecklistIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projetos/': {
+      id: '/projetos/'
+      path: '/projetos'
+      fullPath: '/projetos/'
+      preLoaderRoute: typeof ProjetosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projetos/$projectId': {
+      id: '/projetos/$projectId'
+      path: '/projetos/$projectId'
+      fullPath: '/projetos/$projectId'
+      preLoaderRoute: typeof ProjetosProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ArquivadosRoute: ArquivadosRoute,
   ChecklistsChecklistIdRoute: ChecklistsChecklistIdRoute,
+  ProjetosProjectIdRoute: ProjetosProjectIdRoute,
+  ProjetosIndexRoute: ProjetosIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
