@@ -15,6 +15,7 @@ import {
   DEFAULT_PROJECT_FILTERS,
   filterAndSortProjects,
   localToday,
+  matchingOpenTasks,
   projectRepository,
   type Project,
   type ProjectFilters,
@@ -151,13 +152,19 @@ function ProjectsPage() {
               }
             />
           ) : view === "lista" ? (
-            <ProjectList projects={visible} today={today} {...actions} />
+            <ProjectList
+              projects={visible}
+              today={today}
+              openTask={filters.openTask}
+              {...actions}
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {visible.map((p) => (
                 <ProjectCard
                   key={p.id}
                   project={p}
+                  openTasks={matchingOpenTasks(p, filters.openTask)}
                   onEdit={() => actions.onEdit(p)}
                   onDuplicate={() => actions.onDuplicate(p)}
                   onArchive={() => actions.onArchive(p)}

@@ -1,11 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { Archive, ArchiveRestore, Copy, Lock, Pencil, Trash2 } from "lucide-react";
-import { isOverdue, projectProgress, projectStatus, type Project } from "@/lib/data";
+import {
+  isOverdue,
+  matchingOpenTasks,
+  projectProgress,
+  projectStatus,
+  type Project,
+} from "@/lib/data";
 import { formatDateOnly } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge } from "./status-badge";
 import { IconAction } from "./icon-action";
+import { OpenTaskChips } from "./open-task-chips";
 
 export interface ProjectRowActions {
   onEdit?: (p: Project) => void;
@@ -19,8 +26,9 @@ export interface ProjectRowActions {
 export function ProjectList({
   projects,
   today,
+  openTask = "",
   ...actions
-}: { projects: Project[]; today: string } & ProjectRowActions) {
+}: { projects: Project[]; today: string; openTask?: string } & ProjectRowActions) {
   return (
     <div className="surface-card overflow-hidden">
       <div className="hidden grid-cols-[minmax(0,1fr)_8rem_10rem_7rem_9.5rem] gap-4 border-b border-border bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid">
@@ -53,6 +61,7 @@ export function ProjectList({
                   )}
                   {p.description || "Sem descrição"}
                 </p>
+                <OpenTaskChips titles={matchingOpenTasks(p, openTask)} />
               </div>
 
               <div className="justify-self-end md:justify-self-start">

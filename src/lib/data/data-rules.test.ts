@@ -4,6 +4,7 @@ import {
   DEFAULT_PROJECT_FILTERS,
   filterAndSortProjects,
   groupTeamByRole,
+  matchingOpenTasks,
   moveItem,
   normalizeClientInfo,
   projectProgress,
@@ -169,5 +170,36 @@ describe("project filters", () => {
     expect(names({ progress: "100" })).toEqual(["Entregue"]);
     expect(names({ sort: "producao_desc" }).slice(0, 2)).toEqual(["Entregue", "Marq Acessórios"]);
     expect(names({ sort: "nome_asc" })[0]).toBe("Atrasado");
+  });
+});
+
+describe("open task filter", () => {
+  const today = "2026-11-16";
+  const t = (title: string, done: boolean) => ({
+    title,
+    completedAt: done ? "2026-11-10T10:00:00Z" : null,
+  });
+  const projects = [
+    { name: "AGITO", dueDate: null, tasks: [t("Arte aprovada", true), t("Instalação", false)] },
+    { name: "GNV", dueDate: null, tasks: [t("Instalação", true), t("Corte ACM", false)] },
+    { name: "USIPA", dueDate: null, tasks: [t("Instalacao fachada", false), t("Pintura", false)] },
+  ];
+  const names = (openTask: string) =>
+    filterAndSortProjects(
+      projects,
+      { ...DEFAULT_PROJECT_FILTERS, sort: "nome_asc", openTask },
+      today,
+    ).map((p) => p.name);
+
+  it("keeps only projects with a matching task still open (accent/case-insensitive)", () => {
+    expect(names("instalação")).toEqual(["AGITO", "USIPA"]);
+    expect(names("CORTE")).toEqual(["GNV"]);
+    expect(names("arte aprovada")).toEqual([]);
+    expect(names("  ")).toEqual(["AGITO", "GNV", "USIPA"]);
+  });
+
+  it("lists the matching open task titles", () => {
+    expect(matchingOpenTasks(projects[2]!, "instal")).toEqual(["Instalacao fachada"]);
+    expect(matchingOpenTasks(projects[0]!, "")).toEqual([]);
   });
 });

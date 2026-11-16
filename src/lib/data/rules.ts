@@ -89,6 +89,8 @@ export type ProjectSort =
 
 export interface ProjectFilters {
   query: string;
+  /** Text of an open (not completed) task the project must have, e.g. "instalação". */
+  openTask: string;
   due: DueFilter;
   progress: ProgressFilter;
   sort: ProjectSort;
@@ -96,6 +98,7 @@ export interface ProjectFilters {
 
 export const DEFAULT_PROJECT_FILTERS: ProjectFilters = {
   query: "",
+  openTask: "",
   due: "todos",
   progress: "todos",
   sort: "prazo_asc",
@@ -104,7 +107,7 @@ export const DEFAULT_PROJECT_FILTERS: ProjectFilters = {
 type ProjectLike = {
   name: string;
   dueDate: string | null;
-  tasks: TaskLike[];
+  tasks: (TaskLike & { title?: string })[];
   clientInfo?: { serviceType?: string };
 };
 
@@ -114,6 +117,21 @@ const fold = (s: string) =>
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .trim();
+
+/**
+ * Titles of the project's open (not completed) tasks whose title contains `text`
+ * (accent/case-insensitive). Empty `text` returns [].
+ */
+export function matchingOpenTasks(
+  project: { tasks: (TaskLike & { title?: string })[] },
+  text: string,
+): string[] {
+  const q = fold(text);
+  if (!q) return [];
+  return project.tasks
+    .filter((t) => t.completedAt === null && fold(t.title ?? "").includes(q))
+    .map((t) => t.title ?? "");
+}
 
 /** Whole days from `today` to `date` (both YYYY-MM-DD); negative when in the past. */
 function daysUntil(date: string, today: string): number {
@@ -156,7 +174,7 @@ export function isOverdue(p: ProjectLike, today: string): boolean {
 
 /**
  * Filters projects by name (accent/case-insensitive; also matches the service type),
- * due date window and production %, then sorts. `today` is the local date as YYYY-MM-DD.
+ * due date window, production % and an open task (by title), then sorts. `today` is the local date as YYYY-MM-DD.
  * Projects without a due date always go last when sorting by prazo.
  */
 export function filterAndSortProjects<T extends ProjectLike>(
@@ -173,7 +191,8 @@ export function filterAndSortProjects<T extends ProjectLike>(
     ({ p, percent }) =>
       (!q || fold(p.name).includes(q) || fold(p.clientInfo?.serviceType ?? "").includes(q)) &&
       matchesDue(p, filters.due, today) &&
-      matchesProgress(percent, filters.progress),
+      matchesProgress(percent, filters.progress) &&
+      (!fold(filters.openTask) || matchingOpenTasks(p, filters.openTask).length > 0),
   );
 
   const [key, dir] = filters.sort.split("_") as ["prazo" | "nome" | "producao", "asc" | "desc"];
