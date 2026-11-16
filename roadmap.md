@@ -9,3 +9,4 @@
 - [ ] Arquivados: list archived projects, restore, delete
 - [ ] Project screen: name, description, status, progress % (0% with no tasks), checkbox tasks with completion timestamp, add/edit/delete/reorder tasks, back to projects
 - [ ] Tests for the business rules
+- [ ] Checklist option "Parâmetros fixos": projects created from it inherit a lock (tasks only checkable; name/description/due date still editable); badge on checklist card; toggling later doesn't affect existing projects
