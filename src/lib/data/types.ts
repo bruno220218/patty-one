@@ -186,13 +186,27 @@ export interface LiberacaoEvento {
 }
 
 /** In-app notification (today: a team member completed a project task). */
+export type NotificationTipo =
+  | "tarefa_concluida"
+  | "liberacao_nova"
+  | "liberacao_reenviada"
+  | "liberacao_reprovada"
+  | "liberacao_aprovada";
+
+/** In-app notification: a task was completed, or a liberação moved in the approval flow. */
 export interface AppNotification {
   id: string;
+  tipo: NotificationTipo;
   /** Null when the project was deleted; the snapshot names are kept. */
   projectId: string | null;
   actorName: string;
+  /** Project name, or the liberação's client for liberação notices. */
   projectName: string;
   taskTitle: string;
+  liberacaoId: string | null;
+  liberacaoNumero: number | null;
+  /** Rejection reason, for "liberacao_reprovada". */
+  detalhe: string;
   createdAt: string;
   readAt: string | null;
 }

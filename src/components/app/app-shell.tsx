@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const wide = pathname.startsWith("/liberacoes/");
   const { data: me } = useCurrentUser();
   const signOut = useSignOut();
-  const showNotifications = !bare && Boolean(me?.isGestor);
+  const showNotifications = !bare && Boolean(me?.isMember);
   const { data: notifications = [] } = useNotifications(me?.id, showNotifications);
 
   if (bare) {

@@ -8,6 +8,59 @@ import { notificationRepository, type AppNotification } from "@/lib/data";
 import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+/** One line describing the notification. */
+function NotificationText({ n }: { n: AppNotification }) {
+  const who = <span className="font-semibold">{n.actorName}</span>;
+  const lib = (
+    <span className="font-medium">
+      liberação nº {n.liberacaoNumero}
+      {n.projectName && ` · ${n.projectName}`}
+    </span>
+  );
+  switch (n.tipo) {
+    case "liberacao_nova":
+      return (
+        <span className="block break-words">
+          {who} enviou a {lib} para a fila do PCP
+        </span>
+      );
+    case "liberacao_reenviada":
+      return (
+        <span className="block break-words">
+          {who} corrigiu e reenviou a {lib} (fim da fila)
+        </span>
+      );
+    case "liberacao_reprovada":
+      return (
+        <span className="block break-words">
+          {who} <span className="font-semibold text-destructive">reprovou</span> a {lib}
+          {n.detalhe && (
+            <span className="mt-0.5 block text-muted-foreground">Motivo: {n.detalhe}</span>
+          )}
+        </span>
+      );
+    case "liberacao_aprovada":
+      return (
+        <span className="block break-words">
+          {who} <span className="font-semibold text-status-done-foreground">aprovou</span> a {lib}:
+          já está em produção
+        </span>
+      );
+    default:
+      return (
+        <span className="block break-words">
+          {who} concluiu <span className="font-medium">“{n.taskTitle}”</span>
+          {n.projectName && (
+            <>
+              {" "}
+              em <span className="font-medium">{n.projectName}</span>
+            </>
+          )}
+        </span>
+      );
+  }
+}
+
 function UnreadBadge({ count, className }: { count: number; className?: string }) {
   if (count === 0) return null;
   return (
@@ -23,7 +76,7 @@ function UnreadBadge({ count, className }: { count: number; className?: string }
 }
 
 /**
- * Bell with the gestor's notifications. `variant="sidebar"` renders a full-width
+ * Bell with the person's notifications (tasks for gestão; liberação flow for PCP/direção and comercial). `variant="sidebar"` renders a full-width
  * menu row (desktop); `variant="icon"` an icon button (mobile header).
  */
 export function NotificationBell({
@@ -42,7 +95,14 @@ export function NotificationBell({
   const openNotification = async (n: AppNotification) => {
     setOpen(false);
     if (n.readAt === null) void run(() => notificationRepository.markRead(n.id));
-    if (n.projectId) {
+    if (n.tipo !== "tarefa_concluida" && n.liberacaoId) {
+      // Approved: go to the production project when there is one.
+      if (n.tipo === "liberacao_aprovada" && n.projectId) {
+        await navigate({ to: "/projetos/$projectId", params: { projectId: n.projectId } });
+      } else {
+        await navigate({ to: "/liberacoes/$liberacaoId", params: { liberacaoId: n.liberacaoId } });
+      }
+    } else if (n.projectId) {
       await navigate({ to: "/projetos/$projectId", params: { projectId: n.projectId } });
     }
   };
@@ -113,16 +173,7 @@ export function NotificationBell({
                     )}
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block break-words">
-                      <span className="font-semibold">{n.actorName}</span> concluiu{" "}
-                      <span className="font-medium">“{n.taskTitle}”</span>
-                      {n.projectName && (
-                        <>
-                          {" "}
-                          em <span className="font-medium">{n.projectName}</span>
-                        </>
-                      )}
-                    </span>
+                    <NotificationText n={n} />
                     <span className="mt-0.5 block text-xs text-muted-foreground">
                       {formatRelative(n.createdAt)}
                       {n.readAt === null && <span className="sr-only"> · não lida</span>}

@@ -8,11 +8,16 @@ import { dbError } from "./db-errors";
 // The notifications table is newer than the generated database types.
 const db = supabase as unknown as SupabaseClient;
 
-const SELECT = "id, project_id, actor_name, project_name, task_title, created_at, read_at";
+const SELECT =
+  "id, tipo, project_id, actor_name, project_name, task_title, liberacao_id, liberacao_numero, detalhe, created_at, read_at";
 
 interface Row {
   id: string;
+  tipo: AppNotification["tipo"] | null;
   project_id: string | null;
+  liberacao_id: string | null;
+  liberacao_numero: number | null;
+  detalhe: string | null;
   actor_name: string;
   project_name: string;
   task_title: string;
@@ -23,7 +28,11 @@ interface Row {
 function toNotification(row: Row): AppNotification {
   return {
     id: row.id,
+    tipo: row.tipo ?? "tarefa_concluida",
     projectId: row.project_id,
+    liberacaoId: row.liberacao_id,
+    liberacaoNumero: row.liberacao_numero,
+    detalhe: row.detalhe ?? "",
     actorName: row.actor_name || "Alguém da equipe",
     projectName: row.project_name,
     taskTitle: row.task_title,
