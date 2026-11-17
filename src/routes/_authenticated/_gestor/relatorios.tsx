@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import {
   useCurrentUser,
+  useBriefings,
   useLiberacoes,
   useProjects,
   useTodosEventosLiberacao,
@@ -22,11 +23,13 @@ import { localToday } from "@/lib/data";
 import {
   ALL_TIME,
   buildIndicators,
+  buildBriefingIndicators,
   buildLiberacaoIndicators,
   monthPeriod,
 } from "@/lib/data/report";
 import { downloadIndicatorsPdf } from "@/lib/report-pdf";
 import { LiberacaoReportSection } from "@/components/app/liberacao-report-section";
+import { BriefingReportSection } from "@/components/app/briefing-report-section";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/_gestor/relatorios")({
@@ -87,6 +90,7 @@ function ReportsPage() {
   const archived = useProjects(true);
   const liberacoes = useLiberacoes();
   const eventosLib = useTodosEventosLiberacao();
+  const briefings = useBriefings();
   const { data: me } = useCurrentUser();
 
   const period = selected === "all" ? ALL_TIME : monthPeriod(selected);
@@ -107,10 +111,23 @@ function ReportsPage() {
     [liberacoes.data, eventosLib.data, selected],
   );
 
+  // Briefings are optional too (null when the table doesn't exist yet).
+  const briefingIndicators = useMemo(
+    () => (briefings.data ? buildBriefingIndicators(briefings.data, period) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [briefings.data, selected],
+  );
+
   const download = async () => {
     setBusy(true);
     try {
-      await downloadIndicatorsPdf(indicators, period, me?.name ?? "Gestão", libIndicators);
+      await downloadIndicatorsPdf(
+        indicators,
+        period,
+        me?.name ?? "Gestão",
+        libIndicators,
+        briefingIndicators,
+      );
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível gerar o PDF. Tente novamente.");
@@ -197,9 +214,11 @@ function ReportsPage() {
             )}
           </section>
           {libIndicators && <LiberacaoReportSection ind={libIndicators} />}
+          {briefingIndicators && <BriefingReportSection ind={briefingIndicators} />}
           <p className="text-xs text-muted-foreground">
             O PDF traz também a lista de clientes, as entregas (no prazo e atrasadas, com a
-            diferença em dias), os serviços ainda em aberto e os indicadores das liberações.
+            diferença em dias), os serviços ainda em aberto os indicadores das liberações e dos
+            briefings.
           </p>
         </div>
       )}

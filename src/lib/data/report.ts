@@ -269,3 +269,58 @@ export function formatHoras(horas: number | null): string {
   const d = `${dias} ${dias === 1 ? "dia" : "dias"}`;
   return resto ? `${d} e ${resto} h` : d;
 }
+
+type ReportBriefing = {
+  destino: "criacao" | "projetos_especiais";
+  status: "novo" | "em_andamento" | "concluido";
+  createdAt: string;
+  concluidoEm: string | null;
+  responsavelNome: string;
+};
+
+export interface BriefingIndicators {
+  criados: number;
+  concluidos: number;
+  /** Average hours from creation to conclusion, for briefings concluded in the period. */
+  horasMediasAteConcluir: number | null;
+  /** Current situation (not limited to the period). */
+  novosAgora: number;
+  emAndamentoAgora: number;
+  /** Concluded in the period, per person. */
+  porResponsavel: { name: string; count: number }[];
+}
+
+/** Briefing indicators, separately for Criação and Projetos especiais. */
+export function buildBriefingIndicators(
+  briefings: ReportBriefing[],
+  period: ReportPeriod,
+): Record<ReportBriefing["destino"], BriefingIndicators> {
+  const collator = new Intl.Collator("pt-BR", { sensitivity: "base" });
+  const calc = (lista: ReportBriefing[]): BriefingIndicators => {
+    const concluidos = lista.filter(
+      (b) => b.concluidoEm && inPeriod(localDateOf(b.concluidoEm), period),
+    );
+    const horas = concluidos.map(
+      (b) => (Date.parse(b.concluidoEm as string) - Date.parse(b.createdAt)) / 3_600_000,
+    );
+    const porPessoa = new Map<string, number>();
+    for (const b of concluidos) {
+      const n = b.responsavelNome || "Sem responsável";
+      porPessoa.set(n, (porPessoa.get(n) ?? 0) + 1);
+    }
+    return {
+      criados: lista.filter((b) => inPeriod(localDateOf(b.createdAt), period)).length,
+      concluidos: concluidos.length,
+      horasMediasAteConcluir: horas.length ? horas.reduce((a, b) => a + b, 0) / horas.length : null,
+      novosAgora: lista.filter((b) => b.status === "novo").length,
+      emAndamentoAgora: lista.filter((b) => b.status === "em_andamento").length,
+      porResponsavel: [...porPessoa.entries()]
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count || collator.compare(a.name, b.name)),
+    };
+  };
+  return {
+    criacao: calc(briefings.filter((b) => b.destino === "criacao")),
+    projetos_especiais: calc(briefings.filter((b) => b.destino === "projetos_especiais")),
+  };
+}

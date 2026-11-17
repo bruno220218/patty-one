@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ALL_TIME,
   buildIndicators,
+  buildBriefingIndicators,
   buildLiberacaoIndicators,
   formatHoras,
   monthPeriod,
@@ -139,5 +140,49 @@ describe("liberação indicators", () => {
     expect(formatHoras(0.2)).toBe("1 h");
     expect(formatHoras(24)).toBe("1 dia");
     expect(formatHoras(52)).toBe("2 dias e 4 h");
+  });
+});
+
+describe("buildBriefingIndicators", () => {
+  it("separa criação e projetos especiais", () => {
+    const p = { from: "2026-11-01", to: "2026-11-30", label: "nov" };
+    const ind = buildBriefingIndicators(
+      [
+        {
+          destino: "criacao",
+          status: "concluido",
+          createdAt: "2026-11-02T12:00:00Z",
+          concluidoEm: "2026-11-03T12:00:00Z",
+          responsavelNome: "Ana",
+        },
+        {
+          destino: "criacao",
+          status: "novo",
+          createdAt: "2026-11-05T12:00:00Z",
+          concluidoEm: null,
+          responsavelNome: "",
+        },
+        {
+          destino: "projetos_especiais",
+          status: "em_andamento",
+          createdAt: "2026-10-20T12:00:00Z",
+          concluidoEm: null,
+          responsavelNome: "Toninho",
+        },
+      ],
+      p,
+    );
+    expect(ind.criacao).toMatchObject({
+      criados: 2,
+      concluidos: 1,
+      novosAgora: 1,
+      horasMediasAteConcluir: 24,
+    });
+    expect(ind.criacao.porResponsavel).toEqual([{ name: "Ana", count: 1 }]);
+    expect(ind.projetos_especiais).toMatchObject({
+      criados: 0,
+      concluidos: 0,
+      emAndamentoAgora: 1,
+    });
   });
 });

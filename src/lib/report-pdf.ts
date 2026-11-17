@@ -1,6 +1,7 @@
 import {
   formatHoras,
   type Indicators,
+  type BriefingIndicators,
   type LiberacaoIndicators,
   type ReportPeriod,
 } from "@/lib/data/report";
@@ -18,6 +19,7 @@ export async function downloadIndicatorsPdf(
   period: ReportPeriod,
   issuedBy: string,
   lib?: LiberacaoIndicators | null,
+  briefings?: { criacao: BriefingIndicators; projetos_especiais: BriefingIndicators } | null,
 ): Promise<void> {
   const [{ jsPDF }, { default: autoTable }] = await Promise.all([
     import("jspdf"),
@@ -230,6 +232,43 @@ export async function downloadIndicatorsPdf(
         lib.maisReprovadas.map((r) => [r.numero, r.cliente, r.vezes]),
         "",
       );
+    }
+  }
+
+  if (briefings) {
+    section(
+      "Briefings",
+      "Criados e concluídos no período; novos e em andamento na data de emissão.",
+    );
+    const linha = (rotulo: string, f: (b: BriefingIndicators) => string | number) => [
+      rotulo,
+      f(briefings.criacao),
+      f(briefings.projetos_especiais),
+    ];
+    table(
+      ["Indicador", "Criação", "Projetos especiais"],
+      [
+        linha("Criados", (b) => b.criados),
+        linha("Concluídos", (b) => b.concluidos),
+        linha("Tempo médio até concluir", (b) =>
+          formatHoras(b.horasMediasAteConcluir).replace("—", "-"),
+        ),
+        linha("Novos agora", (b) => b.novosAgora),
+        linha("Em andamento agora", (b) => b.emAndamentoAgora),
+      ],
+      "",
+    );
+    const pessoas = [
+      ...briefings.criacao.porResponsavel.map((p) => ["Criação", p.name, p.count]),
+      ...briefings.projetos_especiais.porResponsavel.map((p) => [
+        "Projetos especiais",
+        p.name,
+        p.count,
+      ]),
+    ];
+    if (pessoas.length > 0) {
+      section("Briefings concluídos por pessoa");
+      table(["Área", "Responsável", "Concluídos"], pessoas, "");
     }
   }
 
