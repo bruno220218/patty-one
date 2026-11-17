@@ -23,7 +23,7 @@ import { formatDate } from "@/lib/format";
 const ROLE_LABEL: Record<TeamRole, string> = {
   pendente: "Aguardando aprovação",
   gestor: "Gestão",
-  membro: "Membros",
+  membro: "Colaboradores",
 };
 
 export const Route = createFileRoute("/_authenticated/_gestor/equipe")({
