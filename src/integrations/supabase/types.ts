@@ -84,6 +84,198 @@ export type Database = {
           },
         ]
       }
+      liberacao_eventos: {
+        Row: {
+          autor: string | null
+          autor_nome: string
+          created_at: string
+          detalhe: string
+          id: string
+          liberacao_id: string
+          tipo: string
+        }
+        Insert: {
+          autor?: string | null
+          autor_nome?: string
+          created_at?: string
+          detalhe?: string
+          id?: string
+          liberacao_id: string
+          tipo: string
+        }
+        Update: {
+          autor?: string | null
+          autor_nome?: string
+          created_at?: string
+          detalhe?: string
+          id?: string
+          liberacao_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liberacao_eventos_liberacao_id_fkey"
+            columns: ["liberacao_id"]
+            isOneToOne: false
+            referencedRelation: "liberacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liberacao_itens: {
+        Row: {
+          acabamento: string
+          altura_cm: number | null
+          created_at: string
+          detalhes: string
+          id: string
+          instalacao: string
+          insumos: string
+          largura_cm: number | null
+          liberacao_id: string
+          local_instalacao: string
+          position: number
+          quantidade: number | null
+          referencia: string
+          servico: string
+        }
+        Insert: {
+          acabamento?: string
+          altura_cm?: number | null
+          created_at?: string
+          detalhes?: string
+          id?: string
+          instalacao?: string
+          insumos?: string
+          largura_cm?: number | null
+          liberacao_id: string
+          local_instalacao?: string
+          position?: number
+          quantidade?: number | null
+          referencia?: string
+          servico?: string
+        }
+        Update: {
+          acabamento?: string
+          altura_cm?: number | null
+          created_at?: string
+          detalhes?: string
+          id?: string
+          instalacao?: string
+          insumos?: string
+          largura_cm?: number | null
+          liberacao_id?: string
+          local_instalacao?: string
+          position?: number
+          quantidade?: number | null
+          referencia?: string
+          servico?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liberacao_itens_liberacao_id_fkey"
+            columns: ["liberacao_id"]
+            isOneToOne: false
+            referencedRelation: "liberacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liberacoes: {
+        Row: {
+          bissemana: string
+          classificacao_venda: string
+          cliente: string
+          contato: string
+          created_at: string
+          created_by: string | null
+          data_entrega: string | null
+          data_liberacao: string | null
+          decidido_em: string | null
+          decidido_por: string | null
+          decidido_por_nome: string
+          endereco: string
+          enviada_em: string
+          horario_instalacao: string
+          id: string
+          modelo: string
+          motivo_reprovacao: string
+          numero: number
+          observacoes: string
+          ponto_energia: string
+          project_id: string | null
+          projetista: string
+          responsavel: string
+          status: string
+          updated_at: string
+          vendedor: string
+        }
+        Insert: {
+          bissemana?: string
+          classificacao_venda?: string
+          cliente?: string
+          contato?: string
+          created_at?: string
+          created_by?: string | null
+          data_entrega?: string | null
+          data_liberacao?: string | null
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decidido_por_nome?: string
+          endereco?: string
+          enviada_em?: string
+          horario_instalacao?: string
+          id?: string
+          modelo: string
+          motivo_reprovacao?: string
+          numero?: number
+          observacoes?: string
+          ponto_energia?: string
+          project_id?: string | null
+          projetista?: string
+          responsavel?: string
+          status?: string
+          updated_at?: string
+          vendedor?: string
+        }
+        Update: {
+          bissemana?: string
+          classificacao_venda?: string
+          cliente?: string
+          contato?: string
+          created_at?: string
+          created_by?: string | null
+          data_entrega?: string | null
+          data_liberacao?: string | null
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decidido_por_nome?: string
+          endereco?: string
+          enviada_em?: string
+          horario_instalacao?: string
+          id?: string
+          modelo?: string
+          motivo_reprovacao?: string
+          numero?: number
+          observacoes?: string
+          ponto_energia?: string
+          project_id?: string | null
+          projetista?: string
+          responsavel?: string
+          status?: string
+          updated_at?: string
+          vendedor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liberacoes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -281,6 +473,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_aprovar_liberacoes: { Args: { _user_id: string }; Returns: boolean }
+      can_edit_liberacoes: { Args: { _user_id: string }; Returns: boolean }
       create_project: {
         Args: {
           _checklist_id: string
@@ -290,7 +484,12 @@ export type Database = {
         }
         Returns: string
       }
+      current_display_name: { Args: never; Returns: string }
       duplicate_project: { Args: { _project_id: string }; Returns: string }
+      has_any_role: {
+        Args: { _roles: string[]; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -299,9 +498,58 @@ export type Database = {
         Returns: boolean
       }
       is_team_member: { Args: { _user_id: string }; Returns: boolean }
+      liberacao_editavel: { Args: { _liberacao_id: string }; Returns: boolean }
+      old_with_project: {
+        Args: {
+          _old: Database["public"]["Tables"]["liberacoes"]["Row"]
+          _project: string
+        }
+        Returns: {
+          bissemana: string
+          classificacao_venda: string
+          cliente: string
+          contato: string
+          created_at: string
+          created_by: string | null
+          data_entrega: string | null
+          data_liberacao: string | null
+          decidido_em: string | null
+          decidido_por: string | null
+          decidido_por_nome: string
+          endereco: string
+          enviada_em: string
+          horario_instalacao: string
+          id: string
+          modelo: string
+          motivo_reprovacao: string
+          numero: number
+          observacoes: string
+          ponto_energia: string
+          project_id: string | null
+          projetista: string
+          responsavel: string
+          status: string
+          updated_at: string
+          vendedor: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "liberacoes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
-      app_role: "gestor" | "membro"
+      app_role:
+        | "gestor"
+        | "membro"
+        | "comercial"
+        | "pcp"
+        | "direcao"
+        | "criacao"
+        | "producao"
+        | "montagem"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -429,7 +677,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["gestor", "membro"],
+      app_role: [
+        "gestor",
+        "membro",
+        "comercial",
+        "pcp",
+        "direcao",
+        "criacao",
+        "producao",
+        "montagem",
+      ],
     },
   },
 } as const

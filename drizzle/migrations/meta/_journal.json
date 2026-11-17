@@ -43,6 +43,13 @@
       "when": 1794838270268,
       "tag": "0005_allow_task_history_when_person_removed",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794873829081,
+      "tag": "0006_liberacoes_fluxo_aprovacao_funcoes",
+      "breakpoints": true
     }
   ]
 }

@@ -16,3 +16,5 @@
 - [x] Accounts with login (email/senha, Google, Lovable); first signup becomes gestor; Equipe page to grant gestão
 - [x] Record who completed each task; once checked only a gestor can uncheck (enforced in database)
 - [x] Checklists area visible only to gestores
+- [x] Apply uploaded migration: liberações, approval flow, team functions
+- [ ] Tela de gestão: charts of progress per project, per checklist, and blockers, for the team to see what is in progress (waiting on user go-ahead)
