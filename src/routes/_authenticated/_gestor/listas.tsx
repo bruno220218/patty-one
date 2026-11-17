@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { OpcoesListCard } from "@/components/app/opcoes-list-card";
+import { EmailDestinatariosCard } from "@/components/app/email-destinatarios-card";
 import { useDataAction, useListasLiberacao } from "@/hooks/use-data";
 import {
   LIBERACAO_MODELO_INFO,
@@ -103,7 +104,11 @@ function ListasPage() {
             <TabsTrigger value="projeto">Projetos</TabsTrigger>
             <TabsTrigger value="midia">Mídia</TabsTrigger>
             <TabsTrigger value="pessoas">Pessoas</TabsTrigger>
+            <TabsTrigger value="emails">E-mails</TabsTrigger>
           </TabsList>
+          <TabsContent value="emails">
+            <EmailDestinatariosCard />
+          </TabsContent>
           {(["projeto", "midia", "pessoas"] as const).map((aba) => (
             <TabsContent key={aba} value={aba}>
               <div className="grid gap-4 md:grid-cols-2">{GRUPOS[aba].map(card)}</div>

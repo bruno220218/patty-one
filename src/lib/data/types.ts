@@ -179,7 +179,7 @@ export interface Liberacao extends LiberacaoInput {
 
 export interface LiberacaoEvento {
   id: string;
-  tipo: "criada" | "reprovada" | "reenviada" | "aprovada";
+  tipo: "criada" | "reprovada" | "reenviada" | "aprovada" | "email_enviado";
   detalhe: string;
   autorNome: string;
   createdAt: string;

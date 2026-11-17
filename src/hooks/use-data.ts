@@ -6,6 +6,7 @@ import {
   fetchCurrentUser,
   liberacaoOpcoesRepository,
   lixeiraRepository,
+  emailDestinatariosRepository,
   liberacaoRepository,
   resolverListas,
   notificationRepository,
@@ -62,6 +63,13 @@ export const useLiberacaoEventos = (id: string) =>
 
 export const useLixeira = () =>
   useQuery({ queryKey: ["lixeira"], queryFn: () => lixeiraRepository.list() });
+
+export const useEmailDestinatarios = (enabled = true) =>
+  useQuery({
+    queryKey: ["email-destinatarios"],
+    queryFn: () => emailDestinatariosRepository.list(),
+    enabled,
+  });
 
 export const useChecklists = () => useQuery(checklistsQuery());
 export const useChecklist = (id: string) => useQuery(checklistQuery(id));

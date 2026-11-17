@@ -4,6 +4,7 @@ import {
   Clock,
   FolderOpen,
   History,
+  Mail,
   PencilLine,
   ThumbsDown,
   ThumbsUp,
@@ -153,6 +154,7 @@ const EVENTO: Record<LiberacaoEvento["tipo"], { label: string; icon: typeof Cloc
       icon: CheckCircle2,
       tone: "text-status-done-foreground",
     },
+    email_enviado: { label: "Enviada por e-mail", icon: Mail, tone: "text-muted-foreground" },
   };
 
 /** Timeline: criada → reprovada → reenviada → aprovada. */

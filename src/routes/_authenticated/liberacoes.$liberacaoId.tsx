@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, FileDown, SearchX, Trash2 } from "lucide-react";
+import { ArrowLeft, FileDown, Mail, SearchX, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app/page-header";
@@ -28,6 +28,8 @@ import {
 } from "@/lib/data";
 import { formatDateTime } from "@/lib/format";
 import { downloadLiberacaoPdf } from "@/lib/liberacao-pdf";
+import { enviarEmailDaLiberacao } from "@/lib/liberacao-enviar-email";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/liberacoes/$liberacaoId")({
   head: () => ({
@@ -52,6 +54,15 @@ function LiberacaoPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [aprovarOpen, setAprovarOpen] = useState(false);
   const [reprovarOpen, setReprovarOpen] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const queryClient = useQueryClient();
+
+  const enviarEmail = async (opts?: { silenciosoSemLista?: boolean }) => {
+    setEnviando(true);
+    const ok = await enviarEmailDaLiberacao(liberacaoId, opts);
+    if (ok) await queryClient.invalidateQueries({ queryKey: ["liberacoes", liberacaoId] });
+    setEnviando(false);
+  };
 
   const fila = useMemo(() => filaPcp(todas ?? []), [todas]);
   const posicao = fila.findIndex((l) => l.id === liberacaoId) + 1;
@@ -104,6 +115,17 @@ function LiberacaoPage() {
               <FileDown />
               Baixar PDF
             </Button>
+            {aprovada && canAprovar && (
+              <Button
+                variant="outline"
+                onClick={() => enviarEmail()}
+                disabled={enviando}
+                className="h-10"
+              >
+                <Mail />
+                {enviando ? "Enviando…" : "Enviar por e-mail"}
+              </Button>
+            )}
             {canDelete && (
               <Button
                 variant="outline"
@@ -155,19 +177,22 @@ function LiberacaoPage() {
         open={aprovarOpen}
         onOpenChange={setAprovarOpen}
         liberacao={lib}
-        onConfirm={(input) =>
-          run(async () => {
-            const project = await projectRepository.create(input);
+        onConfirm={async (input) => {
+          const project = await run(async () => {
+            const created = await projectRepository.create(input);
             try {
-              await liberacaoRepository.aprovar(lib.id, project.id);
+              await liberacaoRepository.aprovar(lib.id, created.id);
             } catch (error) {
               // Don't leave an orphan project if the approval didn't go through.
-              await projectRepository.remove(project.id).catch(() => undefined);
+              await projectRepository.remove(created.id).catch(() => undefined);
               throw error;
             }
-            return project;
-          }, "Liberação aprovada e projeto criado em Projetos.")
-        }
+            return created;
+          }, "Liberação aprovada e projeto criado em Projetos.");
+          // Sends the PDF to the e-mail list (no-op if the list is empty).
+          if (project) void enviarEmail({ silenciosoSemLista: true });
+          return project;
+        }}
       />
       <ReprovarDialog
         open={reprovarOpen}

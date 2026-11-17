@@ -13,6 +13,11 @@ export const liberacaoRepository = cloudLiberacaoRepository;
 export const notificationRepository = cloudNotificationRepository;
 export { liberacaoOpcoesRepository } from "./cloud-liberacao-opcoes";
 export { lixeiraRepository, type LixeiraItem } from "./cloud-lixeira";
+export {
+  emailDestinatariosRepository,
+  emailValido,
+  type EmailDestinatario,
+} from "./cloud-email-destinatarios";
 
 export type {
   ChecklistRepository,

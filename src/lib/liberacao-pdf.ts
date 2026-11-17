@@ -17,8 +17,8 @@ const BORDER: RGB = [205, 205, 198];
 const num = (n: number | null) =>
   n === null ? "" : n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 
-/** Builds the liberação sheet (A4 landscape, same layout as the spreadsheet) and downloads it. */
-export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Promise<void> {
+/** Builds the liberação sheet (A4 landscape, same layout as the spreadsheet). */
+async function buildLiberacaoPdf(lib: Liberacao, logoUrl?: string) {
   const [{ jsPDF }, { default: autoTable }] = await Promise.all([
     import("jspdf"),
     import("jspdf-autotable"),
@@ -273,5 +273,21 @@ export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Pr
     .replace(/[^a-zA-Z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .toLowerCase();
-  doc.save(`liberacao-${lib.numero}${slug ? `-${slug}` : ""}.pdf`);
+  return { doc, filename: `liberacao-${lib.numero}${slug ? `-${slug}` : ""}.pdf` };
+}
+
+/** Builds the liberação PDF and downloads it. */
+export async function downloadLiberacaoPdf(lib: Liberacao, logoUrl?: string): Promise<void> {
+  const { doc, filename } = await buildLiberacaoPdf(lib, logoUrl);
+  doc.save(filename);
+}
+
+/** Builds the liberação PDF as base64 (for the approval e-mail). */
+export async function liberacaoPdfBase64(
+  lib: Liberacao,
+  logoUrl?: string,
+): Promise<{ base64: string; filename: string }> {
+  const { doc, filename } = await buildLiberacaoPdf(lib, logoUrl);
+  const dataUri = doc.output("datauristring");
+  return { base64: dataUri.slice(dataUri.indexOf(",") + 1), filename };
 }
