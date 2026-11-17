@@ -50,6 +50,13 @@
       "when": 1794873829081,
       "tag": "0006_liberacoes_fluxo_aprovacao_funcoes",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794878399853,
+      "tag": "0007_automacoes_notificacoes_listas_liberacao",
+      "breakpoints": true
     }
   ]
 }

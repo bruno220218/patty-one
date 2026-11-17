@@ -181,6 +181,33 @@ export type Database = {
           },
         ]
       }
+      liberacao_opcoes: {
+        Row: {
+          campo: string
+          created_at: string
+          id: string
+          modelo: string
+          position: number
+          valor: string
+        }
+        Insert: {
+          campo: string
+          created_at?: string
+          id?: string
+          modelo: string
+          position?: number
+          valor: string
+        }
+        Update: {
+          campo?: string
+          created_at?: string
+          id?: string
+          modelo?: string
+          position?: number
+          valor?: string
+        }
+        Relationships: []
+      }
       liberacoes: {
         Row: {
           bissemana: string
@@ -272,6 +299,76 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          actor_name: string
+          created_at: string
+          detalhe: string
+          id: string
+          liberacao_id: string | null
+          liberacao_numero: number | null
+          project_id: string | null
+          project_name: string
+          read_at: string | null
+          recipient_id: string
+          task_id: string | null
+          task_title: string
+          tipo: string
+        }
+        Insert: {
+          actor_name?: string
+          created_at?: string
+          detalhe?: string
+          id?: string
+          liberacao_id?: string | null
+          liberacao_numero?: number | null
+          project_id?: string | null
+          project_name?: string
+          read_at?: string | null
+          recipient_id: string
+          task_id?: string | null
+          task_title?: string
+          tipo?: string
+        }
+        Update: {
+          actor_name?: string
+          created_at?: string
+          detalhe?: string
+          id?: string
+          liberacao_id?: string | null
+          liberacao_numero?: number | null
+          project_id?: string | null
+          project_name?: string
+          read_at?: string | null
+          recipient_id?: string
+          task_id?: string | null
+          task_title?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_liberacao_id_fkey"
+            columns: ["liberacao_id"]
+            isOneToOne: false
+            referencedRelation: "liberacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -392,6 +489,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          adhesive_type: string
           archived: boolean
           archived_at: string | null
           created_at: string
@@ -399,12 +497,17 @@ export type Database = {
           description: string
           due_date: string | null
           id: string
+          lamination: boolean | null
+          led_color: string
           locked: boolean
           name: string
+          paint_colors: string
+          service_type: string
           source_checklist_id: string | null
           updated_at: string
         }
         Insert: {
+          adhesive_type?: string
           archived?: boolean
           archived_at?: string | null
           created_at?: string
@@ -412,12 +515,17 @@ export type Database = {
           description?: string
           due_date?: string | null
           id?: string
+          lamination?: boolean | null
+          led_color?: string
           locked?: boolean
           name: string
+          paint_colors?: string
+          service_type?: string
           source_checklist_id?: string | null
           updated_at?: string
         }
         Update: {
+          adhesive_type?: string
           archived?: boolean
           archived_at?: string | null
           created_at?: string
@@ -425,8 +533,12 @@ export type Database = {
           description?: string
           due_date?: string | null
           id?: string
+          lamination?: boolean | null
+          led_color?: string
           locked?: boolean
           name?: string
+          paint_colors?: string
+          service_type?: string
           source_checklist_id?: string | null
           updated_at?: string
         }
