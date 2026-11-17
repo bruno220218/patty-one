@@ -140,15 +140,6 @@ export function BriefingForm({
             readOnly={readOnly}
           />
         </FormField>
-        <FormField id="b-prazo" label="Prazo">
-          <Input
-            id="b-prazo"
-            type="date"
-            value={v.prazo ?? ""}
-            onChange={(e) => set("prazo", e.target.value || null)}
-            readOnly={readOnly}
-          />
-        </FormField>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

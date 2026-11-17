@@ -18,7 +18,6 @@ import {
   type BriefingDestino,
   type BriefingStatus,
 } from "@/lib/data";
-import { formatDateOnly } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/briefings/")({
@@ -206,7 +205,6 @@ function BriefingsPage() {
                     {[
                       BRIEFING_DESTINO_LABEL[b.destino],
                       b.cliente,
-                      b.prazo ? `prazo ${formatDateOnly(b.prazo)}` : "",
                       b.responsavelNome ? `com ${b.responsavelNome}` : "",
                       `por ${b.createdByNome || "alguém"}`,
                     ]
