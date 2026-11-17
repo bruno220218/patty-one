@@ -1,0 +1,18 @@
+# Mantém o Supabase grátis acordado (ele pausa após 7 dias sem uso).
+name: Supabase keep-alive
+on:
+  schedule:
+    - cron: "17 12 */3 * *" # a cada 3 dias
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consulta leve no banco
+        env:
+          URL: https://dvndroghanmriumjfgqf.supabase.co
+          KEY: sb_publishable_Zf7UAIEvlprlJvZ3LKMfLw_BnauBmM3
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/rest/v1/liberacao_opcoes?select=id&limit=1" -H "apikey: $KEY")
+          echo "HTTP $code"
+          test "$code" -lt 500

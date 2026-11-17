@@ -1,0 +1,32 @@
+# Backup semanal do banco (o Supabase grátis não faz backup automático).
+# Precisa do secret SUPABASE_DB_URL no GitHub (Settings > Secrets and variables > Actions).
+# O arquivo fica em "Artifacts" na execução do workflow por 90 dias (privado).
+name: Supabase backup
+on:
+  schedule:
+    - cron: "41 6 * * 0" # domingo, 03:41 de Brasília
+  workflow_dispatch:
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instala pg_dump 17
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+      - name: Gera backup
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB_URL" ]; then echo "::error::Falta o secret SUPABASE_DB_URL"; exit 1; fi
+          stamp=$(date -u +%Y-%m-%d)
+          /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" -Fc --no-owner --no-privileges \
+            -n public -n auth -f "patty-one-$stamp.backup"
+          ls -lh *.backup
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: "*.backup"
+          retention-days: 90
