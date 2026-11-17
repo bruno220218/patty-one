@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Archive } from "lucide-react";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { Archive, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
@@ -13,7 +14,10 @@ export const Route = createFileRoute("/_authenticated/arquivados")({
   head: () => ({
     meta: [
       { title: "Arquivados — Patty One" },
-      { name: "description", content: "Projetos arquivados na Patty One. Restaure quando precisar." },
+      {
+        name: "description",
+        content: "Projetos arquivados na Patty One. Restaure quando precisar.",
+      },
       { property: "og:title", content: "Arquivados — Patty One" },
       {
         property: "og:description",
@@ -33,7 +37,18 @@ function ArchivedPage() {
 
   return (
     <>
-      <PageHeader title="Arquivados" description="Projetos guardados. Restaure quando precisar." />
+      <PageHeader
+        title="Arquivados"
+        description="Projetos guardados. Restaure quando precisar."
+        action={
+          <Button asChild variant="outline" size="sm">
+            <Link to="/lixeira">
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              Lixeira
+            </Link>
+          </Button>
+        }
+      />
 
       {isPending ? (
         <CardGridSkeleton />
@@ -63,7 +78,7 @@ function ArchivedPage() {
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Excluir projeto?"
-        description={`"${deleting?.name ?? ""}" e suas tarefas serão excluídos permanentemente.`}
+        description={`"${deleting?.name ?? ""}" e suas tarefas vão para a Lixeira, onde ficam 30 dias.`}
         onConfirm={() => {
           if (deleting) run(() => projectRepository.remove(deleting.id), "Projeto excluído.");
           setDeleting(null);

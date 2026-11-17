@@ -184,7 +184,7 @@ function LiberacaoPage() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title={`Excluir a liberação nº ${lib.numero}?`}
-        description={`A liberação de "${lib.cliente}", os itens e o histórico serão excluídos permanentemente.`}
+        description={`A liberação de "${lib.cliente}", os itens e o histórico vão para a Lixeira, onde ficam 30 dias.`}
         onConfirm={async () => {
           setDeleteOpen(false);
           const ok = await run(

@@ -9,6 +9,7 @@ import {
   Hourglass,
   ListChecks,
   LogOut,
+  Trash2,
   Users,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,10 +26,19 @@ import { NotificationBell } from "./notification-bell";
 const LOGO_URL = "/patty-logo.png";
 
 type NavItem = {
-  to: "/checklists" | "/projetos" | "/liberacoes" | "/arquivados" | "/equipe" | "/relatorios";
+  to:
+    | "/checklists"
+    | "/projetos"
+    | "/liberacoes"
+    | "/arquivados"
+    | "/equipe"
+    | "/relatorios"
+    | "/lixeira";
   label: string;
   icon: typeof ListChecks;
   gestorOnly?: boolean;
+  /** Hidden from the mobile bottom bar (not enough room); reachable from Arquivados. */
+  desktopOnly?: boolean;
 };
 
 const NAV: NavItem[] = [
@@ -38,6 +48,7 @@ const NAV: NavItem[] = [
   { to: "/arquivados", label: "Arquivados", icon: Archive },
   { to: "/equipe", label: "Equipe", icon: Users, gestorOnly: true },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3, gestorOnly: true },
+  { to: "/lixeira", label: "Lixeira", icon: Trash2, desktopOnly: true },
 ];
 
 const BARE_PATHS = ["/auth", "/reset-password"];
@@ -82,6 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const pending = Boolean(me && !me.isMember);
   const items = pending ? [] : NAV.filter((i) => !i.gestorOnly || me?.isGestor);
+  const mobileItems = items.filter((i) => !i.desktopOnly);
   const isActive = (to: string) => pathname === to || pathname.startsWith(`${to}/`);
 
   return (
@@ -190,14 +202,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Mobile bottom bar */}
         <nav
           aria-label="Principal"
-          hidden={items.length === 0}
+          hidden={mobileItems.length === 0}
           className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar/95 backdrop-blur md:hidden"
         >
           <div
             className="grid h-16"
-            style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+            style={{ gridTemplateColumns: `repeat(${mobileItems.length}, minmax(0, 1fr))` }}
           >
-            {items.map((item) => {
+            {mobileItems.map((item) => {
               const active = isActive(item.to);
               return (
                 <Link

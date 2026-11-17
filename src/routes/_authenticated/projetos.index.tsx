@@ -204,7 +204,7 @@ function ProjectsPage() {
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Excluir projeto?"
-        description={`"${deleting?.name ?? ""}" e suas tarefas serão excluídos permanentemente.`}
+        description={`"${deleting?.name ?? ""}" e suas tarefas vão para a Lixeira, onde ficam 30 dias.`}
         onConfirm={() => {
           if (deleting) run(() => projectRepository.remove(deleting.id), "Projeto excluído.");
           setDeleting(null);

@@ -127,7 +127,7 @@ function ChecklistsPage() {
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Excluir checklist?"
-        description={`"${deleting?.name ?? ""}" será excluído permanentemente. Projetos já criados a partir dele não serão afetados.`}
+        description={`"${deleting?.name ?? ""}" vai para a Lixeira, onde fica 30 dias. Projetos já criados a partir dele não serão afetados.`}
         onConfirm={() => {
           if (deleting) run(() => checklistRepository.remove(deleting.id), "Checklist excluído.");
           setDeleting(null);

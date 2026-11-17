@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenticated/_gestor/route'
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
+import { Route as AuthenticatedLixeiraRouteImport } from './routes/_authenticated/lixeira'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorListasRouteImport } from './routes/_authenticated/_gestor/listas'
@@ -54,6 +55,11 @@ const AuthenticatedGestorRouteRoute =
 const AuthenticatedArquivadosRoute = AuthenticatedArquivadosRouteImport.update({
   id: '/arquivados',
   path: '/arquivados',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLixeiraRoute = AuthenticatedLixeiraRouteImport.update({
+  id: '/lixeira',
+  path: '/lixeira',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/arquivados': typeof AuthenticatedArquivadosRoute
+  '/lixeira': typeof AuthenticatedLixeiraRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/listas': typeof AuthenticatedGestorListasRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/arquivados': typeof AuthenticatedArquivadosRoute
+  '/lixeira': typeof AuthenticatedLixeiraRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/listas': typeof AuthenticatedGestorListasRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/_gestor': typeof AuthenticatedGestorRouteRouteWithChildren
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
+  '/_authenticated/lixeira': typeof AuthenticatedLixeiraRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/listas': typeof AuthenticatedGestorListasRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/arquivados'
+    | '/lixeira'
     | '/api/next-steps'
     | '/equipe'
     | '/listas'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/arquivados'
+    | '/lixeira'
     | '/api/next-steps'
     | '/equipe'
     | '/listas'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/_gestor'
     | '/_authenticated/arquivados'
+    | '/_authenticated/lixeira'
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/listas'
@@ -282,6 +294,13 @@ declare module '@tanstack/react-router' {
       path: '/arquivados'
       fullPath: '/arquivados'
       preLoaderRoute: typeof AuthenticatedArquivadosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lixeira': {
+      id: '/_authenticated/lixeira'
+      path: '/lixeira'
+      fullPath: '/lixeira'
+      preLoaderRoute: typeof AuthenticatedLixeiraRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/next-steps': {
@@ -391,6 +410,7 @@ const AuthenticatedGestorRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedGestorRouteRoute: typeof AuthenticatedGestorRouteRouteWithChildren
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
+  AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
   AuthenticatedLiberacoesLiberacaoIdRoute: typeof AuthenticatedLiberacoesLiberacaoIdRoute
   AuthenticatedLiberacoesNovaRoute: typeof AuthenticatedLiberacoesNovaRoute
   AuthenticatedProjetosProjectIdRoute: typeof AuthenticatedProjetosProjectIdRoute
@@ -401,6 +421,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGestorRouteRoute: AuthenticatedGestorRouteRouteWithChildren,
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
+  AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
   AuthenticatedLiberacoesLiberacaoIdRoute:
     AuthenticatedLiberacoesLiberacaoIdRoute,
   AuthenticatedLiberacoesNovaRoute: AuthenticatedLiberacoesNovaRoute,

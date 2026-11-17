@@ -5,6 +5,7 @@ import {
   checklistRepository,
   fetchCurrentUser,
   liberacaoOpcoesRepository,
+  lixeiraRepository,
   liberacaoRepository,
   resolverListas,
   notificationRepository,
@@ -58,6 +59,9 @@ export const useLiberacaoEventos = (id: string) =>
     queryKey: ["liberacoes", id, "eventos"],
     queryFn: () => liberacaoRepository.eventos(id),
   });
+
+export const useLixeira = () =>
+  useQuery({ queryKey: ["lixeira"], queryFn: () => lixeiraRepository.list() });
 
 export const useChecklists = () => useQuery(checklistsQuery());
 export const useChecklist = (id: string) => useQuery(checklistQuery(id));

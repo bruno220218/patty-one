@@ -196,7 +196,7 @@ function ProjectDetailPage() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="Excluir projeto?"
-        description={`"${project.name}" e suas tarefas serão excluídos permanentemente.`}
+        description={`"${project.name}" e suas tarefas vão para a Lixeira, onde ficam 30 dias.`}
         onConfirm={async () => {
           setDeleteOpen(false);
           await navigate({ to: project.archived ? "/arquivados" : "/projetos" });

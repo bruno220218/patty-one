@@ -147,7 +147,7 @@ function ChecklistDetailPage() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="Excluir checklist?"
-        description={`"${checklist.name}" será excluído permanentemente. Projetos já criados a partir dele não serão afetados.`}
+        description={`"${checklist.name}" vai para a Lixeira, onde fica 30 dias. Projetos já criados a partir dele não serão afetados.`}
         onConfirm={async () => {
           setDeleteOpen(false);
           await navigate({ to: "/checklists" });
