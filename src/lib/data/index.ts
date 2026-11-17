@@ -1,6 +1,6 @@
 /**
  * Single swap point for persistence. The UI depends on the repository interfaces;
- * the current implementations store data in Lovable Cloud.
+ * the current implementations store data in Supabase.
  */
 import { cloudChecklistRepository } from "./cloud-checklists";
 import { cloudProjectRepository } from "./cloud-projects";

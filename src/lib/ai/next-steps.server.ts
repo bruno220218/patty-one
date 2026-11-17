@@ -1,14 +1,13 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, streamText } from "ai";
 import { nextStepsRequestSchema, type NextStepsRequest } from "./next-steps-schema";
-import {
-  createLovableAiGatewayRunIdFetch,
-  getLovableAiGatewayRunId,
-  withLovableAiGatewayRunIdHeader,
-} from "./run-id.server";
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
-const MODEL = "openai/gpt-6-astra";
+// IA opcional: qualquer provedor compatível com a API da OpenAI.
+// AI_API_KEY (obrigatória para ligar), AI_BASE_URL (padrão: OpenAI) e AI_MODEL.
+// Ex. grátis: Google Gemini -> AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+//   AI_MODEL=gemini-2.5-flash
+const DEFAULT_BASE_URL = "https://api.openai.com/v1";
+const DEFAULT_MODEL = "gpt-4o-mini";
 
 const INSTRUCTIONS = `Você é um assistente de gestão de projetos da Patty One, uma empresa de produção (impressão, acabamento, pintura, embalagem etc.).
 A pessoa responsável por um projeto descreveu um bloqueio. Com base no bloqueio, nas tarefas (feitas e pendentes), no progresso e no prazo, sugira próximos passos práticos para destravar o projeto.
@@ -60,7 +59,7 @@ function friendlyError(error: unknown): string {
     return "Muitas solicitações ao mesmo tempo. Aguarde alguns segundos e tente de novo.";
   }
   if (status === 403) {
-    return "O uso de IA está bloqueado para este workspace no momento. Fale com a pessoa administradora.";
+    return "O provedor de IA recusou o pedido. Confira a chave e o modelo configurados.";
   }
   if (status === 401) {
     return "A IA não está configurada corretamente neste app.";
@@ -71,7 +70,10 @@ function friendlyError(error: unknown): string {
 
 /** Confirms the caller is a signed-in Patty One user before spending AI credits. */
 async function isSignedIn(request: Request): Promise<boolean> {
-  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
+  const token = request.headers
+    .get("authorization")
+    ?.replace(/^Bearer\s+/i, "")
+    .trim();
   const url = process.env["SUPABASE_URL"];
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
   if (!token || !url || !key) return false;
@@ -85,7 +87,7 @@ export async function handleNextSteps(request: Request): Promise<Response> {
   if (!(await isSignedIn(request))) {
     return Response.json({ error: "Entre na sua conta para usar as sugestões." }, { status: 401 });
   }
-  const apiKey = process.env["LOVABLE_API_KEY"];
+  const apiKey = process.env["AI_API_KEY"];
   if (!apiKey) {
     return Response.json({ error: "A IA não está configurada neste app." }, { status: 500 });
   }
@@ -104,33 +106,18 @@ export async function handleNextSteps(request: Request): Promise<Response> {
     );
   }
 
-  const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
   const provider = createOpenAI({
-    baseURL: GATEWAY_URL,
+    baseURL: process.env["AI_BASE_URL"] || DEFAULT_BASE_URL,
     apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    fetch: runIdFetch.fetch,
   });
 
   const result = streamText({
-    model: provider.responses(MODEL),
+    model: provider.chat(process.env["AI_MODEL"] || DEFAULT_MODEL),
     instructions: INSTRUCTIONS,
     messages: [{ role: "user", content: describeProject(parsed.data) }],
     abortSignal: request.signal,
     maxRetries: 0,
-    providerOptions: {
-      openai: {
-        forceReasoning: true,
-        reasoningEffort: "low",
-        reasoningSummary: "auto",
-        store: false,
-        include: ["reasoning.encrypted_content"],
-      },
-    },
   });
 
-  return withLovableAiGatewayRunIdHeader(
-    result.toUIMessageStreamResponse({ sendReasoning: true, onError: friendlyError }),
-    runIdFetch,
-  );
+  return result.toUIMessageStreamResponse({ onError: friendlyError });
 }

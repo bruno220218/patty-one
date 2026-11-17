@@ -91,7 +91,7 @@ export const setTeamMemberPassword = createServerFn({ method: "POST" })
 
     if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
       throw new Error(
-        "Este endereço não tem permissão para definir senhas. Faça isso pelo site do Lovable (servicospatty.lovable.app).",
+        "O servidor não está configurado para definir senhas (falta SUPABASE_SERVICE_ROLE_KEY).",
       );
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
