@@ -17,6 +17,7 @@ import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenti
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
+import { Route as AuthenticatedGestorListasRouteImport } from './routes/_authenticated/_gestor/listas'
 import { Route as AuthenticatedGestorRelatoriosRouteImport } from './routes/_authenticated/_gestor/relatorios'
 import { Route as AuthenticatedLiberacoesIndexRouteImport } from './routes/_authenticated/liberacoes.index'
 import { Route as AuthenticatedLiberacoesLiberacaoIdRouteImport } from './routes/_authenticated/liberacoes.$liberacaoId'
@@ -64,6 +65,12 @@ const AuthenticatedGestorEquipeRoute =
   AuthenticatedGestorEquipeRouteImport.update({
     id: '/equipe',
     path: '/equipe',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
+const AuthenticatedGestorListasRoute =
+  AuthenticatedGestorListasRouteImport.update({
+    id: '/listas',
+    path: '/listas',
     getParentRoute: () => AuthenticatedGestorRouteRoute,
   } as any)
 const AuthenticatedGestorRelatoriosRoute =
@@ -122,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/listas': typeof AuthenticatedGestorListasRoute
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/listas': typeof AuthenticatedGestorListasRoute
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
@@ -157,6 +166,7 @@ export interface FileRoutesById {
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
+  '/_authenticated/_gestor/listas': typeof AuthenticatedGestorListasRoute
   '/_authenticated/_gestor/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/_authenticated/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/_authenticated/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/api/next-steps'
     | '/equipe'
+    | '/listas'
     | '/relatorios'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/api/next-steps'
     | '/equipe'
+    | '/listas'
     | '/relatorios'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
@@ -209,6 +221,7 @@ export interface FileRouteTypes {
     | '/_authenticated/arquivados'
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
+    | '/_authenticated/_gestor/listas'
     | '/_authenticated/_gestor/relatorios'
     | '/_authenticated/liberacoes/$liberacaoId'
     | '/_authenticated/liberacoes/nova'
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGestorEquipeRouteImport
       parentRoute: typeof AuthenticatedGestorRouteRoute
     }
+    '/_authenticated/_gestor/listas': {
+      id: '/_authenticated/_gestor/listas'
+      path: '/listas'
+      fullPath: '/listas'
+      preLoaderRoute: typeof AuthenticatedGestorListasRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
+    }
     '/_authenticated/_gestor/relatorios': {
       id: '/_authenticated/_gestor/relatorios'
       path: '/relatorios'
@@ -346,6 +366,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedGestorRouteRouteChildren {
   AuthenticatedGestorEquipeRoute: typeof AuthenticatedGestorEquipeRoute
+  AuthenticatedGestorListasRoute: typeof AuthenticatedGestorListasRoute
   AuthenticatedGestorRelatoriosRoute: typeof AuthenticatedGestorRelatoriosRoute
   AuthenticatedGestorChecklistsChecklistIdRoute: typeof AuthenticatedGestorChecklistsChecklistIdRoute
   AuthenticatedGestorChecklistsIndexRoute: typeof AuthenticatedGestorChecklistsIndexRoute
@@ -354,6 +375,7 @@ interface AuthenticatedGestorRouteRouteChildren {
 const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildren =
   {
     AuthenticatedGestorEquipeRoute: AuthenticatedGestorEquipeRoute,
+    AuthenticatedGestorListasRoute: AuthenticatedGestorListasRoute,
     AuthenticatedGestorRelatoriosRoute: AuthenticatedGestorRelatoriosRoute,
     AuthenticatedGestorChecklistsChecklistIdRoute:
       AuthenticatedGestorChecklistsChecklistIdRoute,

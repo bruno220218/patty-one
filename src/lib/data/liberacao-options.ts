@@ -397,3 +397,55 @@ export const BISSEMANAS = [
   "50ª",
   "52ª",
 ];
+
+export type OpcaoCampo =
+  "servico" | "insumos" | "acabamento" | "instalacao" | "projetista" | "vendedor";
+
+/** One editable option row (table liberacao_opcoes). */
+export interface LiberacaoOpcao {
+  id: string;
+  modelo: "projeto" | "midia" | "todos";
+  campo: OpcaoCampo;
+  valor: string;
+  position: number;
+}
+
+export interface ListasLiberacao {
+  projeto: LiberacaoOptionLists;
+  midia: LiberacaoOptionLists;
+  projetistas: string[];
+  vendedores: string[];
+}
+
+/** Built-in lists, used until the editable table exists (or if it is empty). */
+export const LISTAS_PADRAO: ListasLiberacao = {
+  projeto: PROJETO_OPTIONS,
+  midia: MIDIA_OPTIONS,
+  projetistas: PROJETISTAS,
+  vendedores: VENDEDORES,
+};
+
+/**
+ * Lists from the editable table, in their saved order. Falls back to the built-in lists
+ * when there are no rows at all (table not created yet or never filled).
+ */
+export function resolverListas(opcoes: LiberacaoOpcao[] | null | undefined): ListasLiberacao {
+  if (!opcoes || opcoes.length === 0) return LISTAS_PADRAO;
+  const pick = (modelo: LiberacaoOpcao["modelo"], campo: OpcaoCampo) =>
+    opcoes
+      .filter((o) => o.modelo === modelo && o.campo === campo)
+      .sort((a, b) => a.position - b.position || a.valor.localeCompare(b.valor, "pt-BR"))
+      .map((o) => o.valor);
+  const lists = (modelo: "projeto" | "midia"): LiberacaoOptionLists => ({
+    servico: pick(modelo, "servico"),
+    insumos: pick(modelo, "insumos"),
+    acabamento: pick(modelo, "acabamento"),
+    instalacao: pick(modelo, "instalacao"),
+  });
+  return {
+    projeto: lists("projeto"),
+    midia: lists("midia"),
+    projetistas: pick("todos", "projetista"),
+    vendedores: pick("todos", "vendedor"),
+  };
+}

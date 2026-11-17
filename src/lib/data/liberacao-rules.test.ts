@@ -13,7 +13,7 @@ import {
   splitMultiplos,
   parseCm,
 } from "./rules";
-import { MIDIA_OPTIONS } from "./liberacao-options";
+import { LISTAS_PADRAO, MIDIA_OPTIONS, resolverListas, type OpcaoCampo } from "./liberacao-options";
 
 describe("liberação rules", () => {
   it("only gestão and comercial edit; PCP, direção and gestão approve", () => {
@@ -113,5 +113,40 @@ describe("fila do PCP", () => {
       l(6, "aguardando", "2026-11-16T11:00:00Z"),
     ]);
     expect(fila.map((x) => x.numero)).toEqual([5, 6, 2]);
+  });
+});
+
+describe("listas editáveis", () => {
+  const o = (
+    modelo: "projeto" | "midia" | "todos",
+    campo: OpcaoCampo,
+    valor: string,
+    position: number,
+  ) => ({
+    id: `${modelo}-${campo}-${valor}`,
+    modelo,
+    campo,
+    valor,
+    position,
+  });
+
+  it("falls back to the built-in lists when the table has nothing", () => {
+    expect(resolverListas(undefined)).toBe(LISTAS_PADRAO);
+    expect(resolverListas([])).toBe(LISTAS_PADRAO);
+  });
+
+  it("uses the saved rows in their order, per model", () => {
+    const l = resolverListas([
+      o("midia", "instalacao", "VIDRO", 2),
+      o("midia", "instalacao", "PAREDE", 1),
+      o("projeto", "servico", "TOTEM", 0),
+      o("todos", "vendedor", "ANA", 0),
+      o("todos", "projetista", "IRAUAN", 0),
+    ]);
+    expect(l.midia.instalacao).toEqual(["PAREDE", "VIDRO"]);
+    expect(l.projeto.servico).toEqual(["TOTEM"]);
+    expect(l.projeto.instalacao).toEqual([]);
+    expect(l.vendedores).toEqual(["ANA"]);
+    expect(l.projetistas).toEqual(["IRAUAN"]);
   });
 });

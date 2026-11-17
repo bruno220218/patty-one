@@ -13,6 +13,7 @@ import { LiberacaoHistorico, LiberacaoStatusPanel } from "@/components/app/liber
 import {
   useCurrentUser,
   useDataAction,
+  useListasLiberacao,
   useLiberacao,
   useLiberacaoEventos,
   useLiberacoes,
@@ -45,6 +46,7 @@ function LiberacaoPage() {
   const canAprovar = canAprovarLiberacoes(me);
   const isGestor = Boolean(me?.isGestor);
   const run = useDataAction();
+  const { listas } = useListasLiberacao();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -127,6 +129,7 @@ function LiberacaoPage() {
       />
 
       <LiberacaoEditor
+        listas={listas}
         key={lib.updatedAt}
         initial={lib}
         readOnly={readOnly}

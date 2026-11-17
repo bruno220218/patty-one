@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { DetailSkeleton } from "@/components/app/card-grid-skeleton";
 import { LiberacaoEditor } from "@/components/app/liberacao-editor";
-import { useCurrentUser, useDataAction } from "@/hooks/use-data";
+import { useCurrentUser, useDataAction, useListasLiberacao } from "@/hooks/use-data";
 import {
   canEditLiberacoes,
   LIBERACAO_MODELO_LABEL,
@@ -30,6 +30,7 @@ function NovaLiberacaoPage() {
   const { modelo } = Route.useSearch();
   const { data: me, isPending } = useCurrentUser();
   const run = useDataAction();
+  const { listas } = useListasLiberacao();
   const navigate = useNavigate();
   const [numero, setNumero] = useState<number | null | undefined>(undefined);
   const [saving, setSaving] = useState(false);
@@ -95,6 +96,7 @@ function NovaLiberacaoPage() {
         description="Preencha como na planilha. Ao salvar, ela entra no fim da fila do PCP para aprovação. Os campos sugerem as opções de sempre, mas aceitam qualquer texto."
       />
       <LiberacaoEditor
+        listas={listas}
         key={modelo}
         initial={initial}
         readOnly={false}

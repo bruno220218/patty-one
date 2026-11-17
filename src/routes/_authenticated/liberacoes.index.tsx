@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronDown, FileDown, FileCheck2, Plus, Search, SearchX } from "lucide-react";
+import { ChevronDown, FileDown, FileCheck2, ListChecks, Plus, Search, SearchX } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -140,7 +140,21 @@ function LiberacoesPage() {
       <PageHeader
         title="Liberações"
         description="Comercial cria → PCP ou Direção aprova (vira projeto) ou reprova (volta para edição e, ao reenviar, entra no fim da fila)."
-        action={canEdit ? <NovaLiberacaoButton /> : undefined}
+        action={
+          canEdit || me?.isGestor ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {me?.isGestor && (
+                <Button variant="outline" asChild className="h-10">
+                  <Link to="/listas">
+                    <ListChecks />
+                    Editar listas
+                  </Link>
+                </Button>
+              )}
+              {canEdit && <NovaLiberacaoButton />}
+            </div>
+          ) : undefined
+        }
       />
 
       {isPending ? (

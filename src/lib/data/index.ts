@@ -11,6 +11,7 @@ export const checklistRepository = cloudChecklistRepository;
 export const projectRepository = cloudProjectRepository;
 export const liberacaoRepository = cloudLiberacaoRepository;
 export const notificationRepository = cloudNotificationRepository;
+export { liberacaoOpcoesRepository } from "./cloud-liberacao-opcoes";
 
 export type {
   ChecklistRepository,
@@ -60,5 +61,10 @@ export {
   PROJETISTAS,
   PROJETO_OPTIONS,
   VENDEDORES,
+  LISTAS_PADRAO,
+  resolverListas,
+  type LiberacaoOpcao,
   type LiberacaoOptionLists,
+  type ListasLiberacao,
+  type OpcaoCampo,
 } from "./liberacao-options";

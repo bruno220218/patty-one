@@ -4,7 +4,9 @@ import { toast } from "sonner";
 import {
   checklistRepository,
   fetchCurrentUser,
+  liberacaoOpcoesRepository,
   liberacaoRepository,
+  resolverListas,
   notificationRepository,
   projectRepository,
   teamRepository,
@@ -34,6 +36,16 @@ export const liberacaoQuery = (id: string) =>
 
 export const useLiberacoes = () => useQuery(liberacoesQuery());
 export const useLiberacao = (id: string) => useQuery(liberacaoQuery(id));
+
+/** Option lists for the liberação form: editable table, or the built-in lists as fallback. */
+export const useListasLiberacao = () => {
+  const query = useQuery({
+    queryKey: ["liberacao-opcoes"],
+    queryFn: () => liberacaoOpcoesRepository.list(),
+    staleTime: 5 * 60_000,
+  });
+  return { ...query, listas: resolverListas(query.data) };
+};
 
 export const useTodosEventosLiberacao = () =>
   useQuery({
