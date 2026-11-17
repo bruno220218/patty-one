@@ -1,8 +1,12 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProjectRepository } from "./repositories";
-import type { Project } from "./types";
+import type { Project, ProjectClientInfo } from "./types";
 import { dbError, unwrap } from "./db-errors";
-import { moveItem, requireText } from "./rules";
+import { moveItem, normalizeClientInfo, requireText } from "./rules";
+
+// Client-info columns are newer than the generated database types.
+const db = supabase as unknown as SupabaseClient;
 
 const NAME_REQUIRED = "O nome do projeto é obrigatório.";
 const TASK_REQUIRED = "O título da tarefa é obrigatório.";
@@ -10,6 +14,7 @@ const BLOCKER_REQUIRED = "Descreva o bloqueio.";
 const LOCKED = "Este projeto tem parâmetros fixos: as tarefas não podem ser alteradas.";
 
 const SELECT = `id, name, description, due_date, source_checklist_id, locked, archived, archived_at, created_at, updated_at,
+  service_type, led_color, paint_colors, adhesive_type, lamination,
   project_tasks(id, title, position, completed_at, completed_by, completed_by_name, created_at,
     completer:profiles!project_tasks_completed_by_fkey(display_name)),
   project_blockers(id, description, suggestion, created_at, resolved_at, created_by_name,
@@ -26,6 +31,11 @@ interface Row {
   archived_at: string | null;
   created_at: string;
   updated_at: string;
+  service_type: string | null;
+  led_color: string | null;
+  paint_colors: string | null;
+  adhesive_type: string | null;
+  lamination: boolean | null;
   project_tasks: {
     id: string;
     title: string;
@@ -61,6 +71,13 @@ function toProject(row: Row): Project {
     dueDate: row.due_date,
     sourceChecklistId: row.source_checklist_id,
     locked: row.locked,
+    clientInfo: {
+      serviceType: row.service_type ?? "",
+      ledColor: row.led_color ?? "",
+      paintColors: row.paint_colors ?? "",
+      adhesiveType: row.adhesive_type ?? "",
+      lamination: row.lamination ?? null,
+    },
     archived: row.archived,
     archivedAt: row.archived_at,
     createdAt: row.created_at,
@@ -99,6 +116,22 @@ async function assertUnlocked(projectId: string): Promise<Project> {
   return project;
 }
 
+function clientInfoColumns(info: ProjectClientInfo) {
+  const n = normalizeClientInfo(info);
+  return {
+    service_type: n.serviceType,
+    led_color: n.ledColor,
+    paint_colors: n.paintColors,
+    adhesive_type: n.adhesiveType,
+    lamination: n.lamination,
+  };
+}
+
+async function saveClientInfo(id: string, info: ProjectClientInfo): Promise<void> {
+  const { error } = await db.from("projects").update(clientInfoColumns(info)).eq("id", id);
+  if (error) throw dbError(error);
+}
+
 function normalizeDueDate(value: string | null): string | null {
   return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
 }
@@ -114,7 +147,11 @@ export const cloudProjectRepository: ProjectRepository = {
     return ((data ?? []) as unknown as Row[]).map(toProject);
   },
   async get(id) {
-    const { data, error } = await supabase.from("projects").select(SELECT).eq("id", id).maybeSingle();
+    const { data, error } = await supabase
+      .from("projects")
+      .select(SELECT)
+      .eq("id", id)
+      .maybeSingle();
     if (error) throw dbError(error);
     return data ? toProject(data as unknown as Row) : null;
   },
@@ -127,22 +164,28 @@ export const cloudProjectRepository: ProjectRepository = {
         _checklist_id: input.checklistId as string,
       }),
     );
+    // create_project only knows the base fields; client info is saved right after.
+    await saveClientInfo(id, input.clientInfo);
     return fetchOne(id);
   },
   async update(id, input) {
-    const { error } = await supabase
+    const { error } = await db
       .from("projects")
       .update({
         name: requireText(input.name, NAME_REQUIRED),
         description: input.description.trim(),
         due_date: normalizeDueDate(input.dueDate),
+        ...clientInfoColumns(input.clientInfo),
       })
       .eq("id", id);
     if (error) throw dbError(error);
     return fetchOne(id);
   },
   async duplicate(id) {
+    const source = await fetchOne(id);
     const newId = unwrap(await supabase.rpc("duplicate_project", { _project_id: id }));
+    // duplicate_project copies the base fields and tasks; client info is copied here.
+    await saveClientInfo(newId, source.clientInfo);
     return fetchOne(newId);
   },
   async setArchived(id, archived) {
@@ -169,7 +212,10 @@ export const cloudProjectRepository: ProjectRepository = {
   async updateTask(projectId, taskId, title) {
     const clean = requireText(title, TASK_REQUIRED);
     await assertUnlocked(projectId);
-    const { error } = await supabase.from("project_tasks").update({ title: clean }).eq("id", taskId);
+    const { error } = await supabase
+      .from("project_tasks")
+      .update({ title: clean })
+      .eq("id", taskId);
     if (error) throw dbError(error);
     return fetchOne(projectId);
   },

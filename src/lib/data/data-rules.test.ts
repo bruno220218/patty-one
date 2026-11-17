@@ -6,10 +6,12 @@ import {
   groupTeamByRole,
   matchingOpenTasks,
   moveItem,
+  normalizeClientInfo,
   projectProgress,
   projectStatus,
   requireText,
 } from "./rules";
+import { formatRelative } from "../format";
 
 const task = (done: boolean) => ({ completedAt: done ? "2026-01-01T10:00:00Z" : null });
 
@@ -54,6 +56,37 @@ describe("required text", () => {
   it("rejects blank names", () => {
     expect(() => requireText("   ", "obrigatório")).toThrow("obrigatório");
     expect(requireText("  Nome ", "x")).toBe("Nome");
+  });
+});
+
+describe("client info", () => {
+  it("trims text fields and keeps lamination as given", () => {
+    expect(
+      normalizeClientInfo({
+        serviceType: "  Fachada ACM ",
+        ledColor: " ",
+        paintColors: "Azul",
+        adhesiveType: "",
+        lamination: false,
+      }),
+    ).toEqual({
+      serviceType: "Fachada ACM",
+      ledColor: "",
+      paintColors: "Azul",
+      adhesiveType: "",
+      lamination: false,
+    });
+  });
+});
+
+describe("formatRelative", () => {
+  const now = new Date("2026-11-16T12:00:00Z").getTime();
+  it("says 'agora' for the last seconds", () => {
+    expect(formatRelative("2026-11-16T11:59:40Z", now)).toBe("agora");
+  });
+  it("uses minutes and hours", () => {
+    expect(formatRelative("2026-11-16T11:55:00Z", now)).toBe("há 5 minutos");
+    expect(formatRelative("2026-11-16T09:00:00Z", now)).toBe("há 3 horas");
   });
 });
 

@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/app/status-badge";
 import { EmptyState } from "@/components/app/empty-state";
 import { ProjectProgressBar } from "@/components/app/project-progress";
 import { BlockerPanel } from "@/components/app/blocker-panel";
+import { ClientInfoCard } from "@/components/app/client-info-card";
 import { useCurrentUser, useDataAction, useProject } from "@/hooks/use-data";
 import { projectProgress, projectRepository, projectStatus } from "@/lib/data";
 import { formatDate, formatDateOnly } from "@/lib/format";
@@ -102,6 +103,8 @@ function ProjectDetailPage() {
           <span>{project.dueDate ? `Prazo ${formatDateOnly(project.dueDate)}` : "Sem prazo"}</span>
         </div>
       </section>
+
+      <ClientInfoCard info={project.clientInfo} onEdit={() => setEditOpen(true)} />
 
       <div className="mt-8 mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>

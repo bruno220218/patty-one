@@ -19,10 +19,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Checklist, NewProjectInput, Project, ProjectInput } from "@/lib/data";
+import {
+  EMPTY_CLIENT_INFO,
+  type Checklist,
+  type NewProjectInput,
+  type Project,
+  type ProjectClientInfo,
+  type ProjectInput,
+} from "@/lib/data";
 import { pluralTasks } from "@/lib/format";
 
 const EMPTY = "__empty__";
+
+const LAMINATION_UNSET = "unset";
+const laminationToValue = (v: boolean | null) => (v === null ? LAMINATION_UNSET : v ? "yes" : "no");
+const valueToLamination = (v: string): boolean | null =>
+  v === "yes" ? true : v === "no" ? false : null;
+
+const TEXT_FIELDS: { key: Exclude<keyof ProjectClientInfo, "lamination">; label: string }[] = [
+  { key: "serviceType", label: "Tipo de serviço" },
+  { key: "ledColor", label: "Cor do LED" },
+  { key: "paintColors", label: "Cores para pintura" },
+  { key: "adhesiveType", label: "Tipo de adesivação" },
+];
 
 type Props = {
   open: boolean;
@@ -47,6 +66,7 @@ export function ProjectFormDialog(props: Props) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [clientInfo, setClientInfo] = useState<ProjectClientInfo>(EMPTY_CLIENT_INFO);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -57,6 +77,7 @@ export function ProjectFormDialog(props: Props) {
       setName(props.project.name);
       setDescription(props.project.description);
       setDueDate(props.project.dueDate ?? "");
+      setClientInfo(props.project.clientInfo);
     } else {
       const initial =
         props.defaultChecklistId !== undefined
@@ -66,6 +87,7 @@ export function ProjectFormDialog(props: Props) {
       setName("");
       setDescription("");
       setDueDate("");
+      setClientInfo(EMPTY_CLIENT_INFO);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -80,7 +102,7 @@ export function ProjectFormDialog(props: Props) {
       return;
     }
     setSaving(true);
-    const base = { name, description, dueDate: dueDate || null };
+    const base = { name, description, dueDate: dueDate || null, clientInfo };
     const result =
       props.mode === "create"
         ? await props.onSubmit({ ...base, checklistId: source === EMPTY ? null : source })
@@ -91,14 +113,14 @@ export function ProjectFormDialog(props: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-xl sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-xl sm:max-w-lg">
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <DialogHeader>
             <DialogTitle>{props.mode === "create" ? "Novo projeto" : "Editar projeto"}</DialogTitle>
             <DialogDescription>
               {props.mode === "create"
                 ? "As tarefas do checklist são copiadas para o projeto, todas desmarcadas."
-                : "Altere o nome, a descrição ou o prazo do projeto."}
+                : "Altere os dados do projeto e as informações do cliente."}
             </DialogDescription>
           </DialogHeader>
 
@@ -167,6 +189,43 @@ export function ProjectFormDialog(props: Props) {
               className="h-10"
             />
           </div>
+
+          <fieldset className="space-y-4 rounded-lg border p-4">
+            <legend className="px-1 text-sm font-semibold">Informações do cliente</legend>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {TEXT_FIELDS.map((field) => (
+                <div key={field.key} className="space-y-2">
+                  <Label htmlFor={`project-${field.key}`}>{field.label}</Label>
+                  <Input
+                    id={`project-${field.key}`}
+                    value={clientInfo[field.key]}
+                    onChange={(e) =>
+                      setClientInfo((prev) => ({ ...prev, [field.key]: e.target.value }))
+                    }
+                    className="h-10"
+                  />
+                </div>
+              ))}
+              <div className="space-y-2">
+                <Label htmlFor="project-lamination">Haverá laminação?</Label>
+                <Select
+                  value={laminationToValue(clientInfo.lamination)}
+                  onValueChange={(v) =>
+                    setClientInfo((prev) => ({ ...prev, lamination: valueToLamination(v) }))
+                  }
+                >
+                  <SelectTrigger id="project-lamination" className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={LAMINATION_UNSET}>Não informado</SelectItem>
+                    <SelectItem value="yes">Sim</SelectItem>
+                    <SelectItem value="no">Não</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </fieldset>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

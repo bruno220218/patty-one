@@ -61,6 +61,7 @@ export function RenameMemberDialog({
             <DialogTitle>Renomear</DialogTitle>
             <DialogDescription>
               O novo nome aparece na equipe e nos projetos, inclusive em tarefas já concluídas.
+              Notificações já enviadas mantêm o nome antigo.
             </DialogDescription>
           </DialogHeader>
 

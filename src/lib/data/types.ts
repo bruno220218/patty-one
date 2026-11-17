@@ -58,6 +58,16 @@ export interface ProjectBlocker {
   resolvedAt: string | null;
 }
 
+/** Client/job details of a project (comunicação visual). Empty strings mean "not filled". */
+export interface ProjectClientInfo {
+  serviceType: string;
+  ledColor: string;
+  paintColors: string;
+  adhesiveType: string;
+  /** Haverá laminação? null = não informado. */
+  lamination: boolean | null;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -68,6 +78,7 @@ export interface Project {
   sourceChecklistId: string | null;
   /** Inherited from the checklist's "Parâmetros fixos" at creation time. */
   locked: boolean;
+  clientInfo: ProjectClientInfo;
   archived: boolean;
   archivedAt: string | null;
   tasks: ProjectTask[];
@@ -86,6 +97,7 @@ export interface ProjectInput {
   name: string;
   description: string;
   dueDate: string | null;
+  clientInfo: ProjectClientInfo;
 }
 
 export interface NewProjectInput extends ProjectInput {
@@ -171,4 +183,16 @@ export interface LiberacaoEvento {
   detalhe: string;
   autorNome: string;
   createdAt: string;
+}
+
+/** In-app notification (today: a team member completed a project task). */
+export interface AppNotification {
+  id: string;
+  /** Null when the project was deleted; the snapshot names are kept. */
+  projectId: string | null;
+  actorName: string;
+  projectName: string;
+  taskTitle: string;
+  createdAt: string;
+  readAt: string | null;
 }

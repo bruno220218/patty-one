@@ -31,7 +31,8 @@ export const removeTeamMember = createServerFn({ method: "POST" })
 /**
  * Renames a team member (their display name). Only gestores may rename other people;
  * the profiles policy only lets each person update their own row, so this runs with
- * the admin client after the gestor check. Tasks/blockers show the live name.
+ * the admin client after the gestor check. Tasks/blockers show the live
+ * name; already-sent notifications keep their snapshot.
  */
 export const renameTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
