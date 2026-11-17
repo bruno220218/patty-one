@@ -46,6 +46,50 @@ function NotificationText({ n }: { n: AppNotification }) {
           já está em produção
         </span>
       );
+    case "briefing_novo":
+    case "briefing_andamento":
+    case "briefing_concluido": {
+      const verbo = {
+        briefing_novo: "enviou um novo",
+        briefing_andamento: "começou o",
+        briefing_concluido: "concluiu o",
+      }[n.tipo];
+      return (
+        <span className="block break-words">
+          {who} {verbo}{" "}
+          <span className="font-medium">
+            briefing nº {n.refNumero}
+            {n.projectName && ` · ${n.projectName}`}
+          </span>
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
+        </span>
+      );
+    }
+    case "visita_nova":
+    case "visita_agendada":
+    case "visita_realizada":
+    case "visita_cancelada": {
+      const verbo = {
+        visita_nova: "pediu a",
+        visita_agendada: "agendou a",
+        visita_realizada: "fez a",
+        visita_cancelada: "cancelou a",
+      }[n.tipo];
+      return (
+        <span className="block break-words">
+          {who} {verbo}{" "}
+          <span className="font-medium">
+            visita técnica nº {n.refNumero}
+            {n.projectName && ` · ${n.projectName}`}
+          </span>
+          {n.detalhe && (
+            <span className="mt-0.5 block text-muted-foreground">
+              {n.tipo === "visita_cancelada" ? `Motivo: ${n.detalhe}` : n.detalhe}
+            </span>
+          )}
+        </span>
+      );
+    }
     default:
       return (
         <span className="block break-words">
@@ -95,7 +139,9 @@ export function NotificationBell({
   const openNotification = async (n: AppNotification) => {
     setOpen(false);
     if (n.readAt === null) void run(() => notificationRepository.markRead(n.id));
-    if (n.tipo !== "tarefa_concluida" && n.liberacaoId) {
+    if (n.link.startsWith("/")) {
+      await navigate({ to: n.link });
+    } else if (n.tipo !== "tarefa_concluida" && n.liberacaoId) {
       // Approved: go to the production project when there is one.
       if (n.tipo === "liberacao_aprovada" && n.projectId) {
         await navigate({ to: "/projetos/$projectId", params: { projectId: n.projectId } });

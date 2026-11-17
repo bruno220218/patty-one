@@ -1,11 +1,12 @@
-# E-mail das liberações aprovadas (Google Apps Script)
+# Apps Script: e-mail das liberações + anexos no Google Drive
 
 O app manda o PDF da liberação para um Web App do Apps Script, que envia pelo Gmail
-da conta @pattynet.com.br. Grátis (limite do Google Workspace: ~1.500 destinatários/dia).
+da conta @pattynet.com.br. O mesmo script recebe os anexos enviados pelo app e salva
+no Drive dessa conta (pasta "Patty One"), compartilhados com quem é da empresa. Grátis (limite do Google Workspace: ~1.500 destinatários/dia).
 
 1. Logado na conta da empresa, abra https://script.google.com → Novo projeto.
 2. Cole o conteúdo de `enviar-email.gs` e troque `SEGREDO` por um texto longo aleatório.
-3. Rode a função `testar` uma vez e autorize o acesso ao Gmail.
+3. Rode a função `testar` uma vez e autorize o acesso ao Gmail e ao Drive.
 4. Implantar → Nova implantação → tipo "App da Web": Executar como **Eu**,
    Quem pode acessar **Qualquer pessoa**. Copie a URL (termina em `/exec`).
 5. Na Cloudflare (worker patty-one → Configurações → Variáveis e segredos), crie os

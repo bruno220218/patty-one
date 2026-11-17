@@ -275,15 +275,45 @@ export function canAprovarLiberacoes(user: WithFuncoes) {
   return hasFuncao(user, "gestor", "pcp", "direcao");
 }
 
+/** Comercial and gestão create briefings (also enforced in the database). */
+export function canCriarBriefing(user: WithFuncoes) {
+  return hasFuncao(user, "gestor", "comercial");
+}
+
+/** Criação, projetos especiais and gestão take briefings and move them forward. */
+export function canAtenderBriefing(user: WithFuncoes) {
+  return hasFuncao(user, "gestor", "criacao", "projetos_especiais");
+}
+
+/** Comercial and gestão request technical visits. */
+export function canSolicitarVisita(user: WithFuncoes) {
+  return hasFuncao(user, "gestor", "comercial");
+}
+
+/** PCP and gestão schedule visits (date + who goes). */
+export function canAgendarVisita(user: WithFuncoes) {
+  return hasFuncao(user, "gestor", "pcp");
+}
+
+/** Montagem, PCP and gestão fill in and conclude visits. */
+export function canRealizarVisita(user: WithFuncoes) {
+  return hasFuncao(user, "gestor", "pcp", "montagem");
+}
+
 /** Team functions in display order, with labels and what each one does. */
 export const FUNCOES = [
   { value: "gestor", label: "Gestão", descricao: "Acesso total" },
-  { value: "comercial", label: "Comercial", descricao: "Cria e edita liberações" },
-  { value: "pcp", label: "PCP", descricao: "Aprova ou reprova liberações" },
+  { value: "comercial", label: "Comercial", descricao: "Cria liberações, briefings e visitas" },
+  { value: "pcp", label: "PCP", descricao: "Aprova liberações e agenda visitas" },
   { value: "direcao", label: "Direção", descricao: "Aprova ou reprova liberações" },
-  { value: "criacao", label: "Criação", descricao: "Executa projetos" },
+  { value: "criacao", label: "Criação", descricao: "Executa projetos e atende briefings" },
+  {
+    value: "projetos_especiais",
+    label: "Projetos especiais",
+    descricao: "Atende briefings de projetos especiais",
+  },
   { value: "producao", label: "Produção", descricao: "Executa projetos" },
-  { value: "montagem", label: "Montagem", descricao: "Executa projetos" },
+  { value: "montagem", label: "Montagem", descricao: "Executa projetos e faz visitas técnicas" },
 ] as const;
 
 export const LIBERACAO_STATUS_LABEL: Record<"aguardando" | "reprovada" | "aprovada", string> = {

@@ -20,6 +20,7 @@ const FUNCAO_VALUES: Funcao[] = [
   "pcp",
   "direcao",
   "criacao",
+  "projetos_especiais",
   "producao",
   "montagem",
 ];

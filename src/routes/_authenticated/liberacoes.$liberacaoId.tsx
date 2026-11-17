@@ -10,6 +10,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { LiberacaoEditor } from "@/components/app/liberacao-editor";
 import { AprovarDialog, ReprovarDialog } from "@/components/app/liberacao-decisao";
 import { LiberacaoHistorico, LiberacaoStatusPanel } from "@/components/app/liberacao-status";
+import { AnexosPanel } from "@/components/app/anexos-panel";
 import {
   useCurrentUser,
   useDataAction,
@@ -169,6 +170,13 @@ function LiberacaoPage() {
           );
           setSaving(false);
         }}
+      />
+
+      <AnexosPanel
+        entidade="liberacao"
+        entidadeId={lib.id}
+        className="mt-6"
+        aviso="Escopo do serviço, fotos do local, layouts, áudios… Os arquivos vão para o Google Drive da empresa."
       />
 
       <LiberacaoHistorico eventos={eventos} />

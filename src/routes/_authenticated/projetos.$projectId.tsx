@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Archive, ArchiveRestore, ArrowLeft, Copy, Lock, Pencil, SearchX, Trash2 } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  ArrowLeft,
+  Copy,
+  Lock,
+  Pencil,
+  SearchX,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaskList } from "@/components/app/task-list";
 import { ProjectFormDialog } from "@/components/app/project-form-dialog";
@@ -129,7 +138,9 @@ function ProjectDetailPage() {
         locked={project.locked}
         canUncheck={Boolean(me?.isGestor)}
         emptyText={
-          project.locked ? "Este projeto não tem tarefas." : "Nenhuma tarefa ainda. Adicione abaixo."
+          project.locked
+            ? "Este projeto não tem tarefas."
+            : "Nenhuma tarefa ainda. Adicione abaixo."
         }
         onToggle={(taskId, isDone) => run(() => projectRepository.toggleTask(id, taskId, isDone))}
         onAdd={(title) => run(() => projectRepository.addTask(id, title))}
@@ -156,7 +167,9 @@ function ProjectDetailPage() {
         {project.archived ? (
           <Button
             variant="outline"
-            onClick={() => run(() => projectRepository.setArchived(id, false), "Projeto restaurado.")}
+            onClick={() =>
+              run(() => projectRepository.setArchived(id, false), "Projeto restaurado.")
+            }
           >
             <ArchiveRestore />
             Restaurar

@@ -7,8 +7,11 @@ import {
   FileCheck2,
   FolderOpen,
   Hourglass,
+  Lightbulb,
   ListChecks,
   LogOut,
+  MapPin,
+  MoreHorizontal,
   Trash2,
   Users,
 } from "lucide-react";
@@ -18,6 +21,12 @@ import { cn } from "@/lib/utils";
 import { FUNCOES } from "@/lib/data";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EmptyState } from "./empty-state";
 import { ThemeToggle } from "./theme-toggle";
 import { NotificationBell } from "./notification-bell";
@@ -33,22 +42,26 @@ type NavItem = {
     | "/arquivados"
     | "/equipe"
     | "/relatorios"
-    | "/lixeira";
+    | "/lixeira"
+    | "/briefings"
+    | "/visitas";
   label: string;
   icon: typeof ListChecks;
   gestorOnly?: boolean;
-  /** Hidden from the mobile bottom bar (not enough room); reachable from Arquivados. */
-  desktopOnly?: boolean;
+  /** Shown directly in the mobile bottom bar; the others go under "Mais". */
+  primary?: boolean;
 };
 
 const NAV: NavItem[] = [
   { to: "/checklists", label: "Checklists", icon: ListChecks, gestorOnly: true },
-  { to: "/projetos", label: "Projetos", icon: FolderOpen },
-  { to: "/liberacoes", label: "Liberações", icon: FileCheck2 },
+  { to: "/projetos", label: "Projetos", icon: FolderOpen, primary: true },
+  { to: "/liberacoes", label: "Liberações", icon: FileCheck2, primary: true },
+  { to: "/briefings", label: "Briefings", icon: Lightbulb, primary: true },
+  { to: "/visitas", label: "Visitas", icon: MapPin, primary: true },
   { to: "/arquivados", label: "Arquivados", icon: Archive },
   { to: "/equipe", label: "Equipe", icon: Users, gestorOnly: true },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3, gestorOnly: true },
-  { to: "/lixeira", label: "Lixeira", icon: Trash2, desktopOnly: true },
+  { to: "/lixeira", label: "Lixeira", icon: Trash2 },
 ];
 
 const BARE_PATHS = ["/auth", "/reset-password"];
@@ -93,7 +106,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const pending = Boolean(me && !me.isMember);
   const items = pending ? [] : NAV.filter((i) => !i.gestorOnly || me?.isGestor);
-  const mobileItems = items.filter((i) => !i.desktopOnly);
+  const mobileItems = items.filter((i) => i.primary);
+  const moreItems = items.filter((i) => !i.primary);
   const isActive = (to: string) => pathname === to || pathname.startsWith(`${to}/`);
 
   return (
@@ -207,7 +221,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <div
             className="grid h-16"
-            style={{ gridTemplateColumns: `repeat(${mobileItems.length}, minmax(0, 1fr))` }}
+            style={{
+              gridTemplateColumns: `repeat(${mobileItems.length + (moreItems.length > 0 ? 1 : 0)}, minmax(0, 1fr))`,
+            }}
           >
             {mobileItems.map((item) => {
               const active = isActive(item.to);
@@ -233,6 +249,38 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            {moreItems.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
+                    moreItems.some((i) => isActive(i.to))
+                      ? "text-sidebar-accent-foreground"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
+                      moreItems.some((i) => isActive(i.to)) && "bg-sidebar-accent",
+                    )}
+                  >
+                    <MoreHorizontal className="h-[18px] w-[18px]" />
+                  </span>
+                  Mais
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" className="min-w-44">
+                  {moreItems.map((item) => (
+                    <DropdownMenuItem key={item.to} asChild>
+                      <Link to={item.to} className="gap-2">
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </nav>
       </div>

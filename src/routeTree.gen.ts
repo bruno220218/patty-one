@@ -20,11 +20,17 @@ import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorListasRouteImport } from './routes/_authenticated/_gestor/listas'
 import { Route as AuthenticatedGestorRelatoriosRouteImport } from './routes/_authenticated/_gestor/relatorios'
+import { Route as AuthenticatedBriefingsIndexRouteImport } from './routes/_authenticated/briefings.index'
+import { Route as AuthenticatedBriefingsBriefingIdRouteImport } from './routes/_authenticated/briefings.$briefingId'
+import { Route as AuthenticatedBriefingsNovoRouteImport } from './routes/_authenticated/briefings.novo'
 import { Route as AuthenticatedLiberacoesIndexRouteImport } from './routes/_authenticated/liberacoes.index'
 import { Route as AuthenticatedLiberacoesLiberacaoIdRouteImport } from './routes/_authenticated/liberacoes.$liberacaoId'
 import { Route as AuthenticatedLiberacoesNovaRouteImport } from './routes/_authenticated/liberacoes.nova'
 import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
 import { Route as AuthenticatedProjetosProjectIdRouteImport } from './routes/_authenticated/projetos.$projectId'
+import { Route as AuthenticatedVisitasIndexRouteImport } from './routes/_authenticated/visitas.index'
+import { Route as AuthenticatedVisitasVisitaIdRouteImport } from './routes/_authenticated/visitas.$visitaId'
+import { Route as AuthenticatedVisitasNovaRouteImport } from './routes/_authenticated/visitas.nova'
 import { Route as AuthenticatedGestorChecklistsIndexRouteImport } from './routes/_authenticated/_gestor/checklists.index'
 import { Route as AuthenticatedGestorChecklistsChecklistIdRouteImport } from './routes/_authenticated/_gestor/checklists.$checklistId'
 
@@ -85,6 +91,24 @@ const AuthenticatedGestorRelatoriosRoute =
     path: '/relatorios',
     getParentRoute: () => AuthenticatedGestorRouteRoute,
   } as any)
+const AuthenticatedBriefingsIndexRoute =
+  AuthenticatedBriefingsIndexRouteImport.update({
+    id: '/briefings/',
+    path: '/briefings/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedBriefingsBriefingIdRoute =
+  AuthenticatedBriefingsBriefingIdRouteImport.update({
+    id: '/briefings/$briefingId',
+    path: '/briefings/$briefingId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedBriefingsNovoRoute =
+  AuthenticatedBriefingsNovoRouteImport.update({
+    id: '/briefings/novo',
+    path: '/briefings/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLiberacoesIndexRoute =
   AuthenticatedLiberacoesIndexRouteImport.update({
     id: '/liberacoes/',
@@ -115,6 +139,24 @@ const AuthenticatedProjetosProjectIdRoute =
     path: '/projetos/$projectId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedVisitasIndexRoute =
+  AuthenticatedVisitasIndexRouteImport.update({
+    id: '/visitas/',
+    path: '/visitas/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedVisitasVisitaIdRoute =
+  AuthenticatedVisitasVisitaIdRouteImport.update({
+    id: '/visitas/$visitaId',
+    path: '/visitas/$visitaId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedVisitasNovaRoute =
+  AuthenticatedVisitasNovaRouteImport.update({
+    id: '/visitas/nova',
+    path: '/visitas/nova',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedGestorChecklistsIndexRoute =
   AuthenticatedGestorChecklistsIndexRouteImport.update({
     id: '/checklists/',
@@ -138,11 +180,17 @@ export interface FileRoutesByFullPath {
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/listas': typeof AuthenticatedGestorListasRoute
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
+  '/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
+  '/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
+  '/visitas/nova': typeof AuthenticatedVisitasNovaRoute
+  '/briefings/': typeof AuthenticatedBriefingsIndexRoute
   '/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
+  '/visitas/': typeof AuthenticatedVisitasIndexRoute
   '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
   '/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
 }
@@ -156,11 +204,17 @@ export interface FileRoutesByTo {
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/listas': typeof AuthenticatedGestorListasRoute
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
+  '/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
+  '/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
+  '/visitas/nova': typeof AuthenticatedVisitasNovaRoute
+  '/briefings': typeof AuthenticatedBriefingsIndexRoute
   '/liberacoes': typeof AuthenticatedLiberacoesIndexRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
+  '/visitas': typeof AuthenticatedVisitasIndexRoute
   '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
   '/checklists': typeof AuthenticatedGestorChecklistsIndexRoute
 }
@@ -177,11 +231,17 @@ export interface FileRoutesById {
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/listas': typeof AuthenticatedGestorListasRoute
   '/_authenticated/_gestor/relatorios': typeof AuthenticatedGestorRelatoriosRoute
+  '/_authenticated/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
+  '/_authenticated/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
   '/_authenticated/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/_authenticated/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/_authenticated/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
+  '/_authenticated/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
+  '/_authenticated/visitas/nova': typeof AuthenticatedVisitasNovaRoute
+  '/_authenticated/briefings/': typeof AuthenticatedBriefingsIndexRoute
   '/_authenticated/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
+  '/_authenticated/visitas/': typeof AuthenticatedVisitasIndexRoute
   '/_authenticated/_gestor/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
   '/_authenticated/_gestor/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
 }
@@ -197,11 +257,17 @@ export interface FileRouteTypes {
     | '/equipe'
     | '/listas'
     | '/relatorios'
+    | '/briefings/$briefingId'
+    | '/briefings/novo'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
     | '/projetos/$projectId'
+    | '/visitas/$visitaId'
+    | '/visitas/nova'
+    | '/briefings/'
     | '/liberacoes/'
     | '/projetos/'
+    | '/visitas/'
     | '/checklists/$checklistId'
     | '/checklists/'
   fileRoutesByTo: FileRoutesByTo
@@ -215,11 +281,17 @@ export interface FileRouteTypes {
     | '/equipe'
     | '/listas'
     | '/relatorios'
+    | '/briefings/$briefingId'
+    | '/briefings/novo'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
     | '/projetos/$projectId'
+    | '/visitas/$visitaId'
+    | '/visitas/nova'
+    | '/briefings'
     | '/liberacoes'
     | '/projetos'
+    | '/visitas'
     | '/checklists/$checklistId'
     | '/checklists'
   id:
@@ -235,11 +307,17 @@ export interface FileRouteTypes {
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/listas'
     | '/_authenticated/_gestor/relatorios'
+    | '/_authenticated/briefings/$briefingId'
+    | '/_authenticated/briefings/novo'
     | '/_authenticated/liberacoes/$liberacaoId'
     | '/_authenticated/liberacoes/nova'
     | '/_authenticated/projetos/$projectId'
+    | '/_authenticated/visitas/$visitaId'
+    | '/_authenticated/visitas/nova'
+    | '/_authenticated/briefings/'
     | '/_authenticated/liberacoes/'
     | '/_authenticated/projetos/'
+    | '/_authenticated/visitas/'
     | '/_authenticated/_gestor/checklists/$checklistId'
     | '/_authenticated/_gestor/checklists/'
   fileRoutesById: FileRoutesById
@@ -331,6 +409,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGestorRelatoriosRouteImport
       parentRoute: typeof AuthenticatedGestorRouteRoute
     }
+    '/_authenticated/briefings/': {
+      id: '/_authenticated/briefings/'
+      path: '/briefings'
+      fullPath: '/briefings/'
+      preLoaderRoute: typeof AuthenticatedBriefingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/briefings/$briefingId': {
+      id: '/_authenticated/briefings/$briefingId'
+      path: '/briefings/$briefingId'
+      fullPath: '/briefings/$briefingId'
+      preLoaderRoute: typeof AuthenticatedBriefingsBriefingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/briefings/novo': {
+      id: '/_authenticated/briefings/novo'
+      path: '/briefings/novo'
+      fullPath: '/briefings/novo'
+      preLoaderRoute: typeof AuthenticatedBriefingsNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/liberacoes/': {
       id: '/_authenticated/liberacoes/'
       path: '/liberacoes'
@@ -364,6 +463,27 @@ declare module '@tanstack/react-router' {
       path: '/projetos/$projectId'
       fullPath: '/projetos/$projectId'
       preLoaderRoute: typeof AuthenticatedProjetosProjectIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/visitas/': {
+      id: '/_authenticated/visitas/'
+      path: '/visitas'
+      fullPath: '/visitas/'
+      preLoaderRoute: typeof AuthenticatedVisitasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/visitas/$visitaId': {
+      id: '/_authenticated/visitas/$visitaId'
+      path: '/visitas/$visitaId'
+      fullPath: '/visitas/$visitaId'
+      preLoaderRoute: typeof AuthenticatedVisitasVisitaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/visitas/nova': {
+      id: '/_authenticated/visitas/nova'
+      path: '/visitas/nova'
+      fullPath: '/visitas/nova'
+      preLoaderRoute: typeof AuthenticatedVisitasNovaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/_gestor/checklists/': {
@@ -411,23 +531,35 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGestorRouteRoute: typeof AuthenticatedGestorRouteRouteWithChildren
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
   AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
+  AuthenticatedBriefingsBriefingIdRoute: typeof AuthenticatedBriefingsBriefingIdRoute
+  AuthenticatedBriefingsNovoRoute: typeof AuthenticatedBriefingsNovoRoute
   AuthenticatedLiberacoesLiberacaoIdRoute: typeof AuthenticatedLiberacoesLiberacaoIdRoute
   AuthenticatedLiberacoesNovaRoute: typeof AuthenticatedLiberacoesNovaRoute
   AuthenticatedProjetosProjectIdRoute: typeof AuthenticatedProjetosProjectIdRoute
+  AuthenticatedVisitasVisitaIdRoute: typeof AuthenticatedVisitasVisitaIdRoute
+  AuthenticatedVisitasNovaRoute: typeof AuthenticatedVisitasNovaRoute
+  AuthenticatedBriefingsIndexRoute: typeof AuthenticatedBriefingsIndexRoute
   AuthenticatedLiberacoesIndexRoute: typeof AuthenticatedLiberacoesIndexRoute
   AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
+  AuthenticatedVisitasIndexRoute: typeof AuthenticatedVisitasIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGestorRouteRoute: AuthenticatedGestorRouteRouteWithChildren,
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
   AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
+  AuthenticatedBriefingsBriefingIdRoute: AuthenticatedBriefingsBriefingIdRoute,
+  AuthenticatedBriefingsNovoRoute: AuthenticatedBriefingsNovoRoute,
   AuthenticatedLiberacoesLiberacaoIdRoute:
     AuthenticatedLiberacoesLiberacaoIdRoute,
   AuthenticatedLiberacoesNovaRoute: AuthenticatedLiberacoesNovaRoute,
   AuthenticatedProjetosProjectIdRoute: AuthenticatedProjetosProjectIdRoute,
+  AuthenticatedVisitasVisitaIdRoute: AuthenticatedVisitasVisitaIdRoute,
+  AuthenticatedVisitasNovaRoute: AuthenticatedVisitasNovaRoute,
+  AuthenticatedBriefingsIndexRoute: AuthenticatedBriefingsIndexRoute,
   AuthenticatedLiberacoesIndexRoute: AuthenticatedLiberacoesIndexRoute,
   AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,
+  AuthenticatedVisitasIndexRoute: AuthenticatedVisitasIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

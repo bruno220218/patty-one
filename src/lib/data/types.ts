@@ -15,7 +15,14 @@ export interface CurrentUser {
 
 /** Team functions. "gestor" = Gestão (everything). */
 export type Funcao =
-  "gestor" | "comercial" | "pcp" | "direcao" | "criacao" | "producao" | "montagem";
+  | "gestor"
+  | "comercial"
+  | "pcp"
+  | "direcao"
+  | "criacao"
+  | "projetos_especiais"
+  | "producao"
+  | "montagem";
 
 export interface ChecklistTask {
   id: string;
@@ -191,7 +198,14 @@ export type NotificationTipo =
   | "liberacao_nova"
   | "liberacao_reenviada"
   | "liberacao_reprovada"
-  | "liberacao_aprovada";
+  | "liberacao_aprovada"
+  | "briefing_novo"
+  | "briefing_andamento"
+  | "briefing_concluido"
+  | "visita_nova"
+  | "visita_agendada"
+  | "visita_realizada"
+  | "visita_cancelada";
 
 /** In-app notification: a task was completed, or a liberação moved in the approval flow. */
 export interface AppNotification {
@@ -205,8 +219,12 @@ export interface AppNotification {
   taskTitle: string;
   liberacaoId: string | null;
   liberacaoNumero: number | null;
-  /** Rejection reason, for "liberacao_reprovada". */
+  /** Rejection reason, for "liberacao_reprovada"; extra line for briefings/visitas. */
   detalhe: string;
+  /** App path to open (briefings and visitas). */
+  link: string;
+  /** Briefing/visita number. */
+  refNumero: number | null;
   createdAt: string;
   readAt: string | null;
 }

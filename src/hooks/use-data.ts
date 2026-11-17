@@ -6,6 +6,11 @@ import {
   fetchCurrentUser,
   liberacaoOpcoesRepository,
   lixeiraRepository,
+  anexosRepository,
+  briefingRepository,
+  visitaRepository,
+  pessoasDaFuncao,
+  type AnexoEntidade,
   emailDestinatariosRepository,
   liberacaoRepository,
   resolverListas,
@@ -68,6 +73,31 @@ export const useEmailDestinatarios = (enabled = true) =>
   useQuery({
     queryKey: ["email-destinatarios"],
     queryFn: () => emailDestinatariosRepository.list(),
+    enabled,
+  });
+
+export const useAnexos = (entidade: AnexoEntidade, entidadeId: string) =>
+  useQuery({
+    queryKey: ["anexos", entidade, entidadeId],
+    queryFn: () => anexosRepository.list(entidade, entidadeId),
+  });
+
+export const useBriefings = () =>
+  useQuery({ queryKey: ["briefings"], queryFn: () => briefingRepository.list() });
+export const useBriefing = (id: string) =>
+  useQuery({ queryKey: ["briefings", id], queryFn: () => briefingRepository.get(id) });
+
+export const useVisitas = () =>
+  useQuery({ queryKey: ["visitas"], queryFn: () => visitaRepository.list() });
+export const useVisita = (id: string) =>
+  useQuery({ queryKey: ["visitas", id], queryFn: () => visitaRepository.get(id) });
+
+/** Names of the people with any of these functions (for "responsável" pickers). */
+export const usePessoasDaFuncao = (funcoes: string[], enabled = true) =>
+  useQuery({
+    queryKey: ["pessoas-da-funcao", ...funcoes],
+    queryFn: () => pessoasDaFuncao(funcoes),
+    staleTime: 5 * 60_000,
     enabled,
   });
 

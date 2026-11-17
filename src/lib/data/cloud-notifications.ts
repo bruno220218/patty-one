@@ -8,8 +8,10 @@ import { dbError } from "./db-errors";
 // The notifications table is newer than the generated database types.
 const db = supabase as unknown as SupabaseClient;
 
-const SELECT =
+const SELECT_BASE =
   "id, tipo, project_id, actor_name, project_name, task_title, liberacao_id, liberacao_numero, detalhe, created_at, read_at";
+// link/ref_numero come with the briefings/visitas migration.
+const SELECT = `${SELECT_BASE}, link, ref_numero`;
 
 interface Row {
   id: string;
@@ -18,6 +20,8 @@ interface Row {
   liberacao_id: string | null;
   liberacao_numero: number | null;
   detalhe: string | null;
+  link?: string | null;
+  ref_numero?: number | null;
   actor_name: string;
   project_name: string;
   task_title: string;
@@ -33,6 +37,8 @@ function toNotification(row: Row): AppNotification {
     liberacaoId: row.liberacao_id,
     liberacaoNumero: row.liberacao_numero,
     detalhe: row.detalhe ?? "",
+    link: row.link ?? "",
+    refNumero: row.ref_numero ?? null,
     actorName: row.actor_name || "Alguém da equipe",
     projectName: row.project_name,
     taskTitle: row.task_title,
@@ -43,13 +49,12 @@ function toNotification(row: Row): AppNotification {
 
 export const cloudNotificationRepository: NotificationRepository = {
   async list(limit = 50) {
-    const { data, error } = await db
-      .from("notifications")
-      .select(SELECT)
-      .order("created_at", { ascending: false })
-      .limit(limit);
+    const query = (cols: string) =>
+      db.from("notifications").select(cols).order("created_at", { ascending: false }).limit(limit);
+    let { data, error } = await query(SELECT);
+    if (error?.code === "42703") ({ data, error } = await query(SELECT_BASE));
     if (error) throw dbError(error);
-    return ((data ?? []) as Row[]).map(toNotification);
+    return ((data ?? []) as unknown as Row[]).map(toNotification);
   },
   async markRead(id) {
     const { error } = await db

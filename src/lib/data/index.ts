@@ -28,6 +28,11 @@ export type {
 export * from "./types";
 export {
   canAprovarLiberacoes,
+  canAgendarVisita,
+  canAtenderBriefing,
+  canCriarBriefing,
+  canRealizarVisita,
+  canSolicitarVisita,
   canEditLiberacoes,
   filaPcp,
   FUNCOES,
@@ -74,3 +79,6 @@ export {
   type ListasLiberacao,
   type OpcaoCampo,
 } from "./liberacao-options";
+export * from "./cloud-anexos";
+export * from "./cloud-briefings";
+export * from "./cloud-visitas";
