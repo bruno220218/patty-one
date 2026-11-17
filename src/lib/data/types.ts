@@ -58,6 +58,16 @@ export interface ProjectBlocker {
   resolvedAt: string | null;
 }
 
+/** Client/job details of a project (comunicação visual). Empty strings mean "not filled". */
+export interface ProjectClientInfo {
+  serviceType: string;
+  ledColor: string;
+  paintColors: string;
+  adhesiveType: string;
+  /** Haverá laminação? null = não informado. */
+  lamination: boolean | null;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -68,6 +78,7 @@ export interface Project {
   sourceChecklistId: string | null;
   /** Inherited from the checklist's "Parâmetros fixos" at creation time. */
   locked: boolean;
+  clientInfo: ProjectClientInfo;
   archived: boolean;
   archivedAt: string | null;
   tasks: ProjectTask[];
@@ -86,6 +97,7 @@ export interface ProjectInput {
   name: string;
   description: string;
   dueDate: string | null;
+  clientInfo: ProjectClientInfo;
 }
 
 export interface NewProjectInput extends ProjectInput {
@@ -171,4 +183,30 @@ export interface LiberacaoEvento {
   detalhe: string;
   autorNome: string;
   createdAt: string;
+}
+
+/** In-app notification (today: a team member completed a project task). */
+export type NotificationTipo =
+  | "tarefa_concluida"
+  | "liberacao_nova"
+  | "liberacao_reenviada"
+  | "liberacao_reprovada"
+  | "liberacao_aprovada";
+
+/** In-app notification: a task was completed, or a liberação moved in the approval flow. */
+export interface AppNotification {
+  id: string;
+  tipo: NotificationTipo;
+  /** Null when the project was deleted; the snapshot names are kept. */
+  projectId: string | null;
+  actorName: string;
+  /** Project name, or the liberação's client for liberação notices. */
+  projectName: string;
+  taskTitle: string;
+  liberacaoId: string | null;
+  liberacaoNumero: number | null;
+  /** Rejection reason, for "liberacao_reprovada". */
+  detalhe: string;
+  createdAt: string;
+  readAt: string | null;
 }

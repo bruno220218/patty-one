@@ -9,15 +9,13 @@ import {
   CLASSIFICACOES_VENDA,
   emptyLiberacaoItem,
   LIBERACAO_MODELO_INFO,
-  MIDIA_OPTIONS,
+  LISTAS_PADRAO,
   onlyDigits,
   splitMultiplos,
   parseCm,
-  PROJETISTAS,
-  PROJETO_OPTIONS,
-  VENDEDORES,
   type LiberacaoInput,
   type LiberacaoItem,
+  type ListasLiberacao,
 } from "@/lib/data";
 import { formatDateOnly } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -107,6 +105,7 @@ export function LiberacaoEditor({
   readOnly,
   saving,
   submitLabel = "Salvar liberação",
+  listas = LISTAS_PADRAO,
   onSubmit,
 }: {
   initial: LiberacaoInput;
@@ -114,12 +113,14 @@ export function LiberacaoEditor({
   saving?: boolean;
   /** Save button text (e.g. "Salvar e reenviar para o PCP"). */
   submitLabel?: string;
+  /** Suggestion lists (editable by gestão); defaults to the built-in lists. */
+  listas?: ListasLiberacao;
   onSubmit: (input: LiberacaoInput) => void;
 }) {
   const uid = useId();
   const projeto = initial.modelo === "projeto";
   const info = LIBERACAO_MODELO_INFO[initial.modelo];
-  const options = projeto ? PROJETO_OPTIONS : MIDIA_OPTIONS;
+  const options = projeto ? listas.projeto : listas.midia;
 
   const [header, setHeader] = useState(() => ({
     numero: initial.numero === null ? "" : String(initial.numero),
@@ -362,10 +363,10 @@ export function LiberacaoEditor({
               label={projeto ? "Projetista" : "Layoutista / projetista"}
               htmlFor={id("projetista")}
             >
-              {text("projetista", { suggestions: PROJETISTAS, placeholder: "Selecione" })}
+              {text("projetista", { suggestions: listas.projetistas, placeholder: "Selecione" })}
             </HeaderField>
             <HeaderField label="Vendedor" htmlFor={id("vendedor")}>
-              {text("vendedor", { suggestions: VENDEDORES, placeholder: "Selecione" })}
+              {text("vendedor", { suggestions: listas.vendedores, placeholder: "Selecione" })}
             </HeaderField>
             <HeaderField label="Classificação venda" htmlFor={id("classificacaoVenda")}>
               {select("classificacaoVenda", CLASSIFICACOES_VENDA)}

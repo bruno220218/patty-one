@@ -1,4 +1,9 @@
-import type { Indicators, ReportPeriod } from "@/lib/data/report";
+import {
+  formatHoras,
+  type Indicators,
+  type LiberacaoIndicators,
+  type ReportPeriod,
+} from "@/lib/data/report";
 import { formatDateOnly } from "@/lib/format";
 
 const BRAND: [number, number, number] = [31, 95, 74];
@@ -12,6 +17,7 @@ export async function downloadIndicatorsPdf(
   ind: Indicators,
   period: ReportPeriod,
   issuedBy: string,
+  lib?: LiberacaoIndicators | null,
 ): Promise<void> {
   const [{ jsPDF }, { default: autoTable }] = await Promise.all([
     import("jspdf"),
@@ -86,7 +92,8 @@ export async function downloadIndicatorsPdf(
   }
 
   const section = (title: string, subtitle?: string) => {
-    if (y > 265) {
+    // Keep a heading together with the start of its table.
+    if (y > 235) {
       doc.addPage();
       y = 18;
     }
@@ -187,6 +194,44 @@ export async function downloadIndicatorsPdf(
     "Todos os serviços foram finalizados.",
     4,
   );
+
+  if (lib) {
+    section(
+      "Liberações",
+      "Criadas, aprovadas e reprovadas no período; fila e edição na data de emissão.",
+    );
+    const decididas = lib.aprovadas + lib.reprovacoes;
+    table(
+      ["Indicador", "Valor"],
+      [
+        ["Liberações criadas", lib.criadas],
+        ["Aprovadas (viraram projeto)", lib.aprovadas],
+        ["Reprovações", lib.reprovacoes],
+        [
+          "Aprovadas de primeira (sem reprovação)",
+          lib.aprovadas
+            ? `${lib.aprovadasDePrimeira} de ${lib.aprovadas} (${Math.round((lib.aprovadasDePrimeira / lib.aprovadas) * 100)}%)`
+            : "-",
+        ],
+        [
+          "Taxa de reprovação",
+          decididas ? `${Math.round((lib.reprovacoes / decididas) * 100)}%` : "-",
+        ],
+        ["Tempo médio na fila do PCP", formatHoras(lib.horasMediasNaFila).replace("—", "-")],
+        ["Na fila do PCP agora", lib.naFilaAgora],
+        ["Em edição agora (reprovadas)", lib.emEdicaoAgora],
+      ],
+      "",
+    );
+    if (lib.maisReprovadas.length > 0) {
+      section("Liberações mais reprovadas no período");
+      table(
+        ["Nº", "Cliente", "Reprovações"],
+        lib.maisReprovadas.map((r) => [r.numero, r.cliente, r.vezes]),
+        "",
+      );
+    }
+  }
 
   // Footer with page numbers
   const pages = doc.getNumberOfPages();

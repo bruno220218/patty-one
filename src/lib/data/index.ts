@@ -5,12 +5,20 @@
 import { cloudChecklistRepository } from "./cloud-checklists";
 import { cloudProjectRepository } from "./cloud-projects";
 import { cloudLiberacaoRepository } from "./cloud-liberacoes";
+import { cloudNotificationRepository } from "./cloud-notifications";
 
 export const checklistRepository = cloudChecklistRepository;
 export const projectRepository = cloudProjectRepository;
 export const liberacaoRepository = cloudLiberacaoRepository;
+export const notificationRepository = cloudNotificationRepository;
+export { liberacaoOpcoesRepository } from "./cloud-liberacao-opcoes";
 
-export type { ChecklistRepository, LiberacaoRepository, ProjectRepository } from "./repositories";
+export type {
+  ChecklistRepository,
+  LiberacaoRepository,
+  NotificationRepository,
+  ProjectRepository,
+} from "./repositories";
 export * from "./types";
 export {
   canAprovarLiberacoes,
@@ -31,10 +39,11 @@ export {
   parseCm,
   canToggleTask,
   DEFAULT_PROJECT_FILTERS,
+  EMPTY_CLIENT_INFO,
   filterAndSortProjects,
-  groupTeamByRole,
   isOverdue,
   localToday,
+  groupTeamByRole,
   matchingOpenTasks,
   projectProgress,
   projectStatus,
@@ -52,5 +61,10 @@ export {
   PROJETISTAS,
   PROJETO_OPTIONS,
   VENDEDORES,
+  LISTAS_PADRAO,
+  resolverListas,
+  type LiberacaoOpcao,
   type LiberacaoOptionLists,
+  type ListasLiberacao,
+  type OpcaoCampo,
 } from "./liberacao-options";

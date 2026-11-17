@@ -19,7 +19,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useChecklists } from "@/hooks/use-data";
-import { isBlankLiberacaoItem, type Liberacao } from "@/lib/data";
+import {
+  EMPTY_CLIENT_INFO,
+  isBlankLiberacaoItem,
+  type Liberacao,
+  type ProjectClientInfo,
+} from "@/lib/data";
 
 const SEM_CHECKLIST = "__vazio__";
 
@@ -39,6 +44,20 @@ export interface AprovarInput {
   description: string;
   dueDate: string | null;
   checklistId: string | null;
+  clientInfo: ProjectClientInfo;
+}
+
+/** Client info for the new project: the services of the liberação become the service type. */
+function clientInfoDaLiberacao(lib: Liberacao): ProjectClientInfo {
+  const servicos = [
+    ...new Set(
+      lib.itens
+        .filter((i) => !isBlankLiberacaoItem(i))
+        .map((i) => i.servico.trim())
+        .filter(Boolean),
+    ),
+  ];
+  return { ...EMPTY_CLIENT_INFO, serviceType: servicos.join(", ") };
 }
 
 /** PCP/direção approves: creates the production project (from a checklist) and links it. */
@@ -80,6 +99,7 @@ export function AprovarDialog({
       description: descricaoDoProjeto(liberacao),
       dueDate: liberacao.dataEntrega,
       checklistId: checklistId === SEM_CHECKLIST ? null : checklistId,
+      clientInfo: clientInfoDaLiberacao(liberacao),
     });
     setSaving(false);
     if (ok !== undefined) onOpenChange(false);

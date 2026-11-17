@@ -56,6 +56,9 @@ export function ProjectList({
                   {p.name}
                 </Link>
                 <p className="truncate text-xs text-muted-foreground">
+                  {p.clientInfo.serviceType && (
+                    <span className="font-medium text-primary">{p.clientInfo.serviceType} · </span>
+                  )}
                   {p.description || "Sem descrição"}
                 </p>
                 <OpenTaskChips titles={matchingOpenTasks(p, openTask)} />

@@ -2,6 +2,7 @@ import type {
   Liberacao,
   LiberacaoEvento,
   LiberacaoInput,
+  AppNotification,
   Checklist,
   ChecklistInput,
   MoveDirection,
@@ -60,5 +61,18 @@ export interface LiberacaoRepository {
   reprovar(id: string, motivo: string): Promise<void>;
   /** History: criada, reprovada, reenviada, aprovada. */
   eventos(id: string): Promise<LiberacaoEvento[]>;
+  /** Every history event (for reports). */
+  todosEventos(): Promise<
+    { liberacaoId: string; tipo: LiberacaoEvento["tipo"]; createdAt: string }[]
+  >;
   remove(id: string): Promise<void>;
+}
+
+/** Contract for in-app notifications of the signed-in person. */
+export interface NotificationRepository {
+  list(limit?: number): Promise<AppNotification[]>;
+  markRead(id: string): Promise<void>;
+  markAllRead(): Promise<void>;
+  /** Calls `onChange` when the person's notifications change. Returns an unsubscribe function. */
+  subscribe(userId: string, onChange: () => void): () => void;
 }

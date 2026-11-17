@@ -169,3 +169,103 @@ export function buildIndicators(
     open,
   };
 }
+
+type ReportLiberacao = { id: string; numero: number; cliente: string; status: string };
+type ReportEvento = { liberacaoId: string; tipo: string; createdAt: string };
+
+export interface LiberacaoIndicators {
+  criadas: number;
+  aprovadas: number;
+  /** Rejection events in the period (one liberação can be rejected more than once). */
+  reprovacoes: number;
+  /** Approved in the period without ever being rejected. */
+  aprovadasDePrimeira: number;
+  /** Average hours from entering the PCP queue to the decision, for decisions in the period. */
+  horasMediasNaFila: number | null;
+  /** Current situation (not limited to the period). */
+  naFilaAgora: number;
+  emEdicaoAgora: number;
+  /** Most rejected liberações in the period. */
+  maisReprovadas: { numero: number; cliente: string; vezes: number }[];
+}
+
+/**
+ * Liberação indicators from the event history (criada, reenviada, reprovada, aprovada).
+ * Time in queue = from the last criada/reenviada before a decision to that decision.
+ */
+export function buildLiberacaoIndicators(
+  liberacoes: ReportLiberacao[],
+  eventos: ReportEvento[],
+  period: ReportPeriod,
+): LiberacaoIndicators {
+  const inP = (iso: string) => inPeriod(localDateOf(iso), period);
+  const sorted = [...eventos].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const byLib = new Map<string, ReportEvento[]>();
+  for (const e of sorted) byLib.set(e.liberacaoId, [...(byLib.get(e.liberacaoId) ?? []), e]);
+
+  let criadas = 0;
+  let aprovadas = 0;
+  let reprovacoes = 0;
+  let aprovadasDePrimeira = 0;
+  const esperas: number[] = [];
+  const reprovadasPorLib = new Map<string, number>();
+
+  for (const [libId, evs] of byLib) {
+    let entrouNaFila: string | null = null;
+    let jaReprovada = false;
+    for (const e of evs) {
+      if (e.tipo === "criada" || e.tipo === "reenviada") {
+        entrouNaFila = e.createdAt;
+        if (e.tipo === "criada" && inP(e.createdAt)) criadas++;
+        continue;
+      }
+      const decisaoNoPeriodo = inP(e.createdAt);
+      if (decisaoNoPeriodo && entrouNaFila) {
+        esperas.push((Date.parse(e.createdAt) - Date.parse(entrouNaFila)) / 3_600_000);
+      }
+      if (e.tipo === "reprovada") {
+        if (decisaoNoPeriodo) {
+          reprovacoes++;
+          reprovadasPorLib.set(libId, (reprovadasPorLib.get(libId) ?? 0) + 1);
+        }
+        jaReprovada = true;
+      } else if (e.tipo === "aprovada" && decisaoNoPeriodo) {
+        aprovadas++;
+        if (!jaReprovada) aprovadasDePrimeira++;
+      }
+      entrouNaFila = null;
+    }
+  }
+
+  const libById = new Map(liberacoes.map((l) => [l.id, l]));
+  const maisReprovadas = [...reprovadasPorLib.entries()]
+    .map(([id, vezes]) => ({
+      numero: libById.get(id)?.numero ?? 0,
+      cliente: libById.get(id)?.cliente ?? "—",
+      vezes,
+    }))
+    .sort((a, b) => b.vezes - a.vezes || a.numero - b.numero)
+    .slice(0, 5);
+
+  return {
+    criadas,
+    aprovadas,
+    reprovacoes,
+    aprovadasDePrimeira,
+    horasMediasNaFila: esperas.length ? esperas.reduce((a, b) => a + b, 0) / esperas.length : null,
+    naFilaAgora: liberacoes.filter((l) => l.status === "aguardando").length,
+    emEdicaoAgora: liberacoes.filter((l) => l.status === "reprovada").length,
+    maisReprovadas,
+  };
+}
+
+/** "3 h", "1 dia e 4 h", "—". */
+export function formatHoras(horas: number | null): string {
+  if (horas === null) return "—";
+  const total = Math.round(horas);
+  if (total < 24) return `${Math.max(total, horas > 0 ? 1 : 0)} h`;
+  const dias = Math.floor(total / 24);
+  const resto = total % 24;
+  const d = `${dias} ${dias === 1 ? "dia" : "dias"}`;
+  return resto ? `${d} e ${resto} h` : d;
+}

@@ -12,10 +12,21 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/app/page-header";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
-import { useCurrentUser, useProjects } from "@/hooks/use-data";
+import {
+  useCurrentUser,
+  useLiberacoes,
+  useProjects,
+  useTodosEventosLiberacao,
+} from "@/hooks/use-data";
 import { localToday } from "@/lib/data";
-import { ALL_TIME, buildIndicators, monthPeriod } from "@/lib/data/report";
+import {
+  ALL_TIME,
+  buildIndicators,
+  buildLiberacaoIndicators,
+  monthPeriod,
+} from "@/lib/data/report";
 import { downloadIndicatorsPdf } from "@/lib/report-pdf";
+import { LiberacaoReportSection } from "@/components/app/liberacao-report-section";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/_gestor/relatorios")({
@@ -74,6 +85,8 @@ function ReportsPage() {
   const [busy, setBusy] = useState(false);
   const active = useProjects(false);
   const archived = useProjects(true);
+  const liberacoes = useLiberacoes();
+  const eventosLib = useTodosEventosLiberacao();
   const { data: me } = useCurrentUser();
 
   const period = selected === "all" ? ALL_TIME : monthPeriod(selected);
@@ -84,10 +97,20 @@ function ReportsPage() {
     [active.data, archived.data, selected, today],
   );
 
+  // Liberações are optional: if their tables aren't available, the report still works.
+  const libIndicators = useMemo(
+    () =>
+      liberacoes.data && eventosLib.data
+        ? buildLiberacaoIndicators(liberacoes.data, eventosLib.data, period)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [liberacoes.data, eventosLib.data, selected],
+  );
+
   const download = async () => {
     setBusy(true);
     try {
-      await downloadIndicatorsPdf(indicators, period, me?.name ?? "Gestão");
+      await downloadIndicatorsPdf(indicators, period, me?.name ?? "Gestão", libIndicators);
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível gerar o PDF. Tente novamente.");
@@ -173,9 +196,10 @@ function ReportsPage() {
               </ul>
             )}
           </section>
+          {libIndicators && <LiberacaoReportSection ind={libIndicators} />}
           <p className="text-xs text-muted-foreground">
             O PDF traz também a lista de clientes, as entregas (no prazo e atrasadas, com a
-            diferença em dias) e os serviços ainda em aberto.
+            diferença em dias), os serviços ainda em aberto e os indicadores das liberações.
           </p>
         </div>
       )}

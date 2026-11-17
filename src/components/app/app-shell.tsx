@@ -12,13 +12,14 @@ import {
   Users,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useCurrentUser } from "@/hooks/use-data";
+import { useCurrentUser, useNotifications } from "@/hooks/use-data";
 import { cn } from "@/lib/utils";
 import { FUNCOES } from "@/lib/data";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "./empty-state";
 import { ThemeToggle } from "./theme-toggle";
+import { NotificationBell } from "./notification-bell";
 
 /** Served from public/ so it works on any host (not only Lovable). */
 const LOGO_URL = "/patty-logo.png";
@@ -68,6 +69,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const wide = pathname.startsWith("/liberacoes/");
   const { data: me } = useCurrentUser();
   const signOut = useSignOut();
+  const showNotifications = !bare && Boolean(me?.isMember);
+  const { data: notifications = [] } = useNotifications(me?.id, showNotifications);
 
   if (bare) {
     return (
@@ -123,6 +126,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </p>
               </div>
             )}
+            {showNotifications && (
+              <NotificationBell notifications={notifications} variant="sidebar" />
+            )}
             <ThemeToggle />
             {me && (
               <button
@@ -141,6 +147,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-sidebar-border bg-sidebar/95 px-4 backdrop-blur md:hidden">
           <Brand />
           <div className="flex items-center gap-1">
+            {showNotifications && <NotificationBell notifications={notifications} variant="icon" />}
             <ThemeToggle compact />
             {me && (
               <button
