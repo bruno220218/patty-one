@@ -76,7 +76,7 @@ function UnreadBadge({ count, className }: { count: number; className?: string }
 }
 
 /**
- * Bell with the person's notifications (tasks for gestão; liberação flow for PCP/direção and comercial). `variant="sidebar"` renders a full-width
+ * Bell with the person's notifications (completed tasks for gestão and PCP; liberação flow for PCP/direção and comercial). `variant="sidebar"` renders a full-width
  * menu row (desktop); `variant="icon"` an icon button (mobile header).
  */
 export function NotificationBell({

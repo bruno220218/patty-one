@@ -1,6 +1,6 @@
 -- Automações do Patty One
 --   1) Informações do cliente nos projetos
---   2) Notificações (tarefa concluída → gestão; fluxo da liberação → PCP/Direção e quem criou)
+--   2) Notificações (tarefa concluída → Gestão e PCP; fluxo da liberação → PCP/Direção e quem criou)
 --   3) Listas editáveis da liberação (serviços, insumos, acabamentos, instalação, projetistas, vendedores)
 --
 -- Depende da migração das liberações (funções, liberacoes, liberacao_eventos) já aplicada.
@@ -68,7 +68,7 @@ create policy "notifications_update_own" on public.notifications
   using (recipient_id = auth.uid())
   with check (recipient_id = auth.uid());
 
--- Notifies every gestor (except the person who did it) when a task becomes completed.
+-- Avisa a Gestão e o PCP (menos quem marcou) quando uma tarefa de produção é concluída.
 create or replace function public.notify_task_completed()
 returns trigger
 language plpgsql
@@ -93,7 +93,7 @@ begin
   insert into public.notifications (recipient_id, project_id, task_id, actor_name, project_name, task_title)
   select distinct r.user_id, new.project_id, new.id, _actor_name, coalesce(_project_name, ''), new.title
     from public.user_roles r
-   where r.role = 'gestor'
+   where r.role::text in ('gestor', 'pcp')
      and r.user_id is distinct from new.completed_by;
 
   return new;
