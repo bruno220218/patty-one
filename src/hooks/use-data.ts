@@ -35,6 +35,12 @@ export const liberacaoQuery = (id: string) =>
 export const useLiberacoes = () => useQuery(liberacoesQuery());
 export const useLiberacao = (id: string) => useQuery(liberacaoQuery(id));
 
+export const useTodosEventosLiberacao = () =>
+  useQuery({
+    queryKey: ["liberacoes", "eventos"],
+    queryFn: () => liberacaoRepository.todosEventos(),
+  });
+
 export const useLiberacaoEventos = (id: string) =>
   useQuery({
     queryKey: ["liberacoes", id, "eventos"],

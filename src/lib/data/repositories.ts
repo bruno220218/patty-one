@@ -61,6 +61,10 @@ export interface LiberacaoRepository {
   reprovar(id: string, motivo: string): Promise<void>;
   /** History: criada, reprovada, reenviada, aprovada. */
   eventos(id: string): Promise<LiberacaoEvento[]>;
+  /** Every history event (for reports). */
+  todosEventos(): Promise<
+    { liberacaoId: string; tipo: LiberacaoEvento["tipo"]; createdAt: string }[]
+  >;
   remove(id: string): Promise<void>;
 }
 

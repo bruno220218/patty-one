@@ -274,6 +274,17 @@ export const cloudLiberacaoRepository: LiberacaoRepository = {
     }));
   },
 
+  async todosEventos() {
+    const { data, error } = await db
+      .from("liberacao_eventos")
+      .select("liberacao_id, tipo, created_at")
+      .order("created_at", { ascending: true });
+    if (error) throw friendly(error);
+    return (
+      (data ?? []) as { liberacao_id: string; tipo: LiberacaoEvento["tipo"]; created_at: string }[]
+    ).map((e) => ({ liberacaoId: e.liberacao_id, tipo: e.tipo, createdAt: e.created_at }));
+  },
+
   async remove(id) {
     const { error } = await db.from("liberacoes").delete().eq("id", id);
     if (error) throw friendly(error);

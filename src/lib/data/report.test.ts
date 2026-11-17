@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildIndicators, monthPeriod, ALL_TIME } from "./report";
+import {
+  ALL_TIME,
+  buildIndicators,
+  buildLiberacaoIndicators,
+  formatHoras,
+  monthPeriod,
+} from "./report";
 
 const at = (date: string) => `${date}T15:00:00Z`;
 const t = (date: string | null, who = "Ana") => ({
@@ -79,5 +85,59 @@ describe("report indicators", () => {
       to: "2026-02-28",
       label: "Fevereiro de 2026",
     });
+  });
+});
+
+describe("liberação indicators", () => {
+  const ev = (liberacaoId: string, tipo: string, createdAt: string) => ({
+    liberacaoId,
+    tipo,
+    createdAt,
+  });
+  const libs = [
+    { id: "a", numero: 1, cliente: "CENIBRA", status: "aprovada" },
+    { id: "b", numero: 2, cliente: "GNV", status: "aprovada" },
+    { id: "c", numero: 3, cliente: "USIPA", status: "reprovada" },
+    { id: "d", numero: 4, cliente: "MARQ", status: "aguardando" },
+  ];
+  const eventos = [
+    // a: aprovada de primeira, 4h na fila
+    ev("a", "criada", "2026-11-03T12:00:00Z"),
+    ev("a", "aprovada", "2026-11-03T16:00:00Z"),
+    // b: reprovada (2h), reenviada, aprovada (10h)
+    ev("b", "criada", "2026-11-04T12:00:00Z"),
+    ev("b", "reprovada", "2026-11-04T14:00:00Z"),
+    ev("b", "reenviada", "2026-11-05T12:00:00Z"),
+    ev("b", "aprovada", "2026-11-05T22:00:00Z"),
+    // c: reprovada duas vezes (6h e 2h)
+    ev("c", "criada", "2026-11-06T12:00:00Z"),
+    ev("c", "reprovada", "2026-11-06T18:00:00Z"),
+    ev("c", "reenviada", "2026-11-07T12:00:00Z"),
+    ev("c", "reprovada", "2026-11-07T14:00:00Z"),
+    // d: criada em outubro, ainda na fila
+    ev("d", "criada", "2026-10-30T12:00:00Z"),
+  ];
+
+  it("counts creations, approvals, rejections and first-time approvals in the period", () => {
+    const r = buildLiberacaoIndicators(libs, eventos, monthPeriod("2026-11"));
+    expect(r.criadas).toBe(3);
+    expect(r.aprovadas).toBe(2);
+    expect(r.reprovacoes).toBe(3);
+    expect(r.aprovadasDePrimeira).toBe(1);
+    expect(r.horasMediasNaFila).toBeCloseTo((4 + 2 + 10 + 6 + 2) / 5);
+    expect(r.naFilaAgora).toBe(1);
+    expect(r.emEdicaoAgora).toBe(1);
+    expect(r.maisReprovadas).toEqual([
+      { numero: 3, cliente: "USIPA", vezes: 2 },
+      { numero: 2, cliente: "GNV", vezes: 1 },
+    ]);
+  });
+
+  it("formats hours", () => {
+    expect(formatHoras(null)).toBe("—");
+    expect(formatHoras(4.8)).toBe("5 h");
+    expect(formatHoras(0.2)).toBe("1 h");
+    expect(formatHoras(24)).toBe("1 dia");
+    expect(formatHoras(52)).toBe("2 dias e 4 h");
   });
 });
