@@ -1,6 +1,6 @@
 # Patty One
 
-App interno da TR Patty (projetos, tarefas, equipe, liberações).
+SISTEMA INTERNO - PATTY PAINEIS
 
 - Hospedagem: Cloudflare Workers (grátis)
 - Banco e login: Supabase (grátis)
