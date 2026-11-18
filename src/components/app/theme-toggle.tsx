@@ -3,7 +3,14 @@ import { Moon, Sun } from "lucide-react";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
-export function ThemeToggle({ compact = false }: { compact?: boolean }) {
+/** `round` matches the top bar buttons; the default fits a menu. */
+export function ThemeToggle({
+  compact = false,
+  round = false,
+}: {
+  compact?: boolean;
+  round?: boolean;
+}) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
@@ -23,6 +30,20 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
 
   const label = theme === "dark" ? "Claro" : "Escuro";
   const Icon = theme === "dark" ? Sun : Moon;
+
+  if (round) {
+    return (
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={`Ativar tema ${label.toLowerCase()}`}
+        title={`Tema ${label.toLowerCase()}`}
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-sm transition-colors hover:text-primary"
+      >
+        <Icon className="h-[18px] w-[18px]" />
+      </button>
+    );
+  }
 
   return (
     <button

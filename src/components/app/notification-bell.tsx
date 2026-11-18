@@ -219,9 +219,9 @@ export function NotificationBell({
           <button
             type="button"
             aria-label={label}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground hover:bg-sidebar-accent"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-sm transition-colors hover:text-primary"
           >
-            <Bell className="h-4 w-4" />
+            <Bell className="h-[18px] w-[18px]" />
             <UnreadBadge count={unread} className="absolute -right-1 -top-1" />
           </button>
         )}
