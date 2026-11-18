@@ -1,7 +1,24 @@
 -- ============ CI de vinheta: arquivo da vinheta no Drive ============
 -- O representante anexa o arquivo da vinheta na CI; o app envia direto para o Drive
 -- da empresa (Patty One > CIs de vinheta > ...) e guarda só o link, como nos outros anexos.
--- Rode depois da 0013.
+-- Rode depois da 0013 e da 0010 (que cria a tabela de anexos).
+
+do $$
+begin
+  if to_regclass('public.anexos') is null then
+    raise exception 'Falta rodar antes a drizzle/migrations/0010_anexos_briefings_visitas.sql (ela cria a tabela de anexos). Rode a 0010 e depois esta 0014 de novo.';
+  end if;
+end $$;
+
+-- A 0010 redefine os tipos de aviso sem os dos painéis e da CI; aqui ficam todos.
+alter table public.notifications drop constraint if exists notifications_tipo_check;
+alter table public.notifications add constraint notifications_tipo_check
+  check (tipo in ('tarefa_concluida', 'liberacao_nova', 'liberacao_reenviada',
+                  'liberacao_reprovada', 'liberacao_aprovada',
+                  'briefing_novo', 'briefing_andamento', 'briefing_concluido',
+                  'visita_nova', 'visita_agendada', 'visita_realizada', 'visita_cancelada',
+                  'rgb_vencendo', 'rgb_vence_hoje', 'rgb_vencida',
+                  'ci_nova', 'ci_vinheta_entrou', 'ci_recusada'));
 
 alter table public.anexos drop constraint if exists anexos_entidade_check;
 alter table public.anexos add constraint anexos_entidade_check
