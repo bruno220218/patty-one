@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Archive,
   BarChart3,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   FileCheck2,
@@ -100,6 +101,7 @@ const BARE_PATHS = ["/auth", "/reset-password"];
 const SIDEBAR_EXPANDED = 260;
 const SIDEBAR_COLLAPSED = 76;
 const COLLAPSED_KEY = "pattyone:sidebar-collapsed";
+const GRUPOS_KEY = "pattyone:menu-grupos-fechados";
 
 function useSignOut() {
   const queryClient = useQueryClient();
@@ -143,6 +145,31 @@ function useCollapsed() {
     return () => window.removeEventListener("keydown", onKey);
   }, [toggle]);
   return { collapsed, toggle };
+}
+
+/** Menu groups the person closed (by title), remembered per browser. */
+function useGruposFechados() {
+  const [fechados, setFechados] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem(GRUPOS_KEY) ?? "[]");
+      if (Array.isArray(salvo)) setFechados(salvo.filter((t) => typeof t === "string"));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const alternar = useCallback((titulo: string) => {
+    setFechados((atual) => {
+      const novo = atual.includes(titulo) ? atual.filter((t) => t !== titulo) : [...atual, titulo];
+      try {
+        localStorage.setItem(GRUPOS_KEY, JSON.stringify(novo));
+      } catch {
+        /* ignore */
+      }
+      return novo;
+    });
+  }, []);
+  return { fechados, alternar };
 }
 
 const iniciais = (nome: string) =>
@@ -255,12 +282,17 @@ function SidebarBody({
   collapsed,
   isActive,
   onSignOut,
+  fechados,
+  onAlternarGrupo,
 }: {
   me: CurrentUser | null | undefined;
   pending: boolean;
   collapsed: boolean;
   isActive: (to: string) => boolean;
   onSignOut: () => void;
+  /** Titles of the groups whose items are hidden. */
+  fechados: string[];
+  onAlternarGrupo: (titulo: string) => void;
 }) {
   const visible = (i: NavItem) => !pending && (!i.gestorOnly || me?.isGestor);
   return (
@@ -288,16 +320,38 @@ function SidebarBody({
         {NAV_GROUPS.map((g) => {
           const items = g.items.filter(visible);
           if (items.length === 0) return null;
+          // With the menu shrunk to icons there are no titles, so every group stays open.
+          const fechado = !collapsed && fechados.includes(g.title);
+          const listaId = `menu-grupo-${g.title.toLowerCase()}`;
           return (
             <div key={g.title}>
               {collapsed ? (
                 <div className="mx-auto mb-2 h-px w-6 bg-sidebar-hover" />
               ) : (
-                <div className="mb-2 px-3 text-[10px] font-semibold tracking-wider text-sidebar-foreground/80 uppercase">
-                  {g.title}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => onAlternarGrupo(g.title)}
+                  aria-expanded={!fechado}
+                  aria-controls={listaId}
+                  title={fechado ? `Mostrar ${g.title}` : `Esconder ${g.title}`}
+                  className="group mb-2 flex w-full items-center gap-1.5 rounded-md px-3 py-0.5 text-left text-[10px] font-semibold tracking-wider text-sidebar-foreground/80 uppercase transition-colors hover:text-sidebar-primary"
+                >
+                  <span className="flex-1">{g.title}</span>
+                  {fechado && items.some((it) => isActive(it.to)) && (
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-sidebar-primary"
+                      aria-label="a página aberta está neste grupo"
+                    />
+                  )}
+                  <ChevronDown
+                    className={cn(
+                      "h-3.5 w-3.5 opacity-60 transition-transform duration-200 group-hover:opacity-100",
+                      fechado && "-rotate-90",
+                    )}
+                  />
+                </button>
               )}
-              <div className="space-y-1">
+              <div id={listaId} hidden={fechado} className="space-y-1">
                 {items.map((it) => (
                   <NavLink key={it.to} item={it} active={isActive(it.to)} collapsed={collapsed} />
                 ))}
@@ -327,6 +381,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const showNotifications = !bare && Boolean(me?.isMember);
   const { data: notifications = [] } = useNotifications(me?.id, showNotifications);
   const { collapsed, toggle } = useCollapsed();
+  const { fechados, alternar } = useGruposFechados();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Painéis RGB due-date notices: a daily database job creates them; opening the app also
@@ -369,6 +424,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             collapsed={collapsed}
             isActive={isActive}
             onSignOut={signOut}
+            fechados={fechados}
+            onAlternarGrupo={alternar}
           />
         </aside>
         <button
@@ -395,6 +452,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               collapsed={false}
               isActive={isActive}
               onSignOut={signOut}
+              fechados={fechados}
+              onAlternarGrupo={alternar}
             />
           </SheetContent>
         </Sheet>
