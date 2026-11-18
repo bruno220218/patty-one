@@ -325,7 +325,7 @@ function PaineisPage() {
           <Button variant="outline" asChild className="h-10">
             <Link to="/cis">
               <FileText />
-              CIs de vinheta
+              CI
             </Link>
           </Button>
         }

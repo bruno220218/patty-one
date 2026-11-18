@@ -58,7 +58,7 @@ function NovaCiPage() {
     <div className="max-w-4xl">
       {back}
       <PageHeader
-        title="Nova CI de vinheta"
+        title="Nova CI"
         description="Ao salvar, cada painel marcado fica com a vinheta aguardando entrada e a Criação recebe o aviso."
       />
       <CiForm

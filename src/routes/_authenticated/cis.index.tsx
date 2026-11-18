@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/cis/")({
   head: () => ({
-    meta: [{ title: "CIs de vinheta — Patty One" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "CI — Patty One" }, { name: "robots", content: "noindex" }],
   }),
   component: CisPage,
 });
@@ -63,7 +63,7 @@ function CisPage() {
   return (
     <>
       <PageHeader
-        title="CIs de vinheta"
+        title="CI"
         description="Comercial cria a CI e marca os painéis → a Criação dá entrada e a vinheta ocupa o espaço vago."
         action={podeCriar ? <NovaCiButton /> : undefined}
       />

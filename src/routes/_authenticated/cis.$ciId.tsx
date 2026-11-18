@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/cis/$ciId")({
   head: () => ({
-    meta: [{ title: "CI de vinheta — Patty One" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "CI — Patty One" }, { name: "robots", content: "noindex" }],
   }),
   component: CiPage,
 });

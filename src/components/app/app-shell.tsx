@@ -71,7 +71,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     title: "Mídia",
     items: [
       { to: "/paineis", label: "Painéis RGB", icon: MonitorPlay },
-      { to: "/cis", label: "CIs de vinheta", icon: FileText },
+      { to: "/cis", label: "CI", icon: FileText },
     ],
   },
   {
