@@ -9,6 +9,7 @@ import {
   anexosRepository,
   briefingRepository,
   visitaRepository,
+  paineisRepository,
   pessoasDaFuncao,
   type AnexoEntidade,
   emailDestinatariosRepository,
@@ -151,3 +152,13 @@ export function useNotifications(userId: string | undefined, enabled: boolean) {
 
   return useQuery({ ...notificationsQuery(), enabled: active, refetchInterval: 60_000 });
 }
+
+export const usePaineis = () =>
+  useQuery({ queryKey: ["paineis"], queryFn: () => paineisRepository.snapshot() });
+
+export const usePainelHistorico = (painelId: string | null) =>
+  useQuery({
+    queryKey: ["paineis", "historico", painelId],
+    queryFn: () => paineisRepository.historico(painelId as string),
+    enabled: Boolean(painelId),
+  });

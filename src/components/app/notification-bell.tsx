@@ -90,6 +90,25 @@ function NotificationText({ n }: { n: AppNotification }) {
         </span>
       );
     }
+    case "rgb_vencendo":
+    case "rgb_vence_hoje":
+    case "rgb_vencida": {
+      const quando = {
+        rgb_vencendo: (
+          <span className="font-semibold text-status-progress-foreground">vence em breve</span>
+        ),
+        rgb_vence_hoje: (
+          <span className="font-semibold text-status-progress-foreground">vence hoje</span>
+        ),
+        rgb_vencida: <span className="font-semibold text-destructive">venceu</span>,
+      }[n.tipo];
+      return (
+        <span className="block break-words">
+          Painéis RGB: o contrato de <span className="font-medium">{n.projectName}</span> {quando}
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
+        </span>
+      );
+    }
     default:
       return (
         <span className="block break-words">

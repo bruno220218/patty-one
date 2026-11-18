@@ -82,3 +82,5 @@ export {
 export * from "./cloud-anexos";
 export * from "./cloud-briefings";
 export * from "./cloud-visitas";
+export * from "./cloud-paineis";
+export * from "./paineis-rules";

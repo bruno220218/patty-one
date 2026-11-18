@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -11,6 +11,7 @@ import {
   ListChecks,
   LogOut,
   MapPin,
+  MonitorPlay,
   MoreHorizontal,
   Trash2,
   Users,
@@ -18,7 +19,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser, useNotifications } from "@/hooks/use-data";
 import { cn } from "@/lib/utils";
-import { FUNCOES } from "@/lib/data";
+import { FUNCOES, paineisRepository } from "@/lib/data";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +45,8 @@ type NavItem = {
     | "/relatorios"
     | "/lixeira"
     | "/briefings"
-    | "/visitas";
+    | "/visitas"
+    | "/paineis";
   label: string;
   icon: typeof ListChecks;
   gestorOnly?: boolean;
@@ -58,6 +60,7 @@ const NAV: NavItem[] = [
   { to: "/liberacoes", label: "Liberações", icon: FileCheck2, primary: true },
   { to: "/briefings", label: "Briefings", icon: Lightbulb, primary: true },
   { to: "/visitas", label: "Visitas", icon: MapPin, primary: true },
+  { to: "/paineis", label: "Painéis RGB", icon: MonitorPlay },
   { to: "/arquivados", label: "Arquivados", icon: Archive },
   { to: "/equipe", label: "Equipe", icon: Users, gestorOnly: true },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3, gestorOnly: true },
@@ -95,6 +98,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const signOut = useSignOut();
   const showNotifications = !bare && Boolean(me?.isMember);
   const { data: notifications = [] } = useNotifications(me?.id, showNotifications);
+
+  // Painéis RGB due-date notices: a daily database job creates them; opening the app also
+  // does, in case the job isn't on. Each notice goes out once, so repeating is harmless.
+  const isMember = Boolean(me?.isMember);
+  useEffect(() => {
+    if (isMember) paineisRepository.gerarAvisos().catch(() => undefined);
+  }, [isMember]);
 
   if (bare) {
     return (

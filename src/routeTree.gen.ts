@@ -16,6 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenticated/_gestor/route'
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as AuthenticatedLixeiraRouteImport } from './routes/_authenticated/lixeira'
+import { Route as AuthenticatedPaineisRouteImport } from './routes/_authenticated/paineis'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorListasRouteImport } from './routes/_authenticated/_gestor/listas'
@@ -66,6 +67,11 @@ const AuthenticatedArquivadosRoute = AuthenticatedArquivadosRouteImport.update({
 const AuthenticatedLixeiraRoute = AuthenticatedLixeiraRouteImport.update({
   id: '/lixeira',
   path: '/lixeira',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPaineisRoute = AuthenticatedPaineisRouteImport.update({
+  id: '/paineis',
+  path: '/paineis',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
+  '/paineis': typeof AuthenticatedPaineisRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/listas': typeof AuthenticatedGestorListasRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
+  '/paineis': typeof AuthenticatedPaineisRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/listas': typeof AuthenticatedGestorListasRoute
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/_authenticated/_gestor': typeof AuthenticatedGestorRouteRouteWithChildren
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/_authenticated/lixeira': typeof AuthenticatedLixeiraRoute
+  '/_authenticated/paineis': typeof AuthenticatedPaineisRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/listas': typeof AuthenticatedGestorListasRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/arquivados'
     | '/lixeira'
+    | '/paineis'
     | '/api/next-steps'
     | '/equipe'
     | '/listas'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/arquivados'
     | '/lixeira'
+    | '/paineis'
     | '/api/next-steps'
     | '/equipe'
     | '/listas'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_gestor'
     | '/_authenticated/arquivados'
     | '/_authenticated/lixeira'
+    | '/_authenticated/paineis'
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/listas'
@@ -379,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/lixeira'
       fullPath: '/lixeira'
       preLoaderRoute: typeof AuthenticatedLixeiraRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/paineis': {
+      id: '/_authenticated/paineis'
+      path: '/paineis'
+      fullPath: '/paineis'
+      preLoaderRoute: typeof AuthenticatedPaineisRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/next-steps': {
@@ -531,6 +550,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGestorRouteRoute: typeof AuthenticatedGestorRouteRouteWithChildren
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
   AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
+  AuthenticatedPaineisRoute: typeof AuthenticatedPaineisRoute
   AuthenticatedBriefingsBriefingIdRoute: typeof AuthenticatedBriefingsBriefingIdRoute
   AuthenticatedBriefingsNovoRoute: typeof AuthenticatedBriefingsNovoRoute
   AuthenticatedLiberacoesLiberacaoIdRoute: typeof AuthenticatedLiberacoesLiberacaoIdRoute
@@ -548,6 +568,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGestorRouteRoute: AuthenticatedGestorRouteRouteWithChildren,
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
   AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
+  AuthenticatedPaineisRoute: AuthenticatedPaineisRoute,
   AuthenticatedBriefingsBriefingIdRoute: AuthenticatedBriefingsBriefingIdRoute,
   AuthenticatedBriefingsNovoRoute: AuthenticatedBriefingsNovoRoute,
   AuthenticatedLiberacoesLiberacaoIdRoute:
