@@ -208,7 +208,10 @@ export type NotificationTipo =
   | "visita_cancelada"
   | "rgb_vencendo"
   | "rgb_vence_hoje"
-  | "rgb_vencida";
+  | "rgb_vencida"
+  | "ci_nova"
+  | "ci_vinheta_entrou"
+  | "ci_recusada";
 
 /** In-app notification: a task was completed, or a liberação moved in the approval flow. */
 export interface AppNotification {

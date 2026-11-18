@@ -10,6 +10,7 @@ import {
   briefingRepository,
   visitaRepository,
   paineisRepository,
+  ciRepository,
   pessoasDaFuncao,
   type AnexoEntidade,
   emailDestinatariosRepository,
@@ -162,3 +163,7 @@ export const usePainelHistorico = (painelId: string | null) =>
     queryFn: () => paineisRepository.historico(painelId as string),
     enabled: Boolean(painelId),
   });
+
+export const useCis = () => useQuery({ queryKey: ["cis"], queryFn: () => ciRepository.list() });
+export const useCi = (id: string) =>
+  useQuery({ queryKey: ["cis", id], queryFn: () => ciRepository.get(id) });

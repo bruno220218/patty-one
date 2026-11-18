@@ -12,6 +12,7 @@ import {
   LogOut,
   MapPin,
   MonitorPlay,
+  FileText,
   MoreHorizontal,
   Trash2,
   Users,
@@ -46,7 +47,8 @@ type NavItem = {
     | "/lixeira"
     | "/briefings"
     | "/visitas"
-    | "/paineis";
+    | "/paineis"
+    | "/cis";
   label: string;
   icon: typeof ListChecks;
   gestorOnly?: boolean;
@@ -61,6 +63,7 @@ const NAV: NavItem[] = [
   { to: "/briefings", label: "Briefings", icon: Lightbulb, primary: true },
   { to: "/visitas", label: "Visitas", icon: MapPin, primary: true },
   { to: "/paineis", label: "Painéis RGB", icon: MonitorPlay },
+  { to: "/cis", label: "CIs de vinheta", icon: FileText },
   { to: "/arquivados", label: "Arquivados", icon: Archive },
   { to: "/equipe", label: "Equipe", icon: Users, gestorOnly: true },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3, gestorOnly: true },

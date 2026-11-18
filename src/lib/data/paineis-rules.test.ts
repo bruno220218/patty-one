@@ -58,3 +58,21 @@ describe("canEditarPaineis", () => {
     expect(canEditarPaineis(null)).toBe(false);
   });
 });
+
+describe("CI", () => {
+  it("labels like the spreadsheet (number/month)", async () => {
+    const { ciRotulo } = await import("./cloud-cis");
+    expect(ciRotulo(10, "2026-11-17")).toBe("10/Nov");
+    expect(ciRotulo(4, "2026-05-02")).toBe("04/Mai");
+  });
+
+  it("tracks the entry of each panel", async () => {
+    const { ciSituacao, ciEditavel } = await import("./cloud-cis");
+    const cp = (status: "pendente" | "aprovada" | "recusada") => ({ status }) as never;
+    expect(ciSituacao({ paineis: [cp("pendente"), cp("pendente")] })).toBe("aguardando");
+    expect(ciSituacao({ paineis: [cp("aprovada"), cp("pendente")] })).toBe("parcial");
+    expect(ciSituacao({ paineis: [cp("aprovada"), cp("recusada")] })).toBe("concluida");
+    expect(ciEditavel({ paineis: [cp("pendente")] })).toBe(true);
+    expect(ciEditavel({ paineis: [cp("aprovada"), cp("pendente")] })).toBe(false);
+  });
+});

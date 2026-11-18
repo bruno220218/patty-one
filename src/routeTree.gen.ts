@@ -24,6 +24,9 @@ import { Route as AuthenticatedGestorRelatoriosRouteImport } from './routes/_aut
 import { Route as AuthenticatedBriefingsIndexRouteImport } from './routes/_authenticated/briefings.index'
 import { Route as AuthenticatedBriefingsBriefingIdRouteImport } from './routes/_authenticated/briefings.$briefingId'
 import { Route as AuthenticatedBriefingsNovoRouteImport } from './routes/_authenticated/briefings.novo'
+import { Route as AuthenticatedCisIndexRouteImport } from './routes/_authenticated/cis.index'
+import { Route as AuthenticatedCisCiIdRouteImport } from './routes/_authenticated/cis.$ciId'
+import { Route as AuthenticatedCisNovaRouteImport } from './routes/_authenticated/cis.nova'
 import { Route as AuthenticatedLiberacoesIndexRouteImport } from './routes/_authenticated/liberacoes.index'
 import { Route as AuthenticatedLiberacoesLiberacaoIdRouteImport } from './routes/_authenticated/liberacoes.$liberacaoId'
 import { Route as AuthenticatedLiberacoesNovaRouteImport } from './routes/_authenticated/liberacoes.nova'
@@ -115,6 +118,21 @@ const AuthenticatedBriefingsNovoRoute =
     path: '/briefings/novo',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCisIndexRoute = AuthenticatedCisIndexRouteImport.update({
+  id: '/cis/',
+  path: '/cis/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCisCiIdRoute = AuthenticatedCisCiIdRouteImport.update({
+  id: '/cis/$ciId',
+  path: '/cis/$ciId',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCisNovaRoute = AuthenticatedCisNovaRouteImport.update({
+  id: '/cis/nova',
+  path: '/cis/nova',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLiberacoesIndexRoute =
   AuthenticatedLiberacoesIndexRouteImport.update({
     id: '/liberacoes/',
@@ -189,12 +207,15 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
+  '/cis/$ciId': typeof AuthenticatedCisCiIdRoute
+  '/cis/nova': typeof AuthenticatedCisNovaRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
   '/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/briefings/': typeof AuthenticatedBriefingsIndexRoute
+  '/cis/': typeof AuthenticatedCisIndexRoute
   '/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/visitas/': typeof AuthenticatedVisitasIndexRoute
@@ -214,12 +235,15 @@ export interface FileRoutesByTo {
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
+  '/cis/$ciId': typeof AuthenticatedCisCiIdRoute
+  '/cis/nova': typeof AuthenticatedCisNovaRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
   '/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/briefings': typeof AuthenticatedBriefingsIndexRoute
+  '/cis': typeof AuthenticatedCisIndexRoute
   '/liberacoes': typeof AuthenticatedLiberacoesIndexRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
   '/visitas': typeof AuthenticatedVisitasIndexRoute
@@ -242,12 +266,15 @@ export interface FileRoutesById {
   '/_authenticated/_gestor/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/_authenticated/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/_authenticated/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
+  '/_authenticated/cis/$ciId': typeof AuthenticatedCisCiIdRoute
+  '/_authenticated/cis/nova': typeof AuthenticatedCisNovaRoute
   '/_authenticated/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/_authenticated/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/_authenticated/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/_authenticated/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
   '/_authenticated/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/_authenticated/briefings/': typeof AuthenticatedBriefingsIndexRoute
+  '/_authenticated/cis/': typeof AuthenticatedCisIndexRoute
   '/_authenticated/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/_authenticated/visitas/': typeof AuthenticatedVisitasIndexRoute
@@ -269,12 +296,15 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/briefings/$briefingId'
     | '/briefings/novo'
+    | '/cis/$ciId'
+    | '/cis/nova'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
     | '/projetos/$projectId'
     | '/visitas/$visitaId'
     | '/visitas/nova'
     | '/briefings/'
+    | '/cis/'
     | '/liberacoes/'
     | '/projetos/'
     | '/visitas/'
@@ -294,12 +324,15 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/briefings/$briefingId'
     | '/briefings/novo'
+    | '/cis/$ciId'
+    | '/cis/nova'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
     | '/projetos/$projectId'
     | '/visitas/$visitaId'
     | '/visitas/nova'
     | '/briefings'
+    | '/cis'
     | '/liberacoes'
     | '/projetos'
     | '/visitas'
@@ -321,12 +354,15 @@ export interface FileRouteTypes {
     | '/_authenticated/_gestor/relatorios'
     | '/_authenticated/briefings/$briefingId'
     | '/_authenticated/briefings/novo'
+    | '/_authenticated/cis/$ciId'
+    | '/_authenticated/cis/nova'
     | '/_authenticated/liberacoes/$liberacaoId'
     | '/_authenticated/liberacoes/nova'
     | '/_authenticated/projetos/$projectId'
     | '/_authenticated/visitas/$visitaId'
     | '/_authenticated/visitas/nova'
     | '/_authenticated/briefings/'
+    | '/_authenticated/cis/'
     | '/_authenticated/liberacoes/'
     | '/_authenticated/projetos/'
     | '/_authenticated/visitas/'
@@ -449,6 +485,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBriefingsNovoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cis/': {
+      id: '/_authenticated/cis/'
+      path: '/cis'
+      fullPath: '/cis/'
+      preLoaderRoute: typeof AuthenticatedCisIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cis/$ciId': {
+      id: '/_authenticated/cis/$ciId'
+      path: '/cis/$ciId'
+      fullPath: '/cis/$ciId'
+      preLoaderRoute: typeof AuthenticatedCisCiIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cis/nova': {
+      id: '/_authenticated/cis/nova'
+      path: '/cis/nova'
+      fullPath: '/cis/nova'
+      preLoaderRoute: typeof AuthenticatedCisNovaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/liberacoes/': {
       id: '/_authenticated/liberacoes/'
       path: '/liberacoes'
@@ -553,12 +610,15 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPaineisRoute: typeof AuthenticatedPaineisRoute
   AuthenticatedBriefingsBriefingIdRoute: typeof AuthenticatedBriefingsBriefingIdRoute
   AuthenticatedBriefingsNovoRoute: typeof AuthenticatedBriefingsNovoRoute
+  AuthenticatedCisCiIdRoute: typeof AuthenticatedCisCiIdRoute
+  AuthenticatedCisNovaRoute: typeof AuthenticatedCisNovaRoute
   AuthenticatedLiberacoesLiberacaoIdRoute: typeof AuthenticatedLiberacoesLiberacaoIdRoute
   AuthenticatedLiberacoesNovaRoute: typeof AuthenticatedLiberacoesNovaRoute
   AuthenticatedProjetosProjectIdRoute: typeof AuthenticatedProjetosProjectIdRoute
   AuthenticatedVisitasVisitaIdRoute: typeof AuthenticatedVisitasVisitaIdRoute
   AuthenticatedVisitasNovaRoute: typeof AuthenticatedVisitasNovaRoute
   AuthenticatedBriefingsIndexRoute: typeof AuthenticatedBriefingsIndexRoute
+  AuthenticatedCisIndexRoute: typeof AuthenticatedCisIndexRoute
   AuthenticatedLiberacoesIndexRoute: typeof AuthenticatedLiberacoesIndexRoute
   AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
   AuthenticatedVisitasIndexRoute: typeof AuthenticatedVisitasIndexRoute
@@ -571,6 +631,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPaineisRoute: AuthenticatedPaineisRoute,
   AuthenticatedBriefingsBriefingIdRoute: AuthenticatedBriefingsBriefingIdRoute,
   AuthenticatedBriefingsNovoRoute: AuthenticatedBriefingsNovoRoute,
+  AuthenticatedCisCiIdRoute: AuthenticatedCisCiIdRoute,
+  AuthenticatedCisNovaRoute: AuthenticatedCisNovaRoute,
   AuthenticatedLiberacoesLiberacaoIdRoute:
     AuthenticatedLiberacoesLiberacaoIdRoute,
   AuthenticatedLiberacoesNovaRoute: AuthenticatedLiberacoesNovaRoute,
@@ -578,6 +640,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVisitasVisitaIdRoute: AuthenticatedVisitasVisitaIdRoute,
   AuthenticatedVisitasNovaRoute: AuthenticatedVisitasNovaRoute,
   AuthenticatedBriefingsIndexRoute: AuthenticatedBriefingsIndexRoute,
+  AuthenticatedCisIndexRoute: AuthenticatedCisIndexRoute,
   AuthenticatedLiberacoesIndexRoute: AuthenticatedLiberacoesIndexRoute,
   AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,
   AuthenticatedVisitasIndexRoute: AuthenticatedVisitasIndexRoute,

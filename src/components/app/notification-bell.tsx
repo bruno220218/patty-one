@@ -90,6 +90,36 @@ function NotificationText({ n }: { n: AppNotification }) {
         </span>
       );
     }
+    case "ci_nova":
+    case "ci_vinheta_entrou":
+    case "ci_recusada": {
+      const ci = (
+        <span className="font-medium">
+          CI nº {n.refNumero} · {n.projectName}
+        </span>
+      );
+      return (
+        <span className="block break-words">
+          {n.tipo === "ci_nova" && (
+            <>
+              {who} criou a {ci}: vinheta para entrar nos painéis
+            </>
+          )}
+          {n.tipo === "ci_vinheta_entrou" && (
+            <>
+              {who} deu entrada na {ci}
+            </>
+          )}
+          {n.tipo === "ci_recusada" && (
+            <>
+              {who} <span className="font-semibold text-destructive">recusou</span> a entrada da{" "}
+              {ci}
+            </>
+          )}
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
+        </span>
+      );
+    }
     case "rgb_vencendo":
     case "rgb_vence_hoje":
     case "rgb_vencida": {
