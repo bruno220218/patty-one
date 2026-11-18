@@ -8,7 +8,10 @@ const PASTAS = {
   liberacao: { tabela: "liberacoes", pasta: "Liberações" },
   briefing: { tabela: "briefings", pasta: "Briefings" },
   visita: { tabela: "visitas", pasta: "Visitas técnicas" },
+  ci: { tabela: "cis", pasta: "CIs de vinheta" },
 } as const;
+
+const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
 const limpa = (s: string) =>
   s
@@ -42,7 +45,7 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
-        entidade: z.enum(["liberacao", "briefing", "visita"]),
+        entidade: z.enum(["liberacao", "briefing", "visita", "ci"]),
         entidadeId: z.string().uuid(),
         nome: z.string().trim().min(1).max(200),
         mime: z.string().max(100),
@@ -63,9 +66,9 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
     const cfg = PASTAS[data.entidade];
     const { data: row, error } = await db
       .from(cfg.tabela)
-      .select("numero, cliente")
+      .select(data.entidade === "ci" ? "numero, cliente, data" : "numero, cliente")
       .eq("id", data.entidadeId)
-      .maybeSingle();
+      .maybeSingle<{ numero: number; cliente: string; data?: string }>();
     if (error || !row) throw new Error("Registro não encontrado.");
 
     const { data: perfil } = await db
@@ -74,7 +77,12 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .maybeSingle();
 
-    const subpasta = limpa(`Nº ${row.numero}${row.cliente ? ` - ${row.cliente}` : ""}`);
+    // CI numbers restart every month, so their folder carries the month: "2026-11 CI 10-Nov - CSFX".
+    const numero =
+      data.entidade === "ci" && row.data
+        ? `${row.data.slice(0, 7)} CI ${String(row.numero).padStart(2, "0")}-${MESES[Number(row.data.slice(5, 7)) - 1] ?? ""}`
+        : `Nº ${row.numero}`;
+    const subpasta = limpa(`${numero}${row.cliente ? ` - ${row.cliente}` : ""}`);
     const payload = JSON.stringify({
       exp: Date.now() + 15 * 60_000,
       pasta: [PASTA_RAIZ, cfg.pasta, subpasta],

@@ -9,12 +9,15 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { CiForm } from "@/components/app/ci-form";
 import { CiPainelPill, CiSituacaoPill, EntradaAcoes } from "@/components/app/ci-entrada";
 import { useNomesCi } from "@/components/app/ci-nomes";
+import { AnexosPanel } from "@/components/app/anexos-panel";
 import { useCi, useCurrentUser, useDataAction, usePaineis } from "@/hooks/use-data";
 import {
   canEditarPaineis,
   ciEditavel,
   ciRepository,
+  VINHETA_ACCEPT,
   VINHETA_TIPO_LABEL,
+  vinhetaPermitida,
   type Ci,
   type CiInput,
 } from "@/lib/data";
@@ -242,6 +245,18 @@ function CiPage() {
           </section>
         )}
       </article>
+
+      <AnexosPanel
+        entidade="ci"
+        entidadeId={ci.id}
+        titulo="Arquivo da vinheta"
+        aviso="Fica no Google Drive da empresa, na pasta desta CI. Clique para abrir ou baixar."
+        accept={VINHETA_ACCEPT}
+        permitido={vinhetaPermitida}
+        formatos="o vídeo da vinheta (MP4, MOV…), uma imagem ou PDF"
+        rotuloBotao="Enviar vinheta"
+        className="mt-4"
+      />
 
       <p className="mt-3 text-xs text-muted-foreground">
         Criada por {ci.createdByNome || "alguém"} em {formatDateTime(ci.createdAt)}.

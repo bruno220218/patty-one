@@ -76,3 +76,16 @@ describe("CI", () => {
     expect(ciEditavel({ paineis: [cp("aprovada"), cp("pendente")] })).toBe(false);
   });
 });
+
+describe("arquivo da vinheta", () => {
+  it("accepts videos, images and PDF, and rejects the rest", async () => {
+    const { vinhetaPermitida, tipoDoArquivo } = await import("./cloud-anexos");
+    expect(vinhetaPermitida("csfx.mp4", "video/mp4")).toBe(true);
+    expect(vinhetaPermitida("csfx.mov", "video/quicktime")).toBe(true);
+    expect(vinhetaPermitida("csfx.mkv", "")).toBe(true);
+    expect(vinhetaPermitida("arte.gif", "image/gif")).toBe(true);
+    expect(vinhetaPermitida("arte.pdf", "application/pdf")).toBe(true);
+    expect(vinhetaPermitida("planilha.xlsx", "application/vnd.ms-excel")).toBe(false);
+    expect(tipoDoArquivo("csfx.avi", "")).toBe("video");
+  });
+});

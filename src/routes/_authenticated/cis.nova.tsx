@@ -8,6 +8,9 @@ import { CiForm } from "@/components/app/ci-form";
 import { useCurrentUser, useDataAction, usePaineis } from "@/hooks/use-data";
 import { canCriarCi, ciRepository, ciVazia } from "@/lib/data";
 import { useNomesCi } from "@/components/app/ci-nomes";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { anexarArquivo } from "@/lib/drive-upload";
 
 export const Route = createFileRoute("/_authenticated/cis/nova")({
   head: () => ({
@@ -22,6 +25,7 @@ function NovaCiPage() {
   const nomes = useNomesCi();
   const run = useDataAction();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const back = (
     <Button variant="outline" asChild className="mb-6">
@@ -64,12 +68,28 @@ function NovaCiPage() {
         responsaveis={nomes.responsaveis}
         submitLabel="Criar CI"
         onCancel={() => navigate({ to: "/cis" })}
-        onSubmit={async (input) => {
+        comArquivo
+        onSubmit={async (input, arquivos) => {
           const id = await run(
             () => ciRepository.salvar(null, input),
             "CI criada. A Criação foi avisada.",
           );
-          if (id) await navigate({ to: "/cis/$ciId", params: { ciId: id } });
+          if (!id) return;
+          // The vinheta goes to Drive after the CI exists (its folder is named after the CI).
+          for (const file of arquivos) {
+            const t = toast.loading(`Enviando "${file.name}" para o Drive…`);
+            try {
+              await anexarArquivo(file, "ci", id);
+              toast.success(`"${file.name}" enviado para o Drive.`, { id: t });
+            } catch (e) {
+              toast.error(
+                `A CI foi criada, mas "${file.name}" não subiu: ${e instanceof Error ? e.message : "erro no envio"}. Anexe de novo na CI.`,
+                { id: t, duration: 10_000 },
+              );
+            }
+          }
+          await queryClient.invalidateQueries({ queryKey: ["anexos", "ci", id] });
+          await navigate({ to: "/cis/$ciId", params: { ciId: id } });
         }}
       />
     </div>

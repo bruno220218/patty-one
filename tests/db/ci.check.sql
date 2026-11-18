@@ -1,8 +1,9 @@
--- Self-checking test of the CI de vinheta flow (migration 0013). Run it as one statement:
+-- Self-checking test of the CI de vinheta flow (migrations 0013 and 0014). Run it as one statement:
 -- it always ends with an exception "RESULT: ..." so every change is rolled back. Expected:
 -- m_cria=blocked semPainel=blocked numeros=1,2 rotulo=01/Nov c_cria=blocked pendentes=3
 -- m_aprova=blocked primeiroVago=11 vinhetaCi=01/Nov renova=true mesmoEspaco=true semVaga=blocked
--- recusa=ok editarDepois=blocked excluirDepois=blocked excluirPendente=ok outroMes=1
+-- recusa=ok editarDepois=blocked excluirDepois=blocked anexoCi=Comercial CI excluirPendente=ok
+-- anexoApagado=true outroMes=1
 -- avisoCriacao=1 avisosCriador=3
 -- (primeiroVago = lowest free slot of RGB 1 with the imported spreadsheet data.)
 do $$
@@ -71,8 +72,13 @@ begin
   exception when others then out := out || ' editarDepois=blocked'; end;
   begin perform public.excluir_ci(ci1); out := out || ' excluirDepois=ALLOWED';
   exception when others then out := out || ' excluirDepois=blocked'; end;
+  -- The representative attaches the vinheta file (migration 0014); deleting the CI drops the record.
+  insert into anexos (entidade, entidade_id, url, nome, tipo, drive_id)
+    values ('ci', ci2, 'https://drive.google.com/file/d/abc/view', 'vinheta.mp4', 'video', 'abc');
+  out := out || ' anexoCi=' || (select created_by_nome from anexos where entidade = 'ci' and entidade_id = ci2);
   perform public.excluir_ci(ci2);
-  out := out || ' excluirPendente=' || case when exists (select 1 from cis where id = ci2) then 'FAIL' else 'ok' end;
+  out := out || ' excluirPendente=' || case when exists (select 1 from cis where id = ci2) then 'FAIL' else 'ok' end
+             || ' anexoApagado=' || not exists (select 1 from anexos where entidade = 'ci' and entidade_id = ci2);
   ci3 := public.salvar_ci(null, d || '{"data":"2026-12-01"}', array[p1]);
   out := out || ' outroMes=' || (select numero from cis where id = ci3);
   -- Notices are private (RLS), so count them as the database owner.

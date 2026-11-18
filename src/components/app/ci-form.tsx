@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from "react";
-import { ChevronDown } from "lucide-react";
+import { useRef, useState, type DragEvent, type FormEvent } from "react";
+import { ChevronDown, Film, Upload, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -12,8 +13,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  ANEXO_MAX_BYTES,
+  formatBytes,
   localToday,
+  VINHETA_ACCEPT,
   VINHETA_TIPOS,
+  vinhetaPermitida,
   type CiInput,
   type CiMovel,
   type CiTipo,
@@ -64,20 +69,53 @@ export function CiForm({
   submitLabel,
   onSubmit,
   onCancel,
+  comArquivo = false,
 }: {
   initial: CiInput;
   paineis: Painel[];
   representantes: string[];
   responsaveis: string[];
   submitLabel: string;
-  onSubmit: (input: CiInput) => Promise<unknown>;
+  /** Files picked in the form go to Drive right after the CI is saved. */
+  onSubmit: (input: CiInput, arquivos: File[]) => Promise<unknown>;
   onCancel: () => void;
+  /** Show the "Arquivo da vinheta" field (new CI; an existing one uses the attachments panel). */
+  comArquivo?: boolean;
 }) {
   const [form, setForm] = useState<CiInput>(initial);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const temMovel = Object.values(initial.movel).some(Boolean);
   const [movelAberto, setMovelAberto] = useState(temMovel);
+  const [arquivos, setArquivos] = useState<File[]>([]);
+  const [arrastando, setArrastando] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const escolher = (lista: FileList | null) => {
+    if (!lista) return;
+    const novos: File[] = [];
+    for (const f of Array.from(lista)) {
+      if (!vinhetaPermitida(f.name, f.type)) {
+        toast.error(`"${f.name}": envie o vídeo da vinheta (MP4, MOV…), uma imagem ou PDF.`);
+      } else if (f.size > ANEXO_MAX_BYTES) {
+        toast.error(
+          `"${f.name}" tem ${formatBytes(f.size)}. Pelo app vão até ${formatBytes(ANEXO_MAX_BYTES)}: suba no Drive e cole o link na CI depois.`,
+        );
+      } else {
+        novos.push(f);
+      }
+    }
+    setArquivos((a) => [
+      ...a,
+      ...novos.filter((n) => !a.some((x) => x.name === n.name && x.size === n.size)),
+    ]);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+  const soltar = (e: DragEvent) => {
+    e.preventDefault();
+    setArrastando(false);
+    escolher(e.dataTransfer.files);
+  };
 
   const set = <K extends keyof CiInput>(key: K, value: CiInput[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -96,7 +134,7 @@ export function CiForm({
     if (form.inicio && form.fim && form.fim < form.inicio)
       return setError("O fim não pode ser antes do início.");
     setSaving(true);
-    await onSubmit(form);
+    await onSubmit(form, arquivos);
     setSaving(false);
   };
 
@@ -149,6 +187,74 @@ export function CiForm({
           />
         </FormField>
       </section>
+
+      {comArquivo && (
+        <section className="surface-card p-5" aria-labelledby="ci-arquivo-titulo">
+          <h2 id="ci-arquivo-titulo" className="text-sm font-semibold">
+            Arquivo da vinheta
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Vai direto para o Google Drive da empresa, na pasta da CI. A Criação baixa de lá para
+            colocar no painel.
+          </p>
+          <input
+            ref={fileRef}
+            id="ci-arquivo"
+            type="file"
+            multiple
+            accept={VINHETA_ACCEPT}
+            className="hidden"
+            onChange={(e) => escolher(e.target.files)}
+          />
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setArrastando(true);
+            }}
+            onDragLeave={() => setArrastando(false)}
+            onDrop={soltar}
+            className={cn(
+              "mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-dashed px-4 py-4 transition-colors",
+              arrastando ? "border-primary bg-accent" : "border-border",
+            )}
+          >
+            <Button type="button" size="sm" onClick={() => fileRef.current?.click()}>
+              <Upload />
+              Escolher arquivo
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              ou arraste aqui · vídeo (MP4, MOV…), imagem ou PDF · até{" "}
+              {formatBytes(ANEXO_MAX_BYTES)}
+            </span>
+          </div>
+          {arquivos.length > 0 && (
+            <ul className="mt-3 divide-y divide-border rounded-lg border">
+              {arquivos.map((f) => (
+                <li
+                  key={`${f.name}-${f.size}`}
+                  className="flex items-center gap-3 px-3 py-2 text-sm"
+                >
+                  <Film className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate font-medium">{f.name}</span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {formatBytes(f.size)}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    aria-label={`Tirar ${f.name}`}
+                    onClick={() => setArquivos((a) => a.filter((x) => x !== f))}
+                  >
+                    <X />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <section className="surface-card p-5" aria-labelledby="ci-paineis-titulo">
         <h2 id="ci-paineis-titulo" className="mb-3 text-sm font-semibold">

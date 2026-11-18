@@ -1,5 +1,5 @@
 import { prepararUploadDrive } from "@/lib/data/drive.functions";
-import type { AnexoEntidade } from "@/lib/data/cloud-anexos";
+import { anexosRepository, tipoDoArquivo, type AnexoEntidade } from "@/lib/data/cloud-anexos";
 
 function base64DoArquivo(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -54,4 +54,22 @@ export async function enviarParaDrive(
     throw new Error(body?.error ? `Drive: ${body.error}` : "O Drive não aceitou o arquivo.");
   }
   return { id: body.id, url: body.url };
+}
+
+/** Sends the file to Drive and records the link as an attachment of the record. */
+export async function anexarArquivo(
+  file: File,
+  entidade: AnexoEntidade,
+  entidadeId: string,
+): Promise<void> {
+  const drive = await enviarParaDrive(file, entidade, entidadeId);
+  await anexosRepository.add({
+    entidade,
+    entidadeId,
+    url: drive.url,
+    nome: file.name,
+    tipo: tipoDoArquivo(file.name, file.type),
+    driveId: drive.id,
+    tamanho: file.size,
+  });
 }

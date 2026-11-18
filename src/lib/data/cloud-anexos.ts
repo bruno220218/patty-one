@@ -5,7 +5,7 @@ import { dbError } from "./db-errors";
 // The table is newer than the generated database types.
 const db = supabase as unknown as SupabaseClient;
 
-export type AnexoEntidade = "liberacao" | "briefing" | "visita";
+export type AnexoEntidade = "liberacao" | "briefing" | "visita" | "ci";
 export type AnexoTipo = "pdf" | "foto" | "video" | "audio" | "outro";
 
 export interface Anexo {
@@ -35,11 +35,18 @@ export const ANEXO_TIPOS: { value: AnexoTipo; label: string }[] = [
 export const ANEXO_ACCEPT =
   ".pdf,.png,.jpg,.jpeg,.mp4,.mp3,application/pdf,image/png,image/jpeg,video/mp4,audio/mpeg";
 
+/** Accepted for the vinheta file of a CI: video, image, or the PDF of the art. */
+export const VINHETA_ACCEPT =
+  "video/*,image/*,.mp4,.mov,.avi,.wmv,.mkv,.png,.jpg,.jpeg,.gif,.pdf,application/pdf";
+
 /** Apps Script web apps take ~50 MB per request; base64 adds a third. */
 export const ANEXO_MAX_BYTES = 35 * 1024 * 1024;
 
+const EXT_VIDEO = ["mp4", "mov", "avi", "wmv", "mkv", "m4v", "webm"];
+
 export function tipoDoArquivo(nome: string, mime: string): AnexoTipo {
   const ext = nome.toLowerCase().split(".").pop() ?? "";
+  if (EXT_VIDEO.includes(ext)) return "video";
   if (mime === "application/pdf" || ext === "pdf") return "pdf";
   if (mime.startsWith("image/") || ["png", "jpg", "jpeg"].includes(ext)) return "foto";
   if (mime.startsWith("video/") || ext === "mp4") return "video";
@@ -49,6 +56,17 @@ export function tipoDoArquivo(nome: string, mime: string): AnexoTipo {
 
 export function arquivoPermitido(nome: string, mime: string): boolean {
   return tipoDoArquivo(nome, mime) !== "outro";
+}
+
+/** Vinheta file of a CI: any video, an image (GIF/PNG/JPG) or the PDF of the art. */
+export function vinhetaPermitida(nome: string, mime: string): boolean {
+  const ext = nome.toLowerCase().split(".").pop() ?? "";
+  return (
+    mime.startsWith("video/") ||
+    mime.startsWith("image/") ||
+    mime === "application/pdf" ||
+    [...EXT_VIDEO, "png", "jpg", "jpeg", "gif", "pdf"].includes(ext)
+  );
 }
 
 /** Accepts only http(s) links; returns the cleaned URL or null. */

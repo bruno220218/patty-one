@@ -26,12 +26,11 @@ import {
   arquivoPermitido,
   formatBytes,
   linkValido,
-  tipoDoArquivo,
   type Anexo,
   type AnexoEntidade,
   type AnexoTipo,
 } from "@/lib/data";
-import { enviarParaDrive } from "@/lib/drive-upload";
+import { anexarArquivo } from "@/lib/drive-upload";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +53,10 @@ export function AnexosPanel({
   titulo = "Anexos",
   aviso,
   className,
+  accept = ANEXO_ACCEPT,
+  permitido = arquivoPermitido,
+  formatos = "PDF, PNG, JPG, MP4 ou MP3",
+  rotuloBotao = "Anexar arquivo",
 }: {
   entidade: AnexoEntidade;
   entidadeId: string;
@@ -62,6 +65,12 @@ export function AnexosPanel({
   /** Extra hint under the title (e.g. "fotos obrigatórias"). */
   aviso?: string;
   className?: string;
+  /** File picker filter (defaults to PDF, images, MP4 and MP3). */
+  accept?: string;
+  permitido?: (nome: string, mime: string) => boolean;
+  /** Shown when a file isn't accepted: "envie {formatos}". */
+  formatos?: string;
+  rotuloBotao?: string;
 }) {
   const { data: anexos, isPending } = useAnexos(entidade, entidadeId);
   const { data: me } = useCurrentUser();
@@ -81,8 +90,8 @@ export function AnexosPanel({
   const enviarArquivos = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     for (const file of Array.from(files)) {
-      if (!arquivoPermitido(file.name, file.type)) {
-        toast.error(`"${file.name}": envie PDF, PNG, JPG, MP4 ou MP3.`);
+      if (!permitido(file.name, file.type)) {
+        toast.error(`"${file.name}": envie ${formatos}.`);
         continue;
       }
       if (file.size > ANEXO_MAX_BYTES) {
@@ -93,16 +102,7 @@ export function AnexosPanel({
       }
       setEnviando((e) => [...e, file.name]);
       try {
-        const drive = await enviarParaDrive(file, entidade, entidadeId);
-        await anexosRepository.add({
-          entidade,
-          entidadeId,
-          url: drive.url,
-          nome: file.name,
-          tipo: tipoDoArquivo(file.name, file.type),
-          driveId: drive.id,
-          tamanho: file.size,
-        });
+        await anexarArquivo(file, entidade, entidadeId);
         toast.success(`"${file.name}" enviado para o Drive.`);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : `Não foi possível enviar "${file.name}".`);
@@ -169,13 +169,13 @@ export function AnexosPanel({
               ref={fileRef}
               type="file"
               multiple
-              accept={ANEXO_ACCEPT}
+              accept={accept}
               className="hidden"
               onChange={(e) => void enviarArquivos(e.target.files)}
             />
             <Button size="sm" onClick={() => fileRef.current?.click()}>
               <Upload />
-              Anexar arquivo
+              {rotuloBotao}
             </Button>
             <Button size="sm" variant="outline" onClick={() => setModoLink((v) => !v)}>
               <Link2 />
