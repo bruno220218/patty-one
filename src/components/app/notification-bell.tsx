@@ -90,6 +90,28 @@ function NotificationText({ n }: { n: AppNotification }) {
         </span>
       );
     }
+    case "ci_foto_solicitada":
+    case "ci_foto_enviada": {
+      const ci = (
+        <span className="font-medium">
+          CI nº {n.refNumero} · {n.projectName}
+        </span>
+      );
+      return (
+        <span className="block break-words">
+          {n.tipo === "ci_foto_solicitada" ? (
+            <>
+              {who} pediu a <span className="font-semibold">foto da veiculação</span> da {ci}
+            </>
+          ) : (
+            <>
+              {who} enviou as <span className="font-semibold">fotos da veiculação</span> da {ci}
+            </>
+          )}
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
+        </span>
+      );
+    }
     case "ci_nova":
     case "ci_vinheta_entrou":
     case "ci_recusada": {

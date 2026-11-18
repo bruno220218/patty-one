@@ -10,6 +10,7 @@ import { CiForm } from "@/components/app/ci-form";
 import { CiPainelPill, CiSituacaoPill, EntradaAcoes } from "@/components/app/ci-entrada";
 import { useNomesCi } from "@/components/app/ci-nomes";
 import { AnexosPanel } from "@/components/app/anexos-panel";
+import { CiFotoChecking } from "@/components/app/ci-foto-checking";
 import { useCi, useCurrentUser, useDataAction, usePaineis } from "@/hooks/use-data";
 import {
   canEditarPaineis,
@@ -257,6 +258,8 @@ function CiPage() {
         rotuloBotao="Enviar vinheta"
         className="mt-4"
       />
+
+      <CiFotoChecking ci={ci} />
 
       <p className="mt-3 text-xs text-muted-foreground">
         Criada por {ci.createdByNome || "alguém"} em {formatDateTime(ci.createdAt)}.

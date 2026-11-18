@@ -314,6 +314,11 @@ export const FUNCOES = [
   },
   { value: "producao", label: "Produção", descricao: "Executa projetos" },
   { value: "montagem", label: "Montagem", descricao: "Executa projetos e faz visitas técnicas" },
+  {
+    value: "checking",
+    label: "Checking fotográfico",
+    descricao: "Tira as fotos de comprovação das vinhetas nos painéis",
+  },
 ] as const;
 
 export const LIBERACAO_STATUS_LABEL: Record<"aguardando" | "reprovada" | "aprovada", string> = {

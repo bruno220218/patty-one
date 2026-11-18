@@ -61,12 +61,28 @@ export interface CiPainel {
   decididoEm: string | null;
 }
 
+export type CiFotoStatus = "pendente" | "enviada" | "cancelada";
+
+/** A request for the checking fotográfico to photograph the vinheta on the panels. */
+export interface CiFotoPedido {
+  id: string;
+  status: CiFotoStatus;
+  observacao: string;
+  pedidoPorId: string | null;
+  pedidoPorNome: string;
+  pedidoEm: string;
+  atendidoPorNome: string;
+  atendidoEm: string | null;
+}
+
 export interface Ci extends Omit<CiInput, "painelIds"> {
   id: string;
   numero: number;
   /** "10/Nov" — how the spreadsheet and the panels show it. */
   rotulo: string;
   paineis: CiPainel[];
+  /** Photo requests, newest first (empty before migration 0016). */
+  fotoPedidos: CiFotoPedido[];
   createdBy: string | null;
   createdByNome: string;
   createdAt: string;
@@ -129,6 +145,7 @@ interface CiRow {
   created_by_nome: string;
   created_at: string;
   ci_paineis?: CiPainelRow[];
+  ci_fotos_pedidos?: CiFotoPedidoRow[];
 }
 
 const toCiPainel = (r: CiPainelRow): CiPainel => ({
@@ -169,6 +186,18 @@ const toCi = (r: CiRow): Ci => ({
   observacao: r.observacao,
   movel: toMovel(r.movel),
   paineis: (r.ci_paineis ?? []).map(toCiPainel),
+  fotoPedidos: (r.ci_fotos_pedidos ?? [])
+    .map((f): CiFotoPedido => ({
+      id: f.id,
+      status: f.status,
+      observacao: f.observacao,
+      pedidoPorId: f.pedido_por,
+      pedidoPorNome: f.pedido_por_nome,
+      pedidoEm: f.pedido_em,
+      atendidoPorNome: f.atendido_por_nome,
+      atendidoEm: f.atendido_em,
+    }))
+    .sort((a, b) => b.pedidoEm.localeCompare(a.pedidoEm)),
   createdBy: r.created_by,
   createdByNome: r.created_by_nome,
   createdAt: r.created_at,
@@ -204,28 +233,47 @@ function check(i: CiInput) {
   if (i.inicio && i.fim && i.fim < i.inicio) throw new Error("O fim não pode ser antes do início.");
 }
 
-const SELECT = "*, ci_paineis(*)";
+interface CiFotoPedidoRow {
+  id: string;
+  status: CiFotoStatus;
+  observacao: string;
+  pedido_por: string | null;
+  pedido_por_nome: string;
+  pedido_em: string;
+  atendido_por_nome: string;
+  atendido_em: string | null;
+}
+
+const SELECT = "*, ci_paineis(*), ci_fotos_pedidos(*)";
+// Before migration 0016 the photo table doesn't exist: read the CI without it.
+const SELECT_SEM_FOTO = "*, ci_paineis(*)";
+const semRelacao = (code?: string) => code === "PGRST200" || code === "42P01";
 const missingTable = (code?: string) => code === "42P01" || code === "PGRST205";
 
 export const ciRepository = {
   /** Null when the database update (0013) hasn't been run yet. */
   async list(): Promise<Ci[] | null> {
-    const { data, error } = await db
-      .from("cis")
-      .select(SELECT)
-      .order("data", { ascending: false })
-      .order("numero", { ascending: false });
+    const query = (cols: string) =>
+      db
+        .from("cis")
+        .select(cols)
+        .order("data", { ascending: false })
+        .order("numero", { ascending: false });
+    let { data, error } = await query(SELECT);
+    if (error && semRelacao(error.code)) ({ data, error } = await query(SELECT_SEM_FOTO));
     if (error) {
       if (missingTable(error.code)) return null;
       throw dbError(error);
     }
-    return ((data ?? []) as CiRow[]).map(toCi);
+    return ((data ?? []) as unknown as CiRow[]).map(toCi);
   },
 
   async get(id: string): Promise<Ci | null> {
-    const { data, error } = await db.from("cis").select(SELECT).eq("id", id).maybeSingle();
+    const query = (cols: string) => db.from("cis").select(cols).eq("id", id).maybeSingle();
+    let { data, error } = await query(SELECT);
+    if (error && semRelacao(error.code)) ({ data, error } = await query(SELECT_SEM_FOTO));
     if (error) throw dbError(error);
-    return data ? toCi(data as CiRow) : null;
+    return data ? toCi(data as unknown as CiRow) : null;
   },
 
   /** Creates (id null) or edits a CI; returns its id. */
@@ -250,6 +298,26 @@ export const ciRepository = {
     const { data, error } = await db.rpc("aprovar_ci_painel", { _ci_painel_id: ciPainelId });
     if (error) throw dbError(error);
     return data as number;
+  },
+
+  /** Asks the checking fotográfico for photos of the vinheta on the panels. */
+  async solicitarFoto(ciId: string, observacao: string): Promise<void> {
+    const { error } = await db.rpc("solicitar_foto_ci", {
+      _ci_id: ciId,
+      _observacao: observacao.trim(),
+    });
+    if (error) throw dbError(error);
+  },
+
+  /** Checking: photos are up, close the request (at least one photo is required). */
+  async concluirFoto(pedidoId: string): Promise<void> {
+    const { error } = await db.rpc("concluir_foto_ci", { _pedido_id: pedidoId });
+    if (error) throw dbError(error);
+  },
+
+  async cancelarFoto(pedidoId: string): Promise<void> {
+    const { error } = await db.rpc("cancelar_foto_ci", { _pedido_id: pedidoId });
+    if (error) throw dbError(error);
   },
 
   async recusar(ciPainelId: string, motivo: string): Promise<void> {
@@ -278,6 +346,20 @@ export function ciVazia(representanteNome = ""): CiInput {
     movel: CI_MOVEL_VAZIO,
     painelIds: [],
   };
+}
+
+/** The open photo request of a CI, if any. */
+export const fotoPendente = (ci: Pick<Ci, "fotoPedidos">) =>
+  ci.fotoPedidos.find((f) => f.status === "pendente") ?? null;
+
+/** Comercial, criação and gestão ask for photos (also enforced in the database). */
+export function canPedirFoto(user: { funcoes: readonly string[] } | null | undefined) {
+  return Boolean(user && user.funcoes.some((f) => ["gestor", "comercial", "criacao"].includes(f)));
+}
+
+/** Checking fotográfico and gestão take the photos (also enforced in the database). */
+export function canFazerChecking(user: { funcoes: readonly string[] } | null | undefined) {
+  return Boolean(user && user.funcoes.some((f) => f === "gestor" || f === "checking"));
 }
 
 /** Comercial and gestão create CIs (also enforced in the database). */

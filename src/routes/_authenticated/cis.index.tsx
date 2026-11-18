@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileText, Plus, Search, SearchX } from "lucide-react";
+import { Camera, FileText, Plus, Search, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,8 +8,16 @@ import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { CiSituacaoPill } from "@/components/app/ci-entrada";
+import { StatusPill } from "@/components/app/status-pill";
 import { useCis, useCurrentUser, usePaineis } from "@/hooks/use-data";
-import { canCriarCi, ciSituacao, dobrar, VINHETA_TIPO_LABEL, type Ci } from "@/lib/data";
+import {
+  canCriarCi,
+  ciSituacao,
+  fotoPendente,
+  dobrar,
+  VINHETA_TIPO_LABEL,
+  type Ci,
+} from "@/lib/data";
 import { formatDateOnly } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/cis/")({
   component: CisPage,
 });
 
-type Aba = "aguardando" | "todas";
+type Aba = "aguardando" | "fotos" | "todas";
 
 const periodo = (ci: Ci) =>
   ci.inicio || ci.fim
@@ -52,13 +60,14 @@ function CisPage() {
   );
 
   const aguardando = useMemo(() => (cis ?? []).filter((c) => ciSituacao(c) !== "concluida"), [cis]);
+  const fotos = useMemo(() => (cis ?? []).filter((c) => fotoPendente(c)), [cis]);
   const visiveis = useMemo(() => {
     const q = dobrar(query.trim());
-    return (aba === "aguardando" ? aguardando : (cis ?? [])).filter(
+    return (aba === "aguardando" ? aguardando : aba === "fotos" ? fotos : (cis ?? [])).filter(
       (c) =>
         !q || dobrar(`${c.rotulo} ${c.cliente} ${c.titulo} ${c.representanteNome}`).includes(q),
     );
-  }, [aba, aguardando, cis, query]);
+  }, [aba, aguardando, fotos, cis, query]);
 
   return (
     <>
@@ -107,6 +116,19 @@ function CisPage() {
                     {aguardando.length}
                   </span>
                 </TabsTrigger>
+                <TabsTrigger value="fotos" className="gap-1.5">
+                  Fotos pendentes
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      fotos.length > 0
+                        ? "bg-status-progress text-status-progress-foreground"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {fotos.length}
+                  </span>
+                </TabsTrigger>
                 <TabsTrigger value="todas">Todas</TabsTrigger>
               </TabsList>
             </Tabs>
@@ -149,6 +171,11 @@ function CisPage() {
                         <span className="font-normal text-muted-foreground"> · {ci.titulo}</span>
                       )}
                     </Link>
+                    {fotoPendente(ci) && (
+                      <StatusPill tone="progress" icon={Camera}>
+                        Foto pedida
+                      </StatusPill>
+                    )}
                     <CiSituacaoPill ci={ci} />
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 pl-0 sm:pl-[4.25rem]">

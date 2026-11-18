@@ -5,7 +5,7 @@ import { dbError } from "./db-errors";
 // The table is newer than the generated database types.
 const db = supabase as unknown as SupabaseClient;
 
-export type AnexoEntidade = "liberacao" | "briefing" | "visita" | "ci";
+export type AnexoEntidade = "liberacao" | "briefing" | "visita" | "ci" | "ci_foto";
 export type AnexoTipo = "pdf" | "foto" | "video" | "audio" | "outro";
 
 export interface Anexo {

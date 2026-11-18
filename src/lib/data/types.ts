@@ -22,7 +22,8 @@ export type Funcao =
   | "criacao"
   | "projetos_especiais"
   | "producao"
-  | "montagem";
+  | "montagem"
+  | "checking";
 
 export interface ChecklistTask {
   id: string;
@@ -211,7 +212,9 @@ export type NotificationTipo =
   | "rgb_vencida"
   | "ci_nova"
   | "ci_vinheta_entrou"
-  | "ci_recusada";
+  | "ci_recusada"
+  | "ci_foto_solicitada"
+  | "ci_foto_enviada";
 
 /** In-app notification: a task was completed, or a liberação moved in the approval flow. */
 export interface AppNotification {
