@@ -77,7 +77,7 @@ export const setTeamMemberPassword = createServerFn({ method: "POST" })
     z
       .object({
         userId: z.string().uuid(),
-        password: z.string().min(6, "A senha precisa ter pelo menos 6 caracteres.").max(72),
+        password: z.string().min(8, "A senha precisa ter pelo menos 8 caracteres.").max(72),
       })
       .parse(input),
   )
@@ -88,6 +88,19 @@ export const setTeamMemberPassword = createServerFn({ method: "POST" })
     });
     if (error) throw new Error("Não foi possível confirmar sua permissão. Tente novamente.");
     if (!isGestor) throw new Error("Somente gestores podem definir senhas.");
+    // A gestor setting another gestor's password could then sign in as them.
+    if (data.userId !== context.userId) {
+      const { data: alvoGestor, error: alvoError } = await context.supabase.rpc("has_role", {
+        _user_id: data.userId,
+        _role: "gestor",
+      });
+      if (alvoError) throw new Error("Não foi possível confirmar a conta. Tente novamente.");
+      if (alvoGestor) {
+        throw new Error(
+          "Não é possível definir a senha de outro gestor. Peça para a pessoa usar 'Esqueci minha senha'.",
+        );
+      }
+    }
 
     if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
       throw new Error(

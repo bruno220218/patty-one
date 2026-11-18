@@ -68,24 +68,66 @@ function friendlyError(error: unknown): string {
   return "Não foi possível gerar sugestões agora. Tente novamente em instantes.";
 }
 
-/** Confirms the caller is a signed-in Patty One user before spending AI credits. */
-async function isSignedIn(request: Request): Promise<boolean> {
+type Acesso = "ok" | "sem_login" | "nao_membro" | "limite";
+
+/**
+ * Before spending AI credits: the caller must be an approved team member (sign-up is open,
+ * so an account alone isn't enough) and within the daily limit. The database counts each
+ * request (registrar_uso_ia); without that migration it falls back to the membership check.
+ */
+async function checarAcesso(request: Request): Promise<Acesso> {
   const token = request.headers
     .get("authorization")
     ?.replace(/^Bearer\s+/i, "")
     .trim();
-  const url = process.env["SUPABASE_URL"];
+  const url = process.env["SUPABASE_URL"]?.replace(/\/+$/, "");
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
-  if (!token || !url || !key) return false;
-  const res = await fetch(`${url.replace(/\/+$/, "")}/auth/v1/user`, {
-    headers: { apikey: key, Authorization: `Bearer ${token}` },
+  if (!token || !url || !key) return "sem_login";
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${token}`,
+    "content-type": "application/json",
+  };
+
+  const user = await fetch(`${url}/auth/v1/user`, { headers });
+  if (!user.ok) return "sem_login";
+  const { id } = (await user.json()) as { id?: string };
+  if (!id) return "sem_login";
+
+  const uso = await fetch(`${url}/rest/v1/rpc/registrar_uso_ia`, {
+    method: "POST",
+    headers,
+    body: "{}",
   });
-  return res.ok;
+  if (uso.ok) {
+    const r = (await uso.json()) as string;
+    return r === "ok" || r === "limite" || r === "nao_membro" ? r : "nao_membro";
+  }
+  // Migration 0015 not run yet: at least require team membership.
+  const membro = await fetch(`${url}/rest/v1/rpc/is_team_member`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ _user_id: id }),
+  });
+  return membro.ok && (await membro.json()) === true ? "ok" : "nao_membro";
 }
 
 export async function handleNextSteps(request: Request): Promise<Response> {
-  if (!(await isSignedIn(request))) {
+  const acesso = await checarAcesso(request);
+  if (acesso === "sem_login") {
     return Response.json({ error: "Entre na sua conta para usar as sugestões." }, { status: 401 });
+  }
+  if (acesso === "nao_membro") {
+    return Response.json(
+      { error: "As sugestões são só para quem já foi aprovado na equipe." },
+      { status: 403 },
+    );
+  }
+  if (acesso === "limite") {
+    return Response.json(
+      { error: "Você chegou ao limite de sugestões de hoje. Amanhã libera de novo." },
+      { status: 429 },
+    );
   }
   const apiKey = process.env["AI_API_KEY"];
   if (!apiKey) {

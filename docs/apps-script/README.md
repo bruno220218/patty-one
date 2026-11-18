@@ -5,7 +5,9 @@ da conta @pattynet.com.br. O mesmo script recebe os anexos enviados pelo app e s
 no Drive dessa conta (pasta "Patty One"), compartilhados com quem é da empresa. Grátis (limite do Google Workspace: ~1.500 destinatários/dia).
 
 1. Logado na conta da empresa, abra https://script.google.com → Novo projeto.
-2. Cole o conteúdo de `enviar-email.gs` e troque `SEGREDO` por um texto longo aleatório.
+2. Cole o conteúdo de `enviar-email.gs` e troque `SEGREDO` por um texto longo aleatório
+   (recomendado: 24 caracteres ou mais; o script recusa o valor de exemplo). Os e-mails só vão para os
+   domínios em `DOMINIOS_PERMITIDOS` (padrão: pattynet.com.br).
 3. Rode a função `testar` uma vez e autorize o acesso ao Gmail e ao Drive.
 4. Implantar → Nova implantação → tipo "App da Web": Executar como **Eu**,
    Quem pode acessar **Qualquer pessoa**. Copie a URL (termina em `/exec`).

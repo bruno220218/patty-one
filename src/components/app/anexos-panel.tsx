@@ -34,6 +34,16 @@ import { anexarArquivo } from "@/lib/drive-upload";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+/** Host of a pasted link when it isn't Google Drive/Docs (shown so nobody clicks blind). */
+function hostExterno(url: string): string | null {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return /(^|\.)(google\.com|googleusercontent\.com)$/.test(host) ? null : host;
+  } catch {
+    return "link inválido";
+  }
+}
+
 const ICONE: Record<AnexoTipo, typeof FileText> = {
   pdf: FileText,
   foto: ImageIcon,
@@ -267,6 +277,11 @@ export function AnexosPanel({
                   <span className="truncate">{a.nome}</span>
                   <ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
                 </span>
+                {hostExterno(a.url) && (
+                  <span className="block truncate text-xs font-medium text-status-progress-foreground">
+                    Link externo · {hostExterno(a.url)}
+                  </span>
+                )}
                 <span className="block truncate text-xs text-muted-foreground">
                   {[a.createdByNome, formatDateTime(a.createdAt), formatBytes(a.tamanho)]
                     .filter(Boolean)

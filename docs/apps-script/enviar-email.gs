@@ -8,6 +8,9 @@
  */
 const SEGREDO = 'TROQUE-ESTE-SEGREDO';
 
+/** Só manda e-mail para estes domínios: um segredo vazado não vira disparo de spam/golpe. */
+const DOMINIOS_PERMITIDOS = ['pattynet.com.br'];
+
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
@@ -21,7 +24,14 @@ function doPost(e) {
 /** E-mail da liberação aprovada (chamado pelo servidor do app). */
 function email(body) {
   if (body.secret !== SEGREDO) return { ok: false, error: 'não autorizado' };
-  const to = (body.to || []).filter(function (x) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x); });
+  if (SEGREDO === 'TROQUE-ESTE-SEGREDO') {
+    return { ok: false, error: 'troque o SEGREDO do script por um texto longo' };
+  }
+  const to = (body.to || []).filter(function (x) {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x)) return false;
+    const dominio = String(x).split('@')[1].toLowerCase();
+    return DOMINIOS_PERMITIDOS.indexOf(dominio) !== -1;
+  });
   if (!to.length) return { ok: false, error: 'nenhum destinatário' };
 
   const opcoes = { htmlBody: body.html, name: 'Patty One', bcc: to.join(',') };
@@ -42,6 +52,9 @@ function email(body) {
 
 /** Arquivo enviado direto do navegador, com um "ticket" assinado pelo servidor do app. */
 function upload(body) {
+  if (SEGREDO === 'TROQUE-ESTE-SEGREDO') {
+    return { ok: false, error: 'troque o SEGREDO do script por um texto longo' };
+  }
   const esperado = Utilities.base64Encode(
     Utilities.computeHmacSha256Signature(body.payload, SEGREDO, Utilities.Charset.UTF_8));
   if (body.assinatura !== esperado) return { ok: false, error: 'não autorizado' };

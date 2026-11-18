@@ -84,10 +84,13 @@ function TeamPage() {
                           <span className="text-xs text-muted-foreground">(você)</span>
                         )}
                       </p>
+                      {m.email && (
+                        <p className="truncate text-xs text-muted-foreground">{m.email}</p>
+                      )}
                       <p className="text-xs text-muted-foreground">
                         {m.isMember
                           ? `Entrou em ${formatDate(m.joinedAt)}`
-                          : "Aguardando aprovação"}
+                          : "Aguardando aprovação · confira o e-mail antes de liberar"}
                       </p>
                       <div className="mt-1">
                         <FuncoesChips funcoes={m.funcoes} />

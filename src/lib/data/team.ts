@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { CurrentUser, Funcao } from "./types";
 import { dbError } from "./db-errors";
@@ -12,6 +13,8 @@ export interface TeamMember {
   isComercial: boolean;
   funcoes: Funcao[];
   joinedAt: string;
+  /** Account e-mail, shown to gestão so nobody approves an impostor ("" when unknown). */
+  email: string;
 }
 
 const FUNCAO_VALUES: Funcao[] = [
@@ -49,10 +52,15 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
 
 export const teamRepository = {
   async list(): Promise<TeamMember[]> {
-    const [profiles, roles] = await Promise.all([
+    const [profiles, roles, emails] = await Promise.all([
       supabase.from("profiles").select("id, display_name, created_at").order("display_name"),
       supabase.from("user_roles").select("user_id, role"),
+      // Gestão only (database rule); empty for everyone else or before migration 0015.
+      (supabase as unknown as SupabaseClient)
+        .rpc("equipe_emails")
+        .then((r) => (r.error ? [] : ((r.data ?? []) as { id: string; email: string }[]))),
     ]);
+    const emailOf = new Map(emails.map((e) => [e.id, e.email]));
     if (profiles.error) throw dbError(profiles.error);
     if (roles.error) throw dbError(roles.error);
     const members = new Set((roles.data ?? []).map((r) => r.user_id));
@@ -71,6 +79,7 @@ export const teamRepository = {
       isComercial: (rolesOf.get(p.id) ?? []).includes("comercial"),
       funcoes: asFuncoes(rolesOf.get(p.id) ?? []),
       joinedAt: p.created_at,
+      email: emailOf.get(p.id) ?? "",
     }));
   },
   /** Approve (or remove) someone's access to the team's projects. */

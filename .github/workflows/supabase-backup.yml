@@ -1,6 +1,9 @@
 # Backup semanal do banco (o Supabase grátis não faz backup automático).
-# Precisa do secret SUPABASE_DB_URL no GitHub (Settings > Secrets and variables > Actions).
-# O arquivo fica em "Artifacts" na execução do workflow por 90 dias (privado).
+# Precisa dos secrets SUPABASE_DB_URL e BACKUP_PASSPHRASE no GitHub
+# (Settings > Secrets and variables > Actions).
+# ATENÇÃO: em repositório PÚBLICO os "Artifacts" podem ser baixados por qualquer conta do
+# GitHub. Por isso o backup sobe CRIPTOGRAFADO (AES-256) com a BACKUP_PASSPHRASE; sem ela,
+# o backup não sobe. Para abrir: gpg --decrypt patty-one-AAAA-MM-DD.backup.gpg > arquivo.backup
 name: Supabase backup
 on:
   schedule:
@@ -19,14 +22,23 @@ jobs:
       - name: Gera backup
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
           if [ -z "$DB_URL" ]; then echo "::error::Falta o secret SUPABASE_DB_URL"; exit 1; fi
+          if [ ${#PASSPHRASE} -lt 20 ]; then
+            echo "::error::Falta o secret BACKUP_PASSPHRASE (mínimo 20 caracteres). Sem ele o backup não sobe aberto."
+            exit 1
+          fi
           stamp=$(date -u +%Y-%m-%d)
           /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" -Fc --no-owner --no-privileges \
             -n public -n auth -f "patty-one-$stamp.backup"
-          ls -lh *.backup
+          gpg --batch --yes --pinentry-mode loopback --symmetric --cipher-algo AES256 \
+            --passphrase-fd 3 -o "patty-one-$stamp.backup.gpg" "patty-one-$stamp.backup" 3<<<"$PASSPHRASE"
+          shred -u "patty-one-$stamp.backup"
+          ls -lh *.backup.gpg
       - uses: actions/upload-artifact@v4
         with:
           name: backup-${{ github.run_id }}
-          path: "*.backup"
+          path: "*.backup.gpg"
+          if-no-files-found: error
           retention-days: 90
