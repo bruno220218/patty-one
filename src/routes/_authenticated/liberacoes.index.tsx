@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronDown, FileDown, FileCheck2, ListChecks, Plus, Search, SearchX } from "lucide-react";
 import { toast } from "sonner";
@@ -32,6 +32,11 @@ import { downloadLiberacaoPdf } from "@/lib/liberacao-pdf";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/liberacoes/")({
+  // ?modelo=projeto|midia opens the list already filtered (menu: Liberação - Mídias…).
+  validateSearch: (search: Record<string, unknown>): { modelo?: LiberacaoModelo } =>
+    search["modelo"] === "projeto" || search["modelo"] === "midia"
+      ? { modelo: search["modelo"] }
+      : {},
   head: () => ({
     meta: [
       { title: "Liberações — Patty One" },
@@ -86,7 +91,10 @@ function LiberacoesPage() {
   const canEdit = canEditLiberacoes(me);
   const canAprovar = canAprovarLiberacoes(me);
   const [query, setQuery] = useState("");
-  const [modelo, setModelo] = useState<"todos" | LiberacaoModelo>("todos");
+  const search = Route.useSearch();
+  const [modelo, setModelo] = useState<"todos" | LiberacaoModelo>(search.modelo ?? "todos");
+  // Picking another menu item on the same page updates the filter.
+  useEffect(() => setModelo(search.modelo ?? "todos"), [search.modelo]);
   const [aba, setAba] = useState<Aba | null>(null);
 
   const fila = useMemo(() => filaPcp(liberacoes ?? []), [liberacoes]);

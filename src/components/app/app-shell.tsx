@@ -2,8 +2,15 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  Activity,
   Archive,
   BarChart3,
+  Calculator,
+  CalendarRange,
+  Camera,
+  Images,
+  Map as MapIcon,
+  Ruler,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -52,50 +59,176 @@ type NavTo =
   | "/lixeira"
   | "/briefings"
   | "/visitas"
+  | "/visitas/nova"
   | "/paineis"
   | "/cis";
 
-type NavItem = { to: NavTo; label: string; icon: typeof ListChecks; gestorOnly?: boolean };
+type NavItem = {
+  id: string;
+  label: string;
+  icon: typeof ListChecks;
+  /** Missing when the screen doesn't exist yet ("em breve"). */
+  to?: NavTo;
+  /** Opens the page already filtered (e.g. ?modelo=midia). */
+  search?: Record<string, string>;
+  gestorOnly?: boolean;
+};
+type NavSub = { titulo?: string; itens: NavItem[] };
+/** Top level of the menu: a sector, shown to people with one of its functions (and gestão). */
+type Setor = { titulo: string; funcoes?: string[]; subs: NavSub[] };
 
-// Same structure as the PattyOne (mídia) app: grouped menu, secondary items at the bottom.
-const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
+const SETORES: Setor[] = [
   {
-    title: "Operação",
-    items: [
-      { to: "/projetos", label: "Projetos", icon: FolderOpen },
-      { to: "/liberacoes", label: "Liberações", icon: FileCheck2 },
-      { to: "/briefings", label: "Briefings", icon: Lightbulb },
-      { to: "/visitas", label: "Visitas técnicas", icon: MapPin },
+    titulo: "Comercial",
+    funcoes: ["comercial"],
+    subs: [
+      {
+        titulo: "Briefing",
+        itens: [
+          {
+            id: "briefing-criacao",
+            label: "Briefing Criação",
+            icon: Lightbulb,
+            to: "/briefings",
+            search: { destino: "criacao" },
+          },
+          { id: "briefing-orcamento", label: "Briefing Orçamento", icon: Calculator },
+        ],
+      },
+      {
+        titulo: "Liberação",
+        itens: [
+          {
+            id: "lib-projetos",
+            label: "Liberação - Projetos Especiais",
+            icon: FileCheck2,
+            to: "/liberacoes",
+            search: { modelo: "projeto" },
+          },
+          {
+            id: "lib-midias",
+            label: "Liberação - Mídias",
+            icon: FileCheck2,
+            to: "/liberacoes",
+            search: { modelo: "midia" },
+          },
+        ],
+      },
+      {
+        titulo: "Acompanhamento",
+        itens: [
+          {
+            id: "checking",
+            label: "Checking Fotográfico",
+            icon: Camera,
+            to: "/cis",
+            search: { aba: "fotos" },
+          },
+          { id: "checkout", label: "Checkout Fotográfico", icon: Images },
+          { id: "status-servicos", label: "Status Serviços", icon: Activity },
+        ],
+      },
+      {
+        itens: [
+          { id: "medidas", label: "Medidas", icon: Ruler },
+          {
+            id: "solicitar-visita",
+            label: "Solicitar Visita Técnica",
+            icon: MapPin,
+            to: "/visitas/nova",
+          },
+        ],
+      },
     ],
   },
   {
-    title: "Mídia",
-    items: [
-      { to: "/paineis", label: "Painéis RGB", icon: MonitorPlay },
-      { to: "/cis", label: "CI", icon: FileText },
+    titulo: "Produção",
+    funcoes: ["producao"],
+    subs: [
+      {
+        titulo: "Programação",
+        itens: [{ id: "programacao", label: "Programação Produção", icon: CalendarRange }],
+      },
+      {
+        titulo: "Liberações",
+        itens: [
+          {
+            id: "prod-lib-midia",
+            label: "Liberações Mídia",
+            icon: FileCheck2,
+            to: "/liberacoes",
+            search: { modelo: "midia" },
+          },
+        ],
+      },
+      {
+        itens: [
+          { id: "mapeamento", label: "Mapeamento das áreas / datas de colagens", icon: MapIcon },
+        ],
+      },
     ],
   },
   {
-    title: "Gestão",
-    items: [
-      { to: "/checklists", label: "Checklists", icon: ListChecks, gestorOnly: true },
-      { to: "/equipe", label: "Equipe", icon: Users, gestorOnly: true },
-      { to: "/relatorios", label: "Relatórios", icon: BarChart3, gestorOnly: true },
+    // Everything already built that isn't in the sector lists yet.
+    titulo: "Gestão",
+    subs: [
+      {
+        itens: [
+          { id: "projetos", label: "Projetos", icon: FolderOpen, to: "/projetos" },
+          { id: "liberacoes", label: "Liberações", icon: FileCheck2, to: "/liberacoes" },
+          { id: "briefings", label: "Briefings", icon: Lightbulb, to: "/briefings" },
+          { id: "visitas", label: "Visitas técnicas", icon: MapPin, to: "/visitas" },
+          { id: "paineis", label: "Painéis RGB", icon: MonitorPlay, to: "/paineis" },
+          { id: "cis", label: "CI", icon: FileText, to: "/cis" },
+          {
+            id: "checklists",
+            label: "Checklists",
+            icon: ListChecks,
+            to: "/checklists",
+            gestorOnly: true,
+          },
+          { id: "equipe", label: "Equipe", icon: Users, to: "/equipe", gestorOnly: true },
+          {
+            id: "relatorios",
+            label: "Relatórios",
+            icon: BarChart3,
+            to: "/relatorios",
+            gestorOnly: true,
+          },
+        ],
+      },
     ],
   },
 ];
 
 const FOOTER_ITEMS: NavItem[] = [
-  { to: "/arquivados", label: "Arquivados", icon: Archive },
-  { to: "/lixeira", label: "Lixeira", icon: Trash2 },
+  { id: "arquivados", label: "Arquivados", icon: Archive, to: "/arquivados" },
+  { id: "lixeira", label: "Lixeira", icon: Trash2, to: "/lixeira" },
 ];
 
-const ALL_ITEMS = [...NAV_GROUPS.flatMap((g) => g.items), ...FOOTER_ITEMS];
+const ALL_ITEMS = [...SETORES.flatMap((s) => s.subs.flatMap((sub) => sub.itens)), ...FOOTER_ITEMS];
 
 /** Pages outside the menu still get a name in the "Início › …" trail. */
 const OUTRAS_PAGINAS: { to: string; label: string }[] = [
   { to: "/listas", label: "Listas da liberação" },
 ];
+
+/**
+ * The menu item for the current page: same path, and when an item opens a filtered page
+ * (?modelo=midia) the one whose filter matches wins over the plain item.
+ */
+function itemAtivo(pathname: string, search: Record<string, unknown>): NavItem | undefined {
+  const noCaminho = ALL_ITEMS.filter(
+    (i) => i.to && (pathname === i.to || (pathname.startsWith(`${i.to}/`) && !i.search)),
+  );
+  const comFiltro = noCaminho.find(
+    (i) => i.search && Object.entries(i.search).every(([k, v]) => search[k] === v),
+  );
+  return (
+    comFiltro ??
+    noCaminho.filter((i) => !i.search).sort((a, b) => (b.to?.length ?? 0) - (a.to?.length ?? 0))[0]
+  );
+}
 
 const BARE_PATHS = ["/auth", "/reset-password"];
 const SIDEBAR_EXPANDED = 260;
@@ -192,36 +325,68 @@ function NavLink({
   item,
   active,
   collapsed,
+  recuo = false,
 }: {
   item: NavItem;
   active: boolean;
   collapsed: boolean;
+  /** Child of a subcategory: slightly indented. */
+  recuo?: boolean;
 }) {
-  const link = (
+  const classe = cn(
+    "relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
+    collapsed && "justify-center px-0",
+    !collapsed && recuo && "pl-5",
+  );
+  const conteudo = (
+    <>
+      {active && (
+        <span className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-sidebar-primary" />
+      )}
+      <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+      {!collapsed && <span className="min-w-0 flex-1 leading-snug">{item.label}</span>}
+      {!collapsed && !item.to && (
+        <span className="shrink-0 rounded-full bg-sidebar-hover px-1.5 py-px text-[9px] font-semibold tracking-wide uppercase">
+          em breve
+        </span>
+      )}
+    </>
+  );
+  const link = item.to ? (
     <Link
-      to={item.to}
+      to={item.to as never}
+      search={(item.search ?? {}) as never}
+      // Our own logic picks the active item (filtered pages included); the router's
+      // default would also mark the plain item when a filtered one is open.
+      activeOptions={{ exact: true }}
       aria-current={active ? "page" : undefined}
       aria-label={collapsed ? item.label : undefined}
       className={cn(
-        "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
-        collapsed && "justify-center px-0",
+        classe,
         active
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
           : "text-sidebar-foreground hover:translate-x-0.5 hover:bg-sidebar-hover hover:text-sidebar-primary",
       )}
     >
-      {active && (
-        <span className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-sidebar-primary" />
-      )}
-      <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
-      {!collapsed && <span className="truncate">{item.label}</span>}
+      {conteudo}
     </Link>
+  ) : (
+    <span
+      aria-disabled="true"
+      aria-label={`${item.label} (em breve)`}
+      className={cn(classe, "cursor-default text-sidebar-foreground/55")}
+    >
+      {conteudo}
+    </span>
   );
   if (!collapsed) return link;
   return (
     <Tooltip>
       <TooltipTrigger asChild>{link}</TooltipTrigger>
-      <TooltipContent side="right">{item.label}</TooltipContent>
+      <TooltipContent side="right">
+        {item.label}
+        {!item.to && " (em breve)"}
+      </TooltipContent>
     </Tooltip>
   );
 }
@@ -280,7 +445,7 @@ function SidebarBody({
   me,
   pending,
   collapsed,
-  isActive,
+  ativoId,
   onSignOut,
   fechados,
   onAlternarGrupo,
@@ -288,7 +453,8 @@ function SidebarBody({
   me: CurrentUser | null | undefined;
   pending: boolean;
   collapsed: boolean;
-  isActive: (to: string) => boolean;
+  /** Menu item of the current page. */
+  ativoId: string | undefined;
   onSignOut: () => void;
   /** Titles of the groups whose items are hidden. */
   fechados: string[];
@@ -317,27 +483,35 @@ function SidebarBody({
       </Link>
 
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-4" aria-label="Principal">
-        {NAV_GROUPS.map((g) => {
-          const items = g.items.filter(visible);
-          if (items.length === 0) return null;
-          // With the menu shrunk to icons there are no titles, so every group stays open.
-          const fechado = !collapsed && fechados.includes(g.title);
-          const listaId = `menu-grupo-${g.title.toLowerCase()}`;
+        {SETORES.map((setor) => {
+          const veSetor =
+            !setor.funcoes ||
+            Boolean(me?.isGestor) ||
+            setor.funcoes.some((f) => me?.funcoes.includes(f as never));
+          if (!veSetor) return null;
+          const subs = setor.subs
+            .map((sub) => ({ ...sub, itens: sub.itens.filter(visible) }))
+            .filter((sub) => sub.itens.length > 0);
+          if (subs.length === 0) return null;
+          // With the menu shrunk to icons there are no titles, so every sector stays open.
+          const fechado = !collapsed && fechados.includes(setor.titulo);
+          const listaId = `menu-setor-${setor.titulo.toLowerCase()}`;
+          const temAtivo = subs.some((sub) => sub.itens.some((it) => it.id === ativoId));
           return (
-            <div key={g.title}>
+            <div key={setor.titulo}>
               {collapsed ? (
                 <div className="mx-auto mb-2 h-px w-6 bg-sidebar-hover" />
               ) : (
                 <button
                   type="button"
-                  onClick={() => onAlternarGrupo(g.title)}
+                  onClick={() => onAlternarGrupo(setor.titulo)}
                   aria-expanded={!fechado}
                   aria-controls={listaId}
-                  title={fechado ? `Mostrar ${g.title}` : `Esconder ${g.title}`}
+                  title={fechado ? `Mostrar ${setor.titulo}` : `Esconder ${setor.titulo}`}
                   className="group mb-2 flex w-full items-center gap-1.5 rounded-md px-3 py-0.5 text-left text-[10px] font-semibold tracking-wider text-sidebar-foreground/80 uppercase transition-colors hover:text-sidebar-primary"
                 >
-                  <span className="flex-1">{g.title}</span>
-                  {fechado && items.some((it) => isActive(it.to)) && (
+                  <span className="flex-1">{setor.titulo}</span>
+                  {fechado && temAtivo && (
                     <span
                       className="h-1.5 w-1.5 rounded-full bg-sidebar-primary"
                       aria-label="a página aberta está neste grupo"
@@ -351,9 +525,24 @@ function SidebarBody({
                   />
                 </button>
               )}
-              <div id={listaId} hidden={fechado} className="space-y-1">
-                {items.map((it) => (
-                  <NavLink key={it.to} item={it} active={isActive(it.to)} collapsed={collapsed} />
+              <div id={listaId} hidden={fechado} className="space-y-2">
+                {subs.map((sub, n) => (
+                  <div key={sub.titulo ?? `soltos-${n}`} className="space-y-0.5">
+                    {sub.titulo && !collapsed && (
+                      <div className="px-3 pt-1 text-[11px] font-medium text-sidebar-foreground/70">
+                        {sub.titulo}
+                      </div>
+                    )}
+                    {sub.itens.map((it) => (
+                      <NavLink
+                        key={it.id}
+                        item={it}
+                        active={it.id === ativoId}
+                        collapsed={collapsed}
+                        recuo={Boolean(sub.titulo)}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
@@ -363,7 +552,7 @@ function SidebarBody({
 
       <div className="space-y-1 border-t border-sidebar-border px-3 py-3">
         {FOOTER_ITEMS.filter(visible).map((it) => (
-          <NavLink key={it.to} item={it} active={isActive(it.to)} collapsed={collapsed} />
+          <NavLink key={it.id} item={it} active={it.id === ativoId} collapsed={collapsed} />
         ))}
         {me && <UserMenu me={me} collapsed={collapsed} onSignOut={onSignOut} />}
       </div>
@@ -373,6 +562,9 @@ function SidebarBody({
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const locSearch = useRouterState({
+    select: (s) => s.location.search as Record<string, unknown>,
+  });
   const bare = BARE_PATHS.some((p) => pathname.startsWith(p));
   // Liberação forms mirror a 12-column spreadsheet, so they get a wider page.
   const wide = pathname.startsWith("/liberacoes/");
@@ -403,8 +595,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   const pending = Boolean(me && !me.isMember);
-  const isActive = (to: string) => pathname === to || pathname.startsWith(`${to}/`);
-  const atual = [...ALL_ITEMS, ...OUTRAS_PAGINAS].find((i) => isActive(i.to));
+  const ativo = itemAtivo(pathname, locSearch);
+  const atual =
+    ativo ?? OUTRAS_PAGINAS.find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`));
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED;
 
   return (
@@ -422,7 +615,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             me={me}
             pending={pending}
             collapsed={collapsed}
-            isActive={isActive}
+            ativoId={ativo?.id}
             onSignOut={signOut}
             fechados={fechados}
             onAlternarGrupo={alternar}
@@ -450,7 +643,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               me={me}
               pending={pending}
               collapsed={false}
-              isActive={isActive}
+              ativoId={ativo?.id}
               onSignOut={signOut}
               fechados={fechados}
               onAlternarGrupo={alternar}

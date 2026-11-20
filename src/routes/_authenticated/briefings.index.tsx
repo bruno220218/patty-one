@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Lightbulb, Plus, Search, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,11 @@ import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/briefings/")({
+  // ?destino=criacao|projetos_especiais opens the list already filtered (menu: Briefing Criação).
+  validateSearch: (search: Record<string, unknown>): { destino?: BriefingDestino } =>
+    search["destino"] === "criacao" || search["destino"] === "projetos_especiais"
+      ? { destino: search["destino"] }
+      : {},
   head: () => ({
     meta: [{ title: "Briefings — Patty One" }, { name: "robots", content: "noindex" }],
   }),
@@ -59,7 +64,8 @@ function BriefingsPage() {
   const podeCriar = canCriarBriefing(me);
   const atende = canAtenderBriefing(me);
   const [aba, setAba] = useState<Aba>("novo");
-  const [destino, setDestino] = useState<"todos" | BriefingDestino>("todos");
+  const search = Route.useSearch();
+  const [destino, setDestino] = useState<"todos" | BriefingDestino>(search.destino ?? "todos");
   const [query, setQuery] = useState("");
 
   // Who handles only one area starts filtered on it.
@@ -71,7 +77,12 @@ function BriefingsPage() {
           ? "criacao"
           : null
       : null;
-  const [destinoTocado, setDestinoTocado] = useState(false);
+  const [destinoTocado, setDestinoTocado] = useState(Boolean(search.destino));
+  useEffect(() => {
+    if (!search.destino) return;
+    setDestino(search.destino);
+    setDestinoTocado(true);
+  }, [search.destino]);
   const destinoAtual = destinoTocado ? destino : (meuDestino ?? "todos");
 
   const porAba = useMemo(() => {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Camera, FileText, Plus, Search, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,9 @@ import { formatDateOnly } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/cis/")({
+  // ?aba=fotos opens on the photo requests (menu: Checking Fotográfico).
+  validateSearch: (search: Record<string, unknown>): { aba?: "fotos" } =>
+    search["aba"] === "fotos" ? { aba: "fotos" } : {},
   head: () => ({
     meta: [{ title: "CI — Patty One" }, { name: "robots", content: "noindex" }],
   }),
@@ -51,7 +54,11 @@ function CisPage() {
   const { data: snap } = usePaineis();
   const { data: me } = useCurrentUser();
   const podeCriar = canCriarCi(me);
-  const [aba, setAba] = useState<Aba>("aguardando");
+  const search = Route.useSearch();
+  const [aba, setAba] = useState<Aba>(search.aba ?? "aguardando");
+  useEffect(() => {
+    if (search.aba) setAba(search.aba);
+  }, [search.aba]);
   const [query, setQuery] = useState("");
 
   const codigo = useMemo(
