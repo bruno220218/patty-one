@@ -12,6 +12,7 @@ export type AnexoEntidade =
   | "visita"
   | "ci"
   | "ci_foto"
+  | "ci_checkout"
   | "programacao"
   | "agendamento"
   | "ponto_midia";

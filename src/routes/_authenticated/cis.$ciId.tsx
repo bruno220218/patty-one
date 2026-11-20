@@ -259,7 +259,8 @@ function CiPage() {
         className="mt-4"
       />
 
-      <CiFotoChecking ci={ci} />
+      <CiFotoChecking ci={ci} etapa="checking" />
+      <CiFotoChecking ci={ci} etapa="checkout" />
 
       <p className="mt-3 text-xs text-muted-foreground">
         Criada por {ci.createdByNome || "alguém"} em {formatDateTime(ci.createdAt)}.
