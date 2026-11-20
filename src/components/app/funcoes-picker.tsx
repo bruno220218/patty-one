@@ -36,7 +36,10 @@ export function FuncoesPicker({
   personName: string;
   funcoes: Funcao[];
   disabled?: boolean;
-  /** Prevents removing your own Gestão (you would lose access to this page). */
+  /**
+   * Prevents removing Gestão here: your own (you would lose access to this page) or another
+   * gestor's (only that person may leave Gestão; database rule 0030).
+   */
   lockGestor?: boolean;
   onToggle: (funcao: Funcao, on: boolean) => void;
 }) {
