@@ -4,10 +4,13 @@ import { dbError } from "./db-errors";
 import { parseValor } from "./comercial-rules";
 import type {
   AluguelForm,
+  CategoriaPagar,
   ContaForm,
   EnergiaForm,
+  PagarForm,
   Periodicidade,
   StatusConta,
+  StatusPagar,
 } from "./financeiro-rules";
 
 // The financeiro tables are newer than the generated database types.
@@ -206,4 +209,145 @@ export const financeiroRepository = {
   },
 
   excluirEnergia: (id: string) => excluir("contratos_energia", id),
+};
+
+// ---------- Contas a pagar e comissões ----------
+
+export interface ContaPagar {
+  id: string;
+  categoria: CategoriaPagar;
+  descricao: string;
+  vencimento: string;
+  valor: number;
+  status: StatusPagar;
+  pagoEm: string | null;
+  cadastroId: string | null;
+  cadastroNome: string;
+  /** Who gets paid: the cadastro's name, or the free-text name (a vendedor). */
+  favorecido: string;
+  empresaId: string | null;
+  empresaNome: string;
+  contratoAluguelId: string | null;
+  contratoEnergiaId: string | null;
+  vendaId: string | null;
+  pedidoNumero: number | null;
+  comissaoTipo: "Vendedor" | "Agência" | null;
+  comissaoBase: number | null;
+  comissaoPercentual: number | null;
+  observacao: string;
+}
+export interface PercentualVendedor {
+  vendedor: string;
+  percentual: number;
+}
+
+const toPagar = (r: Row): ContaPagar => {
+  const cadastroNome = txt(um(r["cadastros"])?.["nome"]);
+  return {
+    id: txt(r["id"]),
+    categoria: txt(r["categoria"]) as CategoriaPagar,
+    descricao: txt(r["descricao"]),
+    vencimento: txt(r["vencimento"]),
+    valor: Number(r["valor"]) || 0,
+    status: (txt(r["status"]) || "Aberto") as StatusPagar,
+    pagoEm: txtOuNull(r["pago_em"]),
+    cadastroId: txtOuNull(r["cadastro_id"]),
+    cadastroNome,
+    favorecido: cadastroNome || txt(r["favorecido"]),
+    empresaId: txtOuNull(r["empresa_id"]),
+    empresaNome: txt(um(r["empresas"])?.["nome"]),
+    contratoAluguelId: txtOuNull(r["contrato_aluguel_id"]),
+    contratoEnergiaId: txtOuNull(r["contrato_energia_id"]),
+    vendaId: txtOuNull(r["venda_id"]),
+    pedidoNumero: um(r["vendas"]) ? Number(um(r["vendas"])?.["numero"]) : null,
+    comissaoTipo: (txtOuNull(r["comissao_tipo"]) as ContaPagar["comissaoTipo"]) ?? null,
+    comissaoBase: r["comissao_base"] == null ? null : Number(r["comissao_base"]),
+    comissaoPercentual: r["comissao_percentual"] == null ? null : Number(r["comissao_percentual"]),
+    observacao: txt(r["observacao"]),
+  };
+};
+
+export const financeiroPagarRepository = {
+  async contas(): Promise<ContaPagar[]> {
+    const { data, error } = await db
+      .from("contas_pagar")
+      .select(
+        "id, categoria, descricao, vencimento, valor, status, pago_em, cadastro_id, favorecido, empresa_id, contrato_aluguel_id, contrato_energia_id, venda_id, comissao_tipo, comissao_base, comissao_percentual, observacao, cadastros(nome), empresas(nome), vendas(numero)",
+      )
+      .order("vencimento")
+      .limit(10000);
+    if (error) throw dbError(error);
+    return (data ?? []).map(toPagar);
+  },
+
+  async salvar(f: PagarForm, id?: string): Promise<void> {
+    const linha = {
+      categoria: f.categoria,
+      descricao: f.descricao.trim(),
+      vencimento: f.vencimento,
+      valor: parseValor(f.valor),
+      cadastro_id: f.cadastroId || null,
+      favorecido: nulo(f.favorecido),
+      empresa_id: f.empresaId || null,
+      contrato_aluguel_id: f.categoria === "Aluguel" ? f.contratoAluguelId || null : null,
+      contrato_energia_id: f.categoria === "Energia" ? f.contratoEnergiaId || null : null,
+      observacao: nulo(f.observacao),
+    };
+    // A commission keeps its category and calculation; only the rest is editable.
+    const { error } = id
+      ? await db.from("contas_pagar").update(linha).eq("id", id)
+      : await db.from("contas_pagar").insert(linha);
+    if (error) throw dbError(error);
+  },
+
+  async mudarStatus(id: string, status: StatusPagar): Promise<void> {
+    const { error } = await db.from("contas_pagar").update({ status, pago_em: null }).eq("id", id);
+    if (error) throw dbError(error);
+  },
+
+  excluir: (id: string) => excluir("contas_pagar", id),
+
+  /** Rent installments of every active contract up to the date; returns how many were created. */
+  async gerarParcelasAluguel(ate: string): Promise<number> {
+    const { data, error } = await db.rpc("gerar_parcelas_aluguel", { p_ate: ate });
+    if (error) throw dbError(error);
+    return Number(data) || 0;
+  },
+
+  async percentuais(): Promise<PercentualVendedor[]> {
+    const { data, error } = await db
+      .from("comissao_vendedores")
+      .select("vendedor, percentual")
+      .order("vendedor");
+    if (error) throw dbError(error);
+    return (data ?? []).map((r: Row) => ({
+      vendedor: txt(r["vendedor"]),
+      percentual: Number(r["percentual"]) || 0,
+    }));
+  },
+
+  async salvarPercentual(vendedor: string, percentual: number): Promise<void> {
+    const { error } = await db
+      .from("comissao_vendedores")
+      .upsert({ vendedor: vendedor.trim(), percentual }, { onConflict: "vendedor" });
+    if (error) throw dbError(error);
+  },
+
+  async removerPercentual(vendedor: string): Promise<void> {
+    const { error } = await db.from("comissao_vendedores").delete().eq("vendedor", vendedor);
+    if (error) throw dbError(error);
+  },
+
+  /** Seller names already used on pedidos/propostas, to offer in the percentages list. */
+  async vendedoresDosPedidos(): Promise<string[]> {
+    const { data, error } = await db
+      .from("vendas")
+      .select("vendedor")
+      .not("vendedor", "is", null)
+      .limit(5000);
+    if (error) throw dbError(error);
+    return [
+      ...new Set((data ?? []).map((r: Row) => txt(r["vendedor"]).trim()).filter(Boolean)),
+    ].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  },
 };

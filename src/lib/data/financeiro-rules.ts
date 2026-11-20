@@ -151,3 +151,92 @@ export function validarEnergia(f: EnergiaForm): string | null {
     return "Informe o nº do cliente, a instalação ou o local.";
   return null;
 }
+
+// ---------- Contas a pagar e comissões ----------
+
+export const CATEGORIAS_PAGAR = [
+  "Fornecedor",
+  "Aluguel",
+  "Energia",
+  "Comissão",
+  "Imposto",
+  "Outros",
+] as const;
+export type CategoriaPagar = (typeof CATEGORIAS_PAGAR)[number];
+export const STATUS_PAGAR = ["Aberto", "Pago", "Cancelado"] as const;
+export type StatusPagar = (typeof STATUS_PAGAR)[number];
+export const SITUACOES_PAGAR = ["A vencer", "Vencido", "Pago", "Cancelado"] as const;
+export type SituacaoPagar = (typeof SITUACOES_PAGAR)[number];
+
+export function situacaoPagar(
+  status: StatusPagar,
+  vencimento: string,
+  hoje: string,
+): SituacaoPagar {
+  if (status !== "Aberto") return status;
+  return vencimento < hoje ? "Vencido" : "A vencer";
+}
+
+/** Open payables: total, overdue and what falls due in the next 30 days. */
+export function resumoPagar(
+  contas: { status: StatusPagar; vencimento: string; valor: number }[],
+  hoje: string,
+) {
+  const em30 = somarDias(hoje, 30);
+  let vencido = 0;
+  let proximos30 = 0;
+  for (const c of contas) {
+    if (c.status !== "Aberto") continue;
+    if (c.vencimento < hoje) vencido += c.valor;
+    else if (c.vencimento <= em30) proximos30 += c.valor;
+  }
+  return { vencido, proximos30 };
+}
+
+/** Commissions grouped by who receives them: pending and paid totals, biggest pending first. */
+export function comissoesPorFavorecido(
+  linhas: { favorecido: string; status: StatusPagar; valor: number }[],
+) {
+  const mapa = new Map<string, { favorecido: string; pendente: number; pago: number }>();
+  for (const l of linhas) {
+    if (l.status === "Cancelado") continue;
+    const k = l.favorecido || "—";
+    const t = mapa.get(k) ?? { favorecido: k, pendente: 0, pago: 0 };
+    if (l.status === "Pago") t.pago += l.valor;
+    else t.pendente += l.valor;
+    mapa.set(k, t);
+  }
+  return [...mapa.values()].sort(
+    (a, b) => b.pendente - a.pendente || a.favorecido.localeCompare(b.favorecido, "pt-BR"),
+  );
+}
+
+export type PagarForm = {
+  categoria: CategoriaPagar;
+  descricao: string;
+  vencimento: string;
+  valor: string;
+  cadastroId: string;
+  cadastroNome: string;
+  favorecido: string;
+  empresaId: string;
+  contratoAluguelId: string;
+  contratoEnergiaId: string;
+  observacao: string;
+};
+
+/** `nova`: commissions can be edited, but only the database creates them. */
+export function validarPagar(f: PagarForm, valor: number, nova = true): string | null {
+  if (!f.descricao.trim()) return "Informe a descrição.";
+  if (!f.vencimento) return "Informe o vencimento.";
+  if (!(valor > 0)) return "Informe um valor maior que zero.";
+  if (nova && f.categoria === "Comissão")
+    return "Comissões nascem sozinhas quando o cliente paga um pedido.";
+  return null;
+}
+
+/** "12,5" → 12.5 within 0–100; null when unreadable or out of range. */
+export function parsePercentual(v: string): number | null {
+  const n = Number(v.trim().replace(",", "."));
+  return v.trim() !== "" && Number.isFinite(n) && n >= 0 && n <= 100 ? n : null;
+}

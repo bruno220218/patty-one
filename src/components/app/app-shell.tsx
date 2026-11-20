@@ -36,6 +36,8 @@ import {
   Users,
   UsersRound,
   Home,
+  Percent,
+  Receipt,
   Wallet,
   Zap,
 } from "lucide-react";
@@ -380,6 +382,20 @@ const SETORES: Setor[] = [
             icon: Wallet,
             to: "/financeiro",
             search: { aba: "receber" },
+          },
+          {
+            id: "contas-pagar",
+            label: "Contas a pagar",
+            icon: Receipt,
+            to: "/financeiro",
+            search: { aba: "pagar" },
+          },
+          {
+            id: "comissoes",
+            label: "Comissões",
+            icon: Percent,
+            to: "/financeiro",
+            search: { aba: "comissoes" },
           },
           {
             id: "aluguel-pontos",
