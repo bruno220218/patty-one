@@ -1,6 +1,7 @@
--- Self-checking test of migration 0022 (mídia OOH). Run it as one statement:
+-- Self-checking test of migrations 0022 (mídia OOH) and 0023 (calendar rule). Run it as one statement:
 -- it always ends with an exception "RESULT: ..." so every change is rolled back. Expected:
--- calendario2019a2027=235 b46=2026-11-02 virada2027=2026-12-28 membroVe=true membroCria=bloqueado
+-- calendario2019a2027=235 b46=2026-11-02 virada2027=2026-12-28 b54de2020=2020-12-21 b2de2021=2021-01-04
+-- membroVe=true membroCria=bloqueado
 -- pcpCria=ok codigoVazio=null colunaSige=bloqueado pcpMarca=bloqueado comercialReserva=Reservado
 -- ocupa=Ocupado clienteMantido=Loja X foraCalendario=bloqueado livre=0 escritaDireta=bloqueado
 -- foto=ok pcpExclui=0 gestaoExclui=1 fotoLimpa=0 ocupacaoLimpa=0
@@ -23,6 +24,8 @@ begin
   out := out || 'calendario2019a2027=' || (select count(*) from calendario_bissemanas where ano between 2019 and 2027);
   out := out || ' b46=' || (select inicio from calendario_bissemanas where ano = 2026 and codigo_sige = 46);
   out := out || ' virada2027=' || (select inicio from calendario_bissemanas where ano = 2027 and numero = 1);
+  out := out || ' b54de2020=' || (select inicio from calendario_bissemanas where ano = 2020 and codigo_sige = 54);
+  out := out || ' b2de2021=' || (select inicio from calendario_bissemanas where ano = 2021 and numero = 1);
   select id into t from tipos_midia where nome = 'Outdoor';
   out := out || ' membroVe=' || (t is not null);
   begin
