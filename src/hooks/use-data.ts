@@ -13,6 +13,8 @@ import {
   ciRepository,
   cadastroRepository,
   type CadastroFiltros,
+  operacaoRepository,
+  type OrdemFiltros,
   pessoasDaFuncao,
   type AnexoEntidade,
   emailDestinatariosRepository,
@@ -187,4 +189,35 @@ export const useCadastro = (id: string, comBancario: boolean, userId: string | u
     queryKey: ["cadastros", "ficha", id, comBancario, userId],
     queryFn: () => cadastroRepository.get(id, comBancario),
     enabled: Boolean(userId),
+  });
+
+// ---------- Operação (setor Produção) ----------
+export const useRecursosOperacao = () =>
+  useQuery({ queryKey: ["operacao", "recursos"], queryFn: () => operacaoRepository.recursos() });
+
+export const useOrdens = (filtros: OrdemFiltros) =>
+  useQuery({
+    queryKey: ["operacao", "ordens", filtros],
+    queryFn: () => operacaoRepository.ordens(filtros),
+    placeholderData: keepPreviousData,
+  });
+
+export const useOrdem = (id: string) =>
+  useQuery({
+    queryKey: ["operacao", "ordem", id],
+    queryFn: () => operacaoRepository.ordem(id),
+    enabled: Boolean(id),
+  });
+
+export const usePlanejamento = (inicio: string, fim: string) =>
+  useQuery({
+    queryKey: ["operacao", "planejamento", inicio, fim],
+    queryFn: () => operacaoRepository.planejamento(inicio, fim),
+    placeholderData: keepPreviousData,
+  });
+
+export const useProgramacao = (data: string) =>
+  useQuery({
+    queryKey: ["operacao", "programacao", data],
+    queryFn: () => operacaoRepository.programacao(data),
   });

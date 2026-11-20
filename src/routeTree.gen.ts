@@ -17,6 +17,13 @@ import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenti
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as AuthenticatedLixeiraRouteImport } from './routes/_authenticated/lixeira'
 import { Route as AuthenticatedPaineisRouteImport } from './routes/_authenticated/paineis'
+import { Route as AuthenticatedPlanejamentoCatalogosRouteImport } from './routes/_authenticated/planejamento.catalogos'
+import { Route as AuthenticatedPlanejamentoVeiculosRouteImport } from './routes/_authenticated/planejamento.veiculos'
+import { Route as AuthenticatedPlanejamentoEquipesRouteImport } from './routes/_authenticated/planejamento.equipes'
+import { Route as AuthenticatedPlanejamentoProgramacaoRouteImport } from './routes/_authenticated/planejamento.programacao'
+import { Route as AuthenticatedPlanejamentoIndexRouteImport } from './routes/_authenticated/planejamento.index'
+import { Route as AuthenticatedProducaoOrdemIdRouteImport } from './routes/_authenticated/producao.$ordemId'
+import { Route as AuthenticatedProducaoIndexRouteImport } from './routes/_authenticated/producao.index'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
@@ -79,6 +86,41 @@ const AuthenticatedLixeiraRoute = AuthenticatedLixeiraRouteImport.update({
 const AuthenticatedPaineisRoute = AuthenticatedPaineisRouteImport.update({
   id: '/paineis',
   path: '/paineis',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanejamentoCatalogosRoute = AuthenticatedPlanejamentoCatalogosRouteImport.update({
+  id: '/planejamento/catalogos',
+  path: '/planejamento/catalogos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanejamentoVeiculosRoute = AuthenticatedPlanejamentoVeiculosRouteImport.update({
+  id: '/planejamento/veiculos',
+  path: '/planejamento/veiculos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanejamentoEquipesRoute = AuthenticatedPlanejamentoEquipesRouteImport.update({
+  id: '/planejamento/equipes',
+  path: '/planejamento/equipes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanejamentoProgramacaoRoute = AuthenticatedPlanejamentoProgramacaoRouteImport.update({
+  id: '/planejamento/programacao',
+  path: '/planejamento/programacao',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanejamentoIndexRoute = AuthenticatedPlanejamentoIndexRouteImport.update({
+  id: '/planejamento/',
+  path: '/planejamento/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProducaoOrdemIdRoute = AuthenticatedProducaoOrdemIdRouteImport.update({
+  id: '/producao/$ordemId',
+  path: '/producao/$ordemId',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProducaoIndexRoute = AuthenticatedProducaoIndexRouteImport.update({
+  id: '/producao/',
+  path: '/producao/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedConfiguracoesRoute =
@@ -229,6 +271,13 @@ export interface FileRoutesByFullPath {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/paineis': typeof AuthenticatedPaineisRoute
+  '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
+  '/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
+  '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
+  '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
+  '/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
+  '/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
+  '/producao/': typeof AuthenticatedProducaoIndexRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
@@ -261,6 +310,13 @@ export interface FileRoutesByTo {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/paineis': typeof AuthenticatedPaineisRoute
+  '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
+  '/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
+  '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
+  '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
+  '/planejamento': typeof AuthenticatedPlanejamentoIndexRoute
+  '/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
+  '/producao': typeof AuthenticatedProducaoIndexRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
@@ -296,6 +352,13 @@ export interface FileRoutesById {
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/_authenticated/lixeira': typeof AuthenticatedLixeiraRoute
   '/_authenticated/paineis': typeof AuthenticatedPaineisRoute
+  '/_authenticated/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
+  '/_authenticated/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
+  '/_authenticated/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
+  '/_authenticated/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
+  '/_authenticated/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
+  '/_authenticated/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
+  '/_authenticated/producao/': typeof AuthenticatedProducaoIndexRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
@@ -330,6 +393,13 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/lixeira'
     | '/paineis'
+    | '/planejamento/catalogos'
+    | '/planejamento/veiculos'
+    | '/planejamento/equipes'
+    | '/planejamento/programacao'
+    | '/planejamento/'
+    | '/producao/$ordemId'
+    | '/producao/'
     | '/configuracoes'
     | '/api/next-steps'
     | '/equipe'
@@ -362,6 +432,13 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/lixeira'
     | '/paineis'
+    | '/planejamento/catalogos'
+    | '/planejamento/veiculos'
+    | '/planejamento/equipes'
+    | '/planejamento/programacao'
+    | '/planejamento'
+    | '/producao/$ordemId'
+    | '/producao'
     | '/configuracoes'
     | '/api/next-steps'
     | '/equipe'
@@ -396,6 +473,13 @@ export interface FileRouteTypes {
     | '/_authenticated/arquivados'
     | '/_authenticated/lixeira'
     | '/_authenticated/paineis'
+    | '/_authenticated/planejamento/catalogos'
+    | '/_authenticated/planejamento/veiculos'
+    | '/_authenticated/planejamento/equipes'
+    | '/_authenticated/planejamento/programacao'
+    | '/_authenticated/planejamento/'
+    | '/_authenticated/producao/$ordemId'
+    | '/_authenticated/producao/'
     | '/_authenticated/configuracoes'
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
@@ -486,6 +570,55 @@ declare module '@tanstack/react-router' {
       path: '/paineis'
       fullPath: '/paineis'
       preLoaderRoute: typeof AuthenticatedPaineisRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/catalogos': {
+      id: '/_authenticated/planejamento/catalogos'
+      path: '/planejamento/catalogos'
+      fullPath: '/planejamento/catalogos'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoCatalogosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/veiculos': {
+      id: '/_authenticated/planejamento/veiculos'
+      path: '/planejamento/veiculos'
+      fullPath: '/planejamento/veiculos'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoVeiculosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/equipes': {
+      id: '/_authenticated/planejamento/equipes'
+      path: '/planejamento/equipes'
+      fullPath: '/planejamento/equipes'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoEquipesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/programacao': {
+      id: '/_authenticated/planejamento/programacao'
+      path: '/planejamento/programacao'
+      fullPath: '/planejamento/programacao'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoProgramacaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/': {
+      id: '/_authenticated/planejamento/'
+      path: '/planejamento'
+      fullPath: '/planejamento/'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/producao/$ordemId': {
+      id: '/_authenticated/producao/$ordemId'
+      path: '/producao/$ordemId'
+      fullPath: '/producao/$ordemId'
+      preLoaderRoute: typeof AuthenticatedProducaoOrdemIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/producao/': {
+      id: '/_authenticated/producao/'
+      path: '/producao'
+      fullPath: '/producao/'
+      preLoaderRoute: typeof AuthenticatedProducaoIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/configuracoes': {
@@ -690,6 +823,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
   AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
   AuthenticatedPaineisRoute: typeof AuthenticatedPaineisRoute
+  AuthenticatedPlanejamentoCatalogosRoute: typeof AuthenticatedPlanejamentoCatalogosRoute
+  AuthenticatedPlanejamentoVeiculosRoute: typeof AuthenticatedPlanejamentoVeiculosRoute
+  AuthenticatedPlanejamentoEquipesRoute: typeof AuthenticatedPlanejamentoEquipesRoute
+  AuthenticatedPlanejamentoProgramacaoRoute: typeof AuthenticatedPlanejamentoProgramacaoRoute
+  AuthenticatedPlanejamentoIndexRoute: typeof AuthenticatedPlanejamentoIndexRoute
+  AuthenticatedProducaoOrdemIdRoute: typeof AuthenticatedProducaoOrdemIdRoute
+  AuthenticatedProducaoIndexRoute: typeof AuthenticatedProducaoIndexRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCadastrosCadastroIdRoute: typeof AuthenticatedCadastrosCadastroIdRoute
   AuthenticatedCadastrosIndexRoute: typeof AuthenticatedCadastrosIndexRoute
@@ -714,6 +854,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
   AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
   AuthenticatedPaineisRoute: AuthenticatedPaineisRoute,
+  AuthenticatedPlanejamentoCatalogosRoute: AuthenticatedPlanejamentoCatalogosRoute,
+  AuthenticatedPlanejamentoVeiculosRoute: AuthenticatedPlanejamentoVeiculosRoute,
+  AuthenticatedPlanejamentoEquipesRoute: AuthenticatedPlanejamentoEquipesRoute,
+  AuthenticatedPlanejamentoProgramacaoRoute: AuthenticatedPlanejamentoProgramacaoRoute,
+  AuthenticatedPlanejamentoIndexRoute: AuthenticatedPlanejamentoIndexRoute,
+  AuthenticatedProducaoOrdemIdRoute: AuthenticatedProducaoOrdemIdRoute,
+  AuthenticatedProducaoIndexRoute: AuthenticatedProducaoIndexRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCadastrosCadastroIdRoute: AuthenticatedCadastrosCadastroIdRoute,
   AuthenticatedCadastrosIndexRoute: AuthenticatedCadastrosIndexRoute,

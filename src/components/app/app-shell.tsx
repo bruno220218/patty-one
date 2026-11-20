@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   FileCheck2,
   FileText,
   FolderOpen,
@@ -24,9 +25,11 @@ import {
   LogOut,
   MapPin,
   Menu,
+  Package,
   MonitorPlay,
   Settings,
   Trash2,
+  Truck,
   Upload,
   Users,
   UsersRound,
@@ -68,7 +71,13 @@ type NavTo =
   | "/cis"
   | "/cadastros"
   | "/configuracoes"
-  | "/importar";
+  | "/importar"
+  | "/producao"
+  | "/planejamento"
+  | "/planejamento/programacao"
+  | "/planejamento/equipes"
+  | "/planejamento/veiculos"
+  | "/planejamento/catalogos";
 
 type NavItem = {
   id: string;
@@ -150,11 +159,20 @@ const SETORES: Setor[] = [
   },
   {
     titulo: "Produção",
-    funcoes: ["producao"],
+    funcoes: ["producao", "pcp", "montagem"],
     subs: [
       {
         titulo: "Programação",
-        itens: [{ id: "programacao", label: "Programação Produção", icon: CalendarRange }],
+        itens: [
+          {
+            id: "programacao",
+            label: "Programação Produção",
+            icon: CalendarRange,
+            to: "/planejamento/programacao",
+          },
+          { id: "cronograma", label: "Cronograma", icon: CalendarDays, to: "/planejamento" },
+          { id: "ordens", label: "Ordens de produção", icon: ClipboardList, to: "/producao" },
+        ],
       },
       {
         titulo: "Liberações",
@@ -172,6 +190,24 @@ const SETORES: Setor[] = [
         itens: [
           { id: "mapeamento", label: "Mapeamento das áreas", icon: MapIcon },
           { id: "datas-colagens", label: "Datas de colagens", icon: CalendarDays },
+        ],
+      },
+      {
+        titulo: "Cadastros da produção",
+        itens: [
+          {
+            id: "equipes-planejamento",
+            label: "Equipes de planejamento",
+            icon: UsersRound,
+            to: "/planejamento/equipes",
+          },
+          { id: "veiculos", label: "Veículos", icon: Truck, to: "/planejamento/veiculos" },
+          {
+            id: "catalogos",
+            label: "Produtos, serviços e colaboradores",
+            icon: Package,
+            to: "/planejamento/catalogos",
+          },
         ],
       },
     ],
@@ -590,7 +626,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   });
   const bare = BARE_PATHS.some((p) => pathname.startsWith(p));
   // Liberação forms mirror a 12-column spreadsheet, so they get a wider page.
-  const wide = pathname.startsWith("/liberacoes/");
+  const wide =
+    pathname.startsWith("/liberacoes/") || pathname.startsWith("/planejamento/programacao");
   const { data: me } = useCurrentUser();
   const signOut = useSignOut();
   const showNotifications = !bare && Boolean(me?.isMember);

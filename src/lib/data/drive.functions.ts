@@ -13,6 +13,9 @@ const PASTAS = {
   ci: { tabela: "cis", pasta: "CIs de vinheta" },
   // Checking photos go in the CI's own folder, in a subfolder.
   ci_foto: { tabela: "cis", pasta: "CIs de vinheta" },
+  // Operação: one folder per service/appointment, named by date.
+  programacao: { tabela: "programacao_servicos", pasta: "Programação" },
+  agendamento: { tabela: "planejamento_agendamentos", pasta: "Agendamentos" },
 } as const;
 
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -39,6 +42,44 @@ async function assinar(segredo: string, payload: string): Promise<string> {
   return btoa(bin);
 }
 
+/** Folder of the record inside its area: "Nº 12 - Cliente", "2026-11 CI 10-Nov - Cliente", "2026-11-20 - Cliente - Colagem". */
+async function nomeDaSubpasta(
+  db: SupabaseClient,
+  tabela: (typeof PASTAS)[keyof typeof PASTAS]["tabela"],
+  id: string,
+): Promise<string> {
+  if (tabela === "programacao_servicos") {
+    const { data: r } = await db
+      .from(tabela)
+      .select("data, cliente, servico")
+      .eq("id", id)
+      .maybeSingle<{ data: string; cliente: string | null; servico: string }>();
+    if (!r) throw new Error("Registro não encontrado.");
+    return limpa([r.data, r.cliente, r.servico].filter(Boolean).join(" - "));
+  }
+  if (tabela === "planejamento_agendamentos") {
+    const { data: r } = await db
+      .from(tabela)
+      .select("data_inicio, titulo")
+      .eq("id", id)
+      .maybeSingle<{ data_inicio: string; titulo: string }>();
+    if (!r) throw new Error("Registro não encontrado.");
+    return limpa(`${r.data_inicio} - ${r.titulo}`);
+  }
+  const { data: row, error } = await db
+    .from(tabela)
+    .select(tabela === "cis" ? "numero, cliente, data" : "numero, cliente")
+    .eq("id", id)
+    .maybeSingle<{ numero: number; cliente: string; data?: string }>();
+  if (error || !row) throw new Error("Registro não encontrado.");
+  // CI numbers restart every month, so their folder carries the month: "2026-11 CI 10-Nov - CSFX".
+  const numero =
+    tabela === "cis" && row.data
+      ? `${row.data.slice(0, 7)} CI ${String(row.numero).padStart(2, "0")}-${MESES[Number(row.data.slice(5, 7)) - 1] ?? ""}`
+      : `Nº ${row.numero}`;
+  return limpa(`${numero}${row.cliente ? ` - ${row.cliente}` : ""}`);
+}
+
 /**
  * Authorizes one upload straight from the browser to the company's Google Drive
  * (through the Apps Script web app). Returns a short-lived signed ticket; the file
@@ -49,7 +90,16 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
-        entidade: z.enum(["liberacao", "briefing", "briefing_entrega", "visita", "ci", "ci_foto"]),
+        entidade: z.enum([
+          "liberacao",
+          "briefing",
+          "briefing_entrega",
+          "visita",
+          "ci",
+          "ci_foto",
+          "programacao",
+          "agendamento",
+        ]),
         entidadeId: z.string().uuid(),
         nome: z.string().trim().min(1).max(200),
         mime: z.string().max(100),
@@ -68,12 +118,7 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
     if (!membro) throw new Error("Você ainda não foi aprovado na equipe.");
 
     const cfg = PASTAS[data.entidade];
-    const { data: row, error } = await db
-      .from(cfg.tabela)
-      .select(cfg.tabela === "cis" ? "numero, cliente, data" : "numero, cliente")
-      .eq("id", data.entidadeId)
-      .maybeSingle<{ numero: number; cliente: string; data?: string }>();
-    if (error || !row) throw new Error("Registro não encontrado.");
+    const subpasta = await nomeDaSubpasta(db, cfg.tabela, data.entidadeId);
 
     const { data: perfil } = await db
       .from("profiles")
@@ -81,12 +126,6 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .maybeSingle();
 
-    // CI numbers restart every month, so their folder carries the month: "2026-11 CI 10-Nov - CSFX".
-    const numero =
-      cfg.tabela === "cis" && row.data
-        ? `${row.data.slice(0, 7)} CI ${String(row.numero).padStart(2, "0")}-${MESES[Number(row.data.slice(5, 7)) - 1] ?? ""}`
-        : `Nº ${row.numero}`;
-    const subpasta = limpa(`${numero}${row.cliente ? ` - ${row.cliente}` : ""}`);
     const payload = JSON.stringify({
       exp: Date.now() + 15 * 60_000,
       pasta:

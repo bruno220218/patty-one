@@ -6,7 +6,14 @@ import { dbError } from "./db-errors";
 const db = supabase as unknown as SupabaseClient;
 
 export type AnexoEntidade =
-  "liberacao" | "briefing" | "briefing_entrega" | "visita" | "ci" | "ci_foto";
+  | "liberacao"
+  | "briefing"
+  | "briefing_entrega"
+  | "visita"
+  | "ci"
+  | "ci_foto"
+  | "programacao"
+  | "agendamento";
 export type AnexoTipo = "pdf" | "foto" | "video" | "audio" | "outro";
 
 export interface Anexo {
@@ -46,6 +53,13 @@ export function briefingArquivoPermitido(nome: string, mime: string): boolean {
     ["jpg", "jpeg", "png", "pdf", "jxl"].includes(ext) ||
     ["image/jpeg", "image/png", "image/jxl", "application/pdf"].includes(mime)
   );
+}
+
+/** Images of a programmed service or a schedule entry (operação). */
+export const IMAGEM_ACCEPT = "image/*,.png,.jpg,.jpeg,.gif,.webp,.jxl";
+export function imagemPermitida(nome: string, mime: string): boolean {
+  const ext = nome.toLowerCase().split(".").pop() ?? "";
+  return mime.startsWith("image/") || ["png", "jpg", "jpeg", "gif", "webp", "jxl"].includes(ext);
 }
 
 /** Accepted for the vinheta file of a CI: video, image, or the PDF of the art. */
