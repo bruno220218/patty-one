@@ -23,7 +23,7 @@
 - [x] Cadastros: lista, filtros, atribuir vendedor, ficha em abas (CEP pelo ViaCEP), importação do SIGE (só gestão); dados bancários só para Direção e Financeiro (função nova "Financeiro") — migração 0018
 - [x] Configurações: aparência, perfil e sair
 - [x] Operação (setor Produção): ordens de produção com alertas de prazo, cronograma, equipes de planejamento, veículos, produtos/serviços/colaboradores e "Programação Produção" com resumo para WhatsApp (imagens no Drive) — migração 0019
-- [ ] Comercial: propostas e pedidos (PDF) e histórico do SIGE; liga a ordem de produção ao pedido
+- [x] Comercial: propostas e pedidos (PDF, proposta → pedido), histórico do SIGE (importação só gestão) e ordem de produção ligada ao pedido — migração 0020
 - [ ] Mídia OOH: pontos com fotos no Drive (mesma estrutura dos briefings) e bi-semanas → itens "Mapeamento das áreas" e "Datas de colagens"
 - [ ] Trazer os dados reais do PattyOne (cadastros, pontos, calendário, colaboradores, veículos, serviços)
 

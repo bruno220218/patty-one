@@ -15,6 +15,9 @@ import {
   type CadastroFiltros,
   operacaoRepository,
   type OrdemFiltros,
+  comercialRepository,
+  type VendaFiltros,
+  type HistoricoFiltros,
   pessoasDaFuncao,
   type AnexoEntidade,
   emailDestinatariosRepository,
@@ -220,4 +223,40 @@ export const useProgramacao = (data: string) =>
   useQuery({
     queryKey: ["operacao", "programacao", data],
     queryFn: () => operacaoRepository.programacao(data),
+  });
+
+// ---------- Comercial ----------
+export const useEmpresas = () =>
+  useQuery({
+    queryKey: ["comercial", "empresas"],
+    queryFn: () => comercialRepository.empresas(),
+    staleTime: 5 * 60_000,
+  });
+
+export const useVendas = (filtros: VendaFiltros, pagina: number) =>
+  useQuery({
+    queryKey: ["comercial", "vendas", filtros, pagina],
+    queryFn: () => comercialRepository.list(filtros, pagina),
+    placeholderData: keepPreviousData,
+  });
+
+export const useVenda = (id: string) =>
+  useQuery({
+    queryKey: ["comercial", "venda", id],
+    queryFn: () => comercialRepository.get(id),
+    enabled: Boolean(id),
+  });
+
+export const usePedidosAbertos = (enabled = true) =>
+  useQuery({
+    queryKey: ["comercial", "pedidos-abertos"],
+    queryFn: () => comercialRepository.pedidosAbertos(),
+    enabled,
+  });
+
+export const useHistoricoComercial = (filtros: HistoricoFiltros, pagina: number) =>
+  useQuery({
+    queryKey: ["comercial", "historico", filtros, pagina],
+    queryFn: () => comercialRepository.historico(filtros, pagina),
+    placeholderData: keepPreviousData,
   });

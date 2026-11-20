@@ -122,7 +122,7 @@ function CadastrosPage() {
             )}
             {podeEditar && (
               <Button asChild className="h-10">
-                <Link to="/cadastros/novo">
+                <Link to="/cadastros/$cadastroId" params={{ cadastroId: "novo" }}>
                   <Plus />
                   Novo cadastro
                 </Link>

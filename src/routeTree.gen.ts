@@ -15,32 +15,36 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenticated/_gestor/route'
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedLixeiraRouteImport } from './routes/_authenticated/lixeira'
 import { Route as AuthenticatedPaineisRouteImport } from './routes/_authenticated/paineis'
-import { Route as AuthenticatedPlanejamentoCatalogosRouteImport } from './routes/_authenticated/planejamento.catalogos'
-import { Route as AuthenticatedPlanejamentoVeiculosRouteImport } from './routes/_authenticated/planejamento.veiculos'
-import { Route as AuthenticatedPlanejamentoEquipesRouteImport } from './routes/_authenticated/planejamento.equipes'
-import { Route as AuthenticatedPlanejamentoProgramacaoRouteImport } from './routes/_authenticated/planejamento.programacao'
-import { Route as AuthenticatedPlanejamentoIndexRouteImport } from './routes/_authenticated/planejamento.index'
-import { Route as AuthenticatedProducaoOrdemIdRouteImport } from './routes/_authenticated/producao.$ordemId'
-import { Route as AuthenticatedProducaoIndexRouteImport } from './routes/_authenticated/producao.index'
-import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
-import { Route as AuthenticatedGestorListasRouteImport } from './routes/_authenticated/_gestor/listas'
 import { Route as AuthenticatedGestorImportarRouteImport } from './routes/_authenticated/_gestor/importar'
+import { Route as AuthenticatedGestorImportarHistoricoRouteImport } from './routes/_authenticated/_gestor/importar-historico'
+import { Route as AuthenticatedGestorListasRouteImport } from './routes/_authenticated/_gestor/listas'
 import { Route as AuthenticatedGestorRelatoriosRouteImport } from './routes/_authenticated/_gestor/relatorios'
 import { Route as AuthenticatedBriefingsIndexRouteImport } from './routes/_authenticated/briefings.index'
 import { Route as AuthenticatedBriefingsBriefingIdRouteImport } from './routes/_authenticated/briefings.$briefingId'
 import { Route as AuthenticatedBriefingsNovoRouteImport } from './routes/_authenticated/briefings.novo'
-import { Route as AuthenticatedCisIndexRouteImport } from './routes/_authenticated/cis.index'
 import { Route as AuthenticatedCadastrosIndexRouteImport } from './routes/_authenticated/cadastros.index'
-import { Route as AuthenticatedCisCiIdRouteImport } from './routes/_authenticated/cis.$ciId'
 import { Route as AuthenticatedCadastrosCadastroIdRouteImport } from './routes/_authenticated/cadastros.$cadastroId'
+import { Route as AuthenticatedCisIndexRouteImport } from './routes/_authenticated/cis.index'
+import { Route as AuthenticatedCisCiIdRouteImport } from './routes/_authenticated/cis.$ciId'
 import { Route as AuthenticatedCisNovaRouteImport } from './routes/_authenticated/cis.nova'
+import { Route as AuthenticatedComercialIndexRouteImport } from './routes/_authenticated/comercial.index'
+import { Route as AuthenticatedComercialVendaIdRouteImport } from './routes/_authenticated/comercial.$vendaId'
+import { Route as AuthenticatedComercialHistoricoRouteImport } from './routes/_authenticated/comercial.historico'
 import { Route as AuthenticatedLiberacoesIndexRouteImport } from './routes/_authenticated/liberacoes.index'
 import { Route as AuthenticatedLiberacoesLiberacaoIdRouteImport } from './routes/_authenticated/liberacoes.$liberacaoId'
 import { Route as AuthenticatedLiberacoesNovaRouteImport } from './routes/_authenticated/liberacoes.nova'
+import { Route as AuthenticatedPlanejamentoIndexRouteImport } from './routes/_authenticated/planejamento.index'
+import { Route as AuthenticatedPlanejamentoCatalogosRouteImport } from './routes/_authenticated/planejamento.catalogos'
+import { Route as AuthenticatedPlanejamentoEquipesRouteImport } from './routes/_authenticated/planejamento.equipes'
+import { Route as AuthenticatedPlanejamentoProgramacaoRouteImport } from './routes/_authenticated/planejamento.programacao'
+import { Route as AuthenticatedPlanejamentoVeiculosRouteImport } from './routes/_authenticated/planejamento.veiculos'
+import { Route as AuthenticatedProducaoIndexRouteImport } from './routes/_authenticated/producao.index'
+import { Route as AuthenticatedProducaoOrdemIdRouteImport } from './routes/_authenticated/producao.$ordemId'
 import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
 import { Route as AuthenticatedProjetosProjectIdRouteImport } from './routes/_authenticated/projetos.$projectId'
 import { Route as AuthenticatedVisitasIndexRouteImport } from './routes/_authenticated/visitas.index'
@@ -78,6 +82,12 @@ const AuthenticatedArquivadosRoute = AuthenticatedArquivadosRouteImport.update({
   path: '/arquivados',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLixeiraRoute = AuthenticatedLixeiraRouteImport.update({
   id: '/lixeira',
   path: '/lixeira',
@@ -88,47 +98,6 @@ const AuthenticatedPaineisRoute = AuthenticatedPaineisRouteImport.update({
   path: '/paineis',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedPlanejamentoCatalogosRoute = AuthenticatedPlanejamentoCatalogosRouteImport.update({
-  id: '/planejamento/catalogos',
-  path: '/planejamento/catalogos',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPlanejamentoVeiculosRoute = AuthenticatedPlanejamentoVeiculosRouteImport.update({
-  id: '/planejamento/veiculos',
-  path: '/planejamento/veiculos',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPlanejamentoEquipesRoute = AuthenticatedPlanejamentoEquipesRouteImport.update({
-  id: '/planejamento/equipes',
-  path: '/planejamento/equipes',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPlanejamentoProgramacaoRoute = AuthenticatedPlanejamentoProgramacaoRouteImport.update({
-  id: '/planejamento/programacao',
-  path: '/planejamento/programacao',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPlanejamentoIndexRoute = AuthenticatedPlanejamentoIndexRouteImport.update({
-  id: '/planejamento/',
-  path: '/planejamento/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedProducaoOrdemIdRoute = AuthenticatedProducaoOrdemIdRouteImport.update({
-  id: '/producao/$ordemId',
-  path: '/producao/$ordemId',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedProducaoIndexRoute = AuthenticatedProducaoIndexRouteImport.update({
-  id: '/producao/',
-  path: '/producao/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedConfiguracoesRoute =
-  AuthenticatedConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
   id: '/api/next-steps',
   path: '/api/next-steps',
@@ -140,16 +109,22 @@ const AuthenticatedGestorEquipeRoute =
     path: '/equipe',
     getParentRoute: () => AuthenticatedGestorRouteRoute,
   } as any)
-const AuthenticatedGestorListasRoute =
-  AuthenticatedGestorListasRouteImport.update({
-    id: '/listas',
-    path: '/listas',
-    getParentRoute: () => AuthenticatedGestorRouteRoute,
-  } as any)
 const AuthenticatedGestorImportarRoute =
   AuthenticatedGestorImportarRouteImport.update({
     id: '/importar',
     path: '/importar',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
+const AuthenticatedGestorImportarHistoricoRoute =
+  AuthenticatedGestorImportarHistoricoRouteImport.update({
+    id: '/importar-historico',
+    path: '/importar-historico',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
+const AuthenticatedGestorListasRoute =
+  AuthenticatedGestorListasRouteImport.update({
+    id: '/listas',
+    path: '/listas',
     getParentRoute: () => AuthenticatedGestorRouteRoute,
   } as any)
 const AuthenticatedGestorRelatoriosRoute =
@@ -176,33 +151,51 @@ const AuthenticatedBriefingsNovoRoute =
     path: '/briefings/novo',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCisIndexRoute = AuthenticatedCisIndexRouteImport.update({
-  id: '/cis/',
-  path: '/cis/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedCadastrosIndexRoute =
   AuthenticatedCadastrosIndexRouteImport.update({
     id: '/cadastros/',
     path: '/cadastros/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCisCiIdRoute = AuthenticatedCisCiIdRouteImport.update({
-  id: '/cis/$ciId',
-  path: '/cis/$ciId',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedCadastrosCadastroIdRoute =
   AuthenticatedCadastrosCadastroIdRouteImport.update({
     id: '/cadastros/$cadastroId',
     path: '/cadastros/$cadastroId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCisIndexRoute = AuthenticatedCisIndexRouteImport.update({
+  id: '/cis/',
+  path: '/cis/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCisCiIdRoute = AuthenticatedCisCiIdRouteImport.update({
+  id: '/cis/$ciId',
+  path: '/cis/$ciId',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCisNovaRoute = AuthenticatedCisNovaRouteImport.update({
   id: '/cis/nova',
   path: '/cis/nova',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedComercialIndexRoute =
+  AuthenticatedComercialIndexRouteImport.update({
+    id: '/comercial/',
+    path: '/comercial/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedComercialVendaIdRoute =
+  AuthenticatedComercialVendaIdRouteImport.update({
+    id: '/comercial/$vendaId',
+    path: '/comercial/$vendaId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedComercialHistoricoRoute =
+  AuthenticatedComercialHistoricoRouteImport.update({
+    id: '/comercial/historico',
+    path: '/comercial/historico',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLiberacoesIndexRoute =
   AuthenticatedLiberacoesIndexRouteImport.update({
     id: '/liberacoes/',
@@ -219,6 +212,48 @@ const AuthenticatedLiberacoesNovaRoute =
   AuthenticatedLiberacoesNovaRouteImport.update({
     id: '/liberacoes/nova',
     path: '/liberacoes/nova',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPlanejamentoIndexRoute =
+  AuthenticatedPlanejamentoIndexRouteImport.update({
+    id: '/planejamento/',
+    path: '/planejamento/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPlanejamentoCatalogosRoute =
+  AuthenticatedPlanejamentoCatalogosRouteImport.update({
+    id: '/planejamento/catalogos',
+    path: '/planejamento/catalogos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPlanejamentoEquipesRoute =
+  AuthenticatedPlanejamentoEquipesRouteImport.update({
+    id: '/planejamento/equipes',
+    path: '/planejamento/equipes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPlanejamentoProgramacaoRoute =
+  AuthenticatedPlanejamentoProgramacaoRouteImport.update({
+    id: '/planejamento/programacao',
+    path: '/planejamento/programacao',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPlanejamentoVeiculosRoute =
+  AuthenticatedPlanejamentoVeiculosRouteImport.update({
+    id: '/planejamento/veiculos',
+    path: '/planejamento/veiculos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProducaoIndexRoute =
+  AuthenticatedProducaoIndexRouteImport.update({
+    id: '/producao/',
+    path: '/producao/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProducaoOrdemIdRoute =
+  AuthenticatedProducaoOrdemIdRouteImport.update({
+    id: '/producao/$ordemId',
+    path: '/producao/$ordemId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProjetosIndexRoute =
@@ -269,35 +304,39 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/arquivados': typeof AuthenticatedArquivadosRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/paineis': typeof AuthenticatedPaineisRoute
-  '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
-  '/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
-  '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
-  '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
-  '/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
-  '/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
-  '/producao/': typeof AuthenticatedProducaoIndexRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
-  '/listas': typeof AuthenticatedGestorListasRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
+  '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
+  '/listas': typeof AuthenticatedGestorListasRoute
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
-  '/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/cadastros/$cadastroId': typeof AuthenticatedCadastrosCadastroIdRoute
+  '/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/cis/nova': typeof AuthenticatedCisNovaRoute
+  '/comercial/$vendaId': typeof AuthenticatedComercialVendaIdRoute
+  '/comercial/historico': typeof AuthenticatedComercialHistoricoRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
+  '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
+  '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
+  '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
+  '/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
+  '/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
   '/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/briefings/': typeof AuthenticatedBriefingsIndexRoute
-  '/cis/': typeof AuthenticatedCisIndexRoute
   '/cadastros/': typeof AuthenticatedCadastrosIndexRoute
+  '/cis/': typeof AuthenticatedCisIndexRoute
+  '/comercial/': typeof AuthenticatedComercialIndexRoute
   '/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
+  '/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
+  '/producao/': typeof AuthenticatedProducaoIndexRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/visitas/': typeof AuthenticatedVisitasIndexRoute
   '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
@@ -308,35 +347,39 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/arquivados': typeof AuthenticatedArquivadosRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/paineis': typeof AuthenticatedPaineisRoute
-  '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
-  '/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
-  '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
-  '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
-  '/planejamento': typeof AuthenticatedPlanejamentoIndexRoute
-  '/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
-  '/producao': typeof AuthenticatedProducaoIndexRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
-  '/listas': typeof AuthenticatedGestorListasRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
+  '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
+  '/listas': typeof AuthenticatedGestorListasRoute
   '/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
-  '/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/cadastros/$cadastroId': typeof AuthenticatedCadastrosCadastroIdRoute
+  '/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/cis/nova': typeof AuthenticatedCisNovaRoute
+  '/comercial/$vendaId': typeof AuthenticatedComercialVendaIdRoute
+  '/comercial/historico': typeof AuthenticatedComercialHistoricoRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
+  '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
+  '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
+  '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
+  '/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
+  '/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
   '/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
   '/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/briefings': typeof AuthenticatedBriefingsIndexRoute
-  '/cis': typeof AuthenticatedCisIndexRoute
   '/cadastros': typeof AuthenticatedCadastrosIndexRoute
+  '/cis': typeof AuthenticatedCisIndexRoute
+  '/comercial': typeof AuthenticatedComercialIndexRoute
   '/liberacoes': typeof AuthenticatedLiberacoesIndexRoute
+  '/planejamento': typeof AuthenticatedPlanejamentoIndexRoute
+  '/producao': typeof AuthenticatedProducaoIndexRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
   '/visitas': typeof AuthenticatedVisitasIndexRoute
   '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
@@ -350,35 +393,39 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/_gestor': typeof AuthenticatedGestorRouteRouteWithChildren
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/lixeira': typeof AuthenticatedLixeiraRoute
   '/_authenticated/paineis': typeof AuthenticatedPaineisRoute
-  '/_authenticated/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
-  '/_authenticated/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
-  '/_authenticated/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
-  '/_authenticated/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
-  '/_authenticated/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
-  '/_authenticated/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
-  '/_authenticated/producao/': typeof AuthenticatedProducaoIndexRoute
-  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
-  '/_authenticated/_gestor/listas': typeof AuthenticatedGestorListasRoute
   '/_authenticated/_gestor/importar': typeof AuthenticatedGestorImportarRoute
+  '/_authenticated/_gestor/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
+  '/_authenticated/_gestor/listas': typeof AuthenticatedGestorListasRoute
   '/_authenticated/_gestor/relatorios': typeof AuthenticatedGestorRelatoriosRoute
   '/_authenticated/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/_authenticated/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
-  '/_authenticated/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/_authenticated/cadastros/$cadastroId': typeof AuthenticatedCadastrosCadastroIdRoute
+  '/_authenticated/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/_authenticated/cis/nova': typeof AuthenticatedCisNovaRoute
+  '/_authenticated/comercial/$vendaId': typeof AuthenticatedComercialVendaIdRoute
+  '/_authenticated/comercial/historico': typeof AuthenticatedComercialHistoricoRoute
   '/_authenticated/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/_authenticated/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
+  '/_authenticated/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
+  '/_authenticated/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
+  '/_authenticated/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
+  '/_authenticated/planejamento/veiculos': typeof AuthenticatedPlanejamentoVeiculosRoute
+  '/_authenticated/producao/$ordemId': typeof AuthenticatedProducaoOrdemIdRoute
   '/_authenticated/projetos/$projectId': typeof AuthenticatedProjetosProjectIdRoute
   '/_authenticated/visitas/$visitaId': typeof AuthenticatedVisitasVisitaIdRoute
   '/_authenticated/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/_authenticated/briefings/': typeof AuthenticatedBriefingsIndexRoute
-  '/_authenticated/cis/': typeof AuthenticatedCisIndexRoute
   '/_authenticated/cadastros/': typeof AuthenticatedCadastrosIndexRoute
+  '/_authenticated/cis/': typeof AuthenticatedCisIndexRoute
+  '/_authenticated/comercial/': typeof AuthenticatedComercialIndexRoute
   '/_authenticated/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
+  '/_authenticated/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
+  '/_authenticated/producao/': typeof AuthenticatedProducaoIndexRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/_authenticated/visitas/': typeof AuthenticatedVisitasIndexRoute
   '/_authenticated/_gestor/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
@@ -391,35 +438,39 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/arquivados'
+    | '/configuracoes'
     | '/lixeira'
     | '/paineis'
-    | '/planejamento/catalogos'
-    | '/planejamento/veiculos'
-    | '/planejamento/equipes'
-    | '/planejamento/programacao'
-    | '/planejamento/'
-    | '/producao/$ordemId'
-    | '/producao/'
-    | '/configuracoes'
     | '/api/next-steps'
     | '/equipe'
-    | '/listas'
     | '/importar'
+    | '/importar-historico'
+    | '/listas'
     | '/relatorios'
     | '/briefings/$briefingId'
     | '/briefings/novo'
-    | '/cis/$ciId'
     | '/cadastros/$cadastroId'
+    | '/cis/$ciId'
     | '/cis/nova'
+    | '/comercial/$vendaId'
+    | '/comercial/historico'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
+    | '/planejamento/catalogos'
+    | '/planejamento/equipes'
+    | '/planejamento/programacao'
+    | '/planejamento/veiculos'
+    | '/producao/$ordemId'
     | '/projetos/$projectId'
     | '/visitas/$visitaId'
     | '/visitas/nova'
     | '/briefings/'
-    | '/cis/'
     | '/cadastros/'
+    | '/cis/'
+    | '/comercial/'
     | '/liberacoes/'
+    | '/planejamento/'
+    | '/producao/'
     | '/projetos/'
     | '/visitas/'
     | '/checklists/$checklistId'
@@ -430,35 +481,39 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/arquivados'
+    | '/configuracoes'
     | '/lixeira'
     | '/paineis'
-    | '/planejamento/catalogos'
-    | '/planejamento/veiculos'
-    | '/planejamento/equipes'
-    | '/planejamento/programacao'
-    | '/planejamento'
-    | '/producao/$ordemId'
-    | '/producao'
-    | '/configuracoes'
     | '/api/next-steps'
     | '/equipe'
-    | '/listas'
     | '/importar'
+    | '/importar-historico'
+    | '/listas'
     | '/relatorios'
     | '/briefings/$briefingId'
     | '/briefings/novo'
-    | '/cis/$ciId'
     | '/cadastros/$cadastroId'
+    | '/cis/$ciId'
     | '/cis/nova'
+    | '/comercial/$vendaId'
+    | '/comercial/historico'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
+    | '/planejamento/catalogos'
+    | '/planejamento/equipes'
+    | '/planejamento/programacao'
+    | '/planejamento/veiculos'
+    | '/producao/$ordemId'
     | '/projetos/$projectId'
     | '/visitas/$visitaId'
     | '/visitas/nova'
     | '/briefings'
-    | '/cis'
     | '/cadastros'
+    | '/cis'
+    | '/comercial'
     | '/liberacoes'
+    | '/planejamento'
+    | '/producao'
     | '/projetos'
     | '/visitas'
     | '/checklists/$checklistId'
@@ -471,35 +526,39 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/_gestor'
     | '/_authenticated/arquivados'
+    | '/_authenticated/configuracoes'
     | '/_authenticated/lixeira'
     | '/_authenticated/paineis'
-    | '/_authenticated/planejamento/catalogos'
-    | '/_authenticated/planejamento/veiculos'
-    | '/_authenticated/planejamento/equipes'
-    | '/_authenticated/planejamento/programacao'
-    | '/_authenticated/planejamento/'
-    | '/_authenticated/producao/$ordemId'
-    | '/_authenticated/producao/'
-    | '/_authenticated/configuracoes'
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
-    | '/_authenticated/_gestor/listas'
     | '/_authenticated/_gestor/importar'
+    | '/_authenticated/_gestor/importar-historico'
+    | '/_authenticated/_gestor/listas'
     | '/_authenticated/_gestor/relatorios'
     | '/_authenticated/briefings/$briefingId'
     | '/_authenticated/briefings/novo'
-    | '/_authenticated/cis/$ciId'
     | '/_authenticated/cadastros/$cadastroId'
+    | '/_authenticated/cis/$ciId'
     | '/_authenticated/cis/nova'
+    | '/_authenticated/comercial/$vendaId'
+    | '/_authenticated/comercial/historico'
     | '/_authenticated/liberacoes/$liberacaoId'
     | '/_authenticated/liberacoes/nova'
+    | '/_authenticated/planejamento/catalogos'
+    | '/_authenticated/planejamento/equipes'
+    | '/_authenticated/planejamento/programacao'
+    | '/_authenticated/planejamento/veiculos'
+    | '/_authenticated/producao/$ordemId'
     | '/_authenticated/projetos/$projectId'
     | '/_authenticated/visitas/$visitaId'
     | '/_authenticated/visitas/nova'
     | '/_authenticated/briefings/'
-    | '/_authenticated/cis/'
     | '/_authenticated/cadastros/'
+    | '/_authenticated/cis/'
+    | '/_authenticated/comercial/'
     | '/_authenticated/liberacoes/'
+    | '/_authenticated/planejamento/'
+    | '/_authenticated/producao/'
     | '/_authenticated/projetos/'
     | '/_authenticated/visitas/'
     | '/_authenticated/_gestor/checklists/$checklistId'
@@ -558,6 +617,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedArquivadosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lixeira': {
       id: '/_authenticated/lixeira'
       path: '/lixeira'
@@ -570,62 +636,6 @@ declare module '@tanstack/react-router' {
       path: '/paineis'
       fullPath: '/paineis'
       preLoaderRoute: typeof AuthenticatedPaineisRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/planejamento/catalogos': {
-      id: '/_authenticated/planejamento/catalogos'
-      path: '/planejamento/catalogos'
-      fullPath: '/planejamento/catalogos'
-      preLoaderRoute: typeof AuthenticatedPlanejamentoCatalogosRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/planejamento/veiculos': {
-      id: '/_authenticated/planejamento/veiculos'
-      path: '/planejamento/veiculos'
-      fullPath: '/planejamento/veiculos'
-      preLoaderRoute: typeof AuthenticatedPlanejamentoVeiculosRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/planejamento/equipes': {
-      id: '/_authenticated/planejamento/equipes'
-      path: '/planejamento/equipes'
-      fullPath: '/planejamento/equipes'
-      preLoaderRoute: typeof AuthenticatedPlanejamentoEquipesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/planejamento/programacao': {
-      id: '/_authenticated/planejamento/programacao'
-      path: '/planejamento/programacao'
-      fullPath: '/planejamento/programacao'
-      preLoaderRoute: typeof AuthenticatedPlanejamentoProgramacaoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/planejamento/': {
-      id: '/_authenticated/planejamento/'
-      path: '/planejamento'
-      fullPath: '/planejamento/'
-      preLoaderRoute: typeof AuthenticatedPlanejamentoIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/producao/$ordemId': {
-      id: '/_authenticated/producao/$ordemId'
-      path: '/producao/$ordemId'
-      fullPath: '/producao/$ordemId'
-      preLoaderRoute: typeof AuthenticatedProducaoOrdemIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/producao/': {
-      id: '/_authenticated/producao/'
-      path: '/producao'
-      fullPath: '/producao/'
-      preLoaderRoute: typeof AuthenticatedProducaoIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/configuracoes': {
-      id: '/_authenticated/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/next-steps': {
@@ -642,18 +652,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGestorEquipeRouteImport
       parentRoute: typeof AuthenticatedGestorRouteRoute
     }
-    '/_authenticated/_gestor/listas': {
-      id: '/_authenticated/_gestor/listas'
-      path: '/listas'
-      fullPath: '/listas'
-      preLoaderRoute: typeof AuthenticatedGestorListasRouteImport
-      parentRoute: typeof AuthenticatedGestorRouteRoute
-    }
     '/_authenticated/_gestor/importar': {
       id: '/_authenticated/_gestor/importar'
       path: '/importar'
       fullPath: '/importar'
       preLoaderRoute: typeof AuthenticatedGestorImportarRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
+    }
+    '/_authenticated/_gestor/importar-historico': {
+      id: '/_authenticated/_gestor/importar-historico'
+      path: '/importar-historico'
+      fullPath: '/importar-historico'
+      preLoaderRoute: typeof AuthenticatedGestorImportarHistoricoRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
+    }
+    '/_authenticated/_gestor/listas': {
+      id: '/_authenticated/_gestor/listas'
+      path: '/listas'
+      fullPath: '/listas'
+      preLoaderRoute: typeof AuthenticatedGestorListasRouteImport
       parentRoute: typeof AuthenticatedGestorRouteRoute
     }
     '/_authenticated/_gestor/relatorios': {
@@ -684,13 +701,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBriefingsNovoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/cis/': {
-      id: '/_authenticated/cis/'
-      path: '/cis'
-      fullPath: '/cis/'
-      preLoaderRoute: typeof AuthenticatedCisIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/cadastros/': {
       id: '/_authenticated/cadastros/'
       path: '/cadastros'
@@ -705,6 +715,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCadastrosCadastroIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cis/': {
+      id: '/_authenticated/cis/'
+      path: '/cis'
+      fullPath: '/cis/'
+      preLoaderRoute: typeof AuthenticatedCisIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cis/$ciId': {
       id: '/_authenticated/cis/$ciId'
       path: '/cis/$ciId'
@@ -717,6 +734,27 @@ declare module '@tanstack/react-router' {
       path: '/cis/nova'
       fullPath: '/cis/nova'
       preLoaderRoute: typeof AuthenticatedCisNovaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/comercial/': {
+      id: '/_authenticated/comercial/'
+      path: '/comercial'
+      fullPath: '/comercial/'
+      preLoaderRoute: typeof AuthenticatedComercialIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/comercial/$vendaId': {
+      id: '/_authenticated/comercial/$vendaId'
+      path: '/comercial/$vendaId'
+      fullPath: '/comercial/$vendaId'
+      preLoaderRoute: typeof AuthenticatedComercialVendaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/comercial/historico': {
+      id: '/_authenticated/comercial/historico'
+      path: '/comercial/historico'
+      fullPath: '/comercial/historico'
+      preLoaderRoute: typeof AuthenticatedComercialHistoricoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/liberacoes/': {
@@ -738,6 +776,55 @@ declare module '@tanstack/react-router' {
       path: '/liberacoes/nova'
       fullPath: '/liberacoes/nova'
       preLoaderRoute: typeof AuthenticatedLiberacoesNovaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/': {
+      id: '/_authenticated/planejamento/'
+      path: '/planejamento'
+      fullPath: '/planejamento/'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/catalogos': {
+      id: '/_authenticated/planejamento/catalogos'
+      path: '/planejamento/catalogos'
+      fullPath: '/planejamento/catalogos'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoCatalogosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/equipes': {
+      id: '/_authenticated/planejamento/equipes'
+      path: '/planejamento/equipes'
+      fullPath: '/planejamento/equipes'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoEquipesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/programacao': {
+      id: '/_authenticated/planejamento/programacao'
+      path: '/planejamento/programacao'
+      fullPath: '/planejamento/programacao'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoProgramacaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento/veiculos': {
+      id: '/_authenticated/planejamento/veiculos'
+      path: '/planejamento/veiculos'
+      fullPath: '/planejamento/veiculos'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoVeiculosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/producao/': {
+      id: '/_authenticated/producao/'
+      path: '/producao'
+      fullPath: '/producao/'
+      preLoaderRoute: typeof AuthenticatedProducaoIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/producao/$ordemId': {
+      id: '/_authenticated/producao/$ordemId'
+      path: '/producao/$ordemId'
+      fullPath: '/producao/$ordemId'
+      preLoaderRoute: typeof AuthenticatedProducaoOrdemIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/projetos/': {
@@ -794,8 +881,9 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedGestorRouteRouteChildren {
   AuthenticatedGestorEquipeRoute: typeof AuthenticatedGestorEquipeRoute
-  AuthenticatedGestorListasRoute: typeof AuthenticatedGestorListasRoute
   AuthenticatedGestorImportarRoute: typeof AuthenticatedGestorImportarRoute
+  AuthenticatedGestorImportarHistoricoRoute: typeof AuthenticatedGestorImportarHistoricoRoute
+  AuthenticatedGestorListasRoute: typeof AuthenticatedGestorListasRoute
   AuthenticatedGestorRelatoriosRoute: typeof AuthenticatedGestorRelatoriosRoute
   AuthenticatedGestorChecklistsChecklistIdRoute: typeof AuthenticatedGestorChecklistsChecklistIdRoute
   AuthenticatedGestorChecklistsIndexRoute: typeof AuthenticatedGestorChecklistsIndexRoute
@@ -804,8 +892,10 @@ interface AuthenticatedGestorRouteRouteChildren {
 const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildren =
   {
     AuthenticatedGestorEquipeRoute: AuthenticatedGestorEquipeRoute,
-    AuthenticatedGestorListasRoute: AuthenticatedGestorListasRoute,
     AuthenticatedGestorImportarRoute: AuthenticatedGestorImportarRoute,
+    AuthenticatedGestorImportarHistoricoRoute:
+      AuthenticatedGestorImportarHistoricoRoute,
+    AuthenticatedGestorListasRoute: AuthenticatedGestorListasRoute,
     AuthenticatedGestorRelatoriosRoute: AuthenticatedGestorRelatoriosRoute,
     AuthenticatedGestorChecklistsChecklistIdRoute:
       AuthenticatedGestorChecklistsChecklistIdRoute,
@@ -821,30 +911,33 @@ const AuthenticatedGestorRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedGestorRouteRoute: typeof AuthenticatedGestorRouteRouteWithChildren
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
   AuthenticatedPaineisRoute: typeof AuthenticatedPaineisRoute
-  AuthenticatedPlanejamentoCatalogosRoute: typeof AuthenticatedPlanejamentoCatalogosRoute
-  AuthenticatedPlanejamentoVeiculosRoute: typeof AuthenticatedPlanejamentoVeiculosRoute
-  AuthenticatedPlanejamentoEquipesRoute: typeof AuthenticatedPlanejamentoEquipesRoute
-  AuthenticatedPlanejamentoProgramacaoRoute: typeof AuthenticatedPlanejamentoProgramacaoRoute
-  AuthenticatedPlanejamentoIndexRoute: typeof AuthenticatedPlanejamentoIndexRoute
-  AuthenticatedProducaoOrdemIdRoute: typeof AuthenticatedProducaoOrdemIdRoute
-  AuthenticatedProducaoIndexRoute: typeof AuthenticatedProducaoIndexRoute
-  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
-  AuthenticatedCadastrosCadastroIdRoute: typeof AuthenticatedCadastrosCadastroIdRoute
-  AuthenticatedCadastrosIndexRoute: typeof AuthenticatedCadastrosIndexRoute
   AuthenticatedBriefingsBriefingIdRoute: typeof AuthenticatedBriefingsBriefingIdRoute
   AuthenticatedBriefingsNovoRoute: typeof AuthenticatedBriefingsNovoRoute
+  AuthenticatedCadastrosCadastroIdRoute: typeof AuthenticatedCadastrosCadastroIdRoute
   AuthenticatedCisCiIdRoute: typeof AuthenticatedCisCiIdRoute
   AuthenticatedCisNovaRoute: typeof AuthenticatedCisNovaRoute
+  AuthenticatedComercialVendaIdRoute: typeof AuthenticatedComercialVendaIdRoute
+  AuthenticatedComercialHistoricoRoute: typeof AuthenticatedComercialHistoricoRoute
   AuthenticatedLiberacoesLiberacaoIdRoute: typeof AuthenticatedLiberacoesLiberacaoIdRoute
   AuthenticatedLiberacoesNovaRoute: typeof AuthenticatedLiberacoesNovaRoute
+  AuthenticatedPlanejamentoCatalogosRoute: typeof AuthenticatedPlanejamentoCatalogosRoute
+  AuthenticatedPlanejamentoEquipesRoute: typeof AuthenticatedPlanejamentoEquipesRoute
+  AuthenticatedPlanejamentoProgramacaoRoute: typeof AuthenticatedPlanejamentoProgramacaoRoute
+  AuthenticatedPlanejamentoVeiculosRoute: typeof AuthenticatedPlanejamentoVeiculosRoute
+  AuthenticatedProducaoOrdemIdRoute: typeof AuthenticatedProducaoOrdemIdRoute
   AuthenticatedProjetosProjectIdRoute: typeof AuthenticatedProjetosProjectIdRoute
   AuthenticatedVisitasVisitaIdRoute: typeof AuthenticatedVisitasVisitaIdRoute
   AuthenticatedVisitasNovaRoute: typeof AuthenticatedVisitasNovaRoute
   AuthenticatedBriefingsIndexRoute: typeof AuthenticatedBriefingsIndexRoute
+  AuthenticatedCadastrosIndexRoute: typeof AuthenticatedCadastrosIndexRoute
   AuthenticatedCisIndexRoute: typeof AuthenticatedCisIndexRoute
+  AuthenticatedComercialIndexRoute: typeof AuthenticatedComercialIndexRoute
   AuthenticatedLiberacoesIndexRoute: typeof AuthenticatedLiberacoesIndexRoute
+  AuthenticatedPlanejamentoIndexRoute: typeof AuthenticatedPlanejamentoIndexRoute
+  AuthenticatedProducaoIndexRoute: typeof AuthenticatedProducaoIndexRoute
   AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
   AuthenticatedVisitasIndexRoute: typeof AuthenticatedVisitasIndexRoute
 }
@@ -852,31 +945,37 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGestorRouteRoute: AuthenticatedGestorRouteRouteWithChildren,
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
   AuthenticatedPaineisRoute: AuthenticatedPaineisRoute,
-  AuthenticatedPlanejamentoCatalogosRoute: AuthenticatedPlanejamentoCatalogosRoute,
-  AuthenticatedPlanejamentoVeiculosRoute: AuthenticatedPlanejamentoVeiculosRoute,
-  AuthenticatedPlanejamentoEquipesRoute: AuthenticatedPlanejamentoEquipesRoute,
-  AuthenticatedPlanejamentoProgramacaoRoute: AuthenticatedPlanejamentoProgramacaoRoute,
-  AuthenticatedPlanejamentoIndexRoute: AuthenticatedPlanejamentoIndexRoute,
-  AuthenticatedProducaoOrdemIdRoute: AuthenticatedProducaoOrdemIdRoute,
-  AuthenticatedProducaoIndexRoute: AuthenticatedProducaoIndexRoute,
-  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
-  AuthenticatedCadastrosCadastroIdRoute: AuthenticatedCadastrosCadastroIdRoute,
-  AuthenticatedCadastrosIndexRoute: AuthenticatedCadastrosIndexRoute,
   AuthenticatedBriefingsBriefingIdRoute: AuthenticatedBriefingsBriefingIdRoute,
   AuthenticatedBriefingsNovoRoute: AuthenticatedBriefingsNovoRoute,
+  AuthenticatedCadastrosCadastroIdRoute: AuthenticatedCadastrosCadastroIdRoute,
   AuthenticatedCisCiIdRoute: AuthenticatedCisCiIdRoute,
   AuthenticatedCisNovaRoute: AuthenticatedCisNovaRoute,
+  AuthenticatedComercialVendaIdRoute: AuthenticatedComercialVendaIdRoute,
+  AuthenticatedComercialHistoricoRoute: AuthenticatedComercialHistoricoRoute,
   AuthenticatedLiberacoesLiberacaoIdRoute:
     AuthenticatedLiberacoesLiberacaoIdRoute,
   AuthenticatedLiberacoesNovaRoute: AuthenticatedLiberacoesNovaRoute,
+  AuthenticatedPlanejamentoCatalogosRoute:
+    AuthenticatedPlanejamentoCatalogosRoute,
+  AuthenticatedPlanejamentoEquipesRoute: AuthenticatedPlanejamentoEquipesRoute,
+  AuthenticatedPlanejamentoProgramacaoRoute:
+    AuthenticatedPlanejamentoProgramacaoRoute,
+  AuthenticatedPlanejamentoVeiculosRoute:
+    AuthenticatedPlanejamentoVeiculosRoute,
+  AuthenticatedProducaoOrdemIdRoute: AuthenticatedProducaoOrdemIdRoute,
   AuthenticatedProjetosProjectIdRoute: AuthenticatedProjetosProjectIdRoute,
   AuthenticatedVisitasVisitaIdRoute: AuthenticatedVisitasVisitaIdRoute,
   AuthenticatedVisitasNovaRoute: AuthenticatedVisitasNovaRoute,
   AuthenticatedBriefingsIndexRoute: AuthenticatedBriefingsIndexRoute,
+  AuthenticatedCadastrosIndexRoute: AuthenticatedCadastrosIndexRoute,
   AuthenticatedCisIndexRoute: AuthenticatedCisIndexRoute,
+  AuthenticatedComercialIndexRoute: AuthenticatedComercialIndexRoute,
   AuthenticatedLiberacoesIndexRoute: AuthenticatedLiberacoesIndexRoute,
+  AuthenticatedPlanejamentoIndexRoute: AuthenticatedPlanejamentoIndexRoute,
+  AuthenticatedProducaoIndexRoute: AuthenticatedProducaoIndexRoute,
   AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,
   AuthenticatedVisitasIndexRoute: AuthenticatedVisitasIndexRoute,
 }

@@ -154,6 +154,8 @@ export interface OrdemInput {
   status: StatusOrdem;
   prioridade: string;
   cadastroId: string;
+  /** Pedido de venda (Comercial); "" = sem vínculo. */
+  vendaId: string;
   servicoId: string;
   descricao: string;
   dataPrevista: string;
@@ -792,6 +794,7 @@ export const operacaoRepository = {
         status: dados.status,
         prioridade: dados.prioridade,
         cadastro_id: dados.cadastroId,
+        venda_id: dados.vendaId,
         servico_id: dados.servicoId,
         descricao: dados.descricao,
         data_prevista: dados.dataPrevista,
