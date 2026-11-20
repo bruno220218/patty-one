@@ -28,7 +28,8 @@
 - [ ] Trazer os dados reais do PattyOne (cadastros, pontos, calendário, colaboradores, veículos, serviços)
 
 ## Tarefas futuras (agendadas)
-- [ ] Financeiro: a receber, contratos de aluguel e de energia (já existiam no PattyOne) + contas a pagar e comissões (faltam) — por último
+- [x] Financeiro: a receber, contratos de aluguel e de energia (vindos do PattyOne; só Gestão, Direção e Financeiro) — migração 0026
+- [ ] Financeiro: contas a pagar e comissões (não existiam no PattyOne; definir regras)
 - [ ] Dashboard com números reais (no PattyOne eram fixos); juntar com a "Tela de gestão" acima
 - [ ] Telas que eram só "Em breve" no PattyOne: Balcão, Compras e Estoque, Administrativo, Painel de Gestão
 

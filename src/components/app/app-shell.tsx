@@ -35,7 +35,9 @@ import {
   Upload,
   Users,
   UsersRound,
+  Home,
   Wallet,
+  Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser, useNotifications } from "@/hooks/use-data";
@@ -86,7 +88,8 @@ type NavTo =
   | "/planejamento/programacao"
   | "/planejamento/equipes"
   | "/planejamento/veiculos"
-  | "/planejamento/catalogos";
+  | "/planejamento/catalogos"
+  | "/financeiro";
 
 type NavItem = {
   id: string;
@@ -361,8 +364,34 @@ const SETORES: Setor[] = [
   },
   {
     titulo: "Financeiro",
-    funcoes: ["financeiro"],
-    subs: [{ itens: [{ id: "financeiro", label: "Financeiro", icon: Wallet }] }],
+    funcoes: ["financeiro", "direcao"],
+    subs: [
+      {
+        itens: [
+          {
+            id: "contas-receber",
+            label: "Contas a receber",
+            icon: Wallet,
+            to: "/financeiro",
+            search: { aba: "receber" },
+          },
+          {
+            id: "aluguel-pontos",
+            label: "Aluguel dos pontos",
+            icon: Home,
+            to: "/financeiro",
+            search: { aba: "aluguel" },
+          },
+          {
+            id: "energia",
+            label: "Contratos de energia",
+            icon: Zap,
+            to: "/financeiro",
+            search: { aba: "energia" },
+          },
+        ],
+      },
+    ],
   },
   {
     // Gestão also sees every sector above.

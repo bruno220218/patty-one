@@ -97,3 +97,5 @@ export * from "./cloud-comercial";
 export * from "./comercial-rules";
 export * from "./cloud-midia";
 export * from "./midia-rules";
+export * from "./cloud-financeiro";
+export * from "./financeiro-rules";
