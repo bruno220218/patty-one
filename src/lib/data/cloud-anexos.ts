@@ -5,7 +5,8 @@ import { dbError } from "./db-errors";
 // The table is newer than the generated database types.
 const db = supabase as unknown as SupabaseClient;
 
-export type AnexoEntidade = "liberacao" | "briefing" | "visita" | "ci" | "ci_foto";
+export type AnexoEntidade =
+  "liberacao" | "briefing" | "briefing_entrega" | "visita" | "ci" | "ci_foto";
 export type AnexoTipo = "pdf" | "foto" | "video" | "audio" | "outro";
 
 export interface Anexo {
@@ -33,7 +34,19 @@ export const ANEXO_TIPOS: { value: AnexoTipo; label: string }[] = [
 
 /** Accepted in the "Anexar arquivo" picker. */
 export const ANEXO_ACCEPT =
-  ".pdf,.png,.jpg,.jpeg,.mp4,.mp3,application/pdf,image/png,image/jpeg,video/mp4,audio/mpeg";
+  ".pdf,.png,.jpg,.jpeg,.jxl,.mp4,.mp3,application/pdf,image/png,image/jpeg,image/jxl,video/mp4,audio/mpeg";
+
+/** Briefing files (comercial and the Criação delivery): JPEG, PNG, PDF and JPEG XL. */
+export const BRIEFING_ACCEPT =
+  ".jpg,.jpeg,.png,.pdf,.jxl,image/jpeg,image/png,image/jxl,application/pdf";
+export const BRIEFING_FORMATOS = "JPEG, PNG, PDF ou JPEG XL";
+export function briefingArquivoPermitido(nome: string, mime: string): boolean {
+  const ext = nome.toLowerCase().split(".").pop() ?? "";
+  return (
+    ["jpg", "jpeg", "png", "pdf", "jxl"].includes(ext) ||
+    ["image/jpeg", "image/png", "image/jxl", "application/pdf"].includes(mime)
+  );
+}
 
 /** Accepted for the vinheta file of a CI: video, image, or the PDF of the art. */
 export const VINHETA_ACCEPT =
@@ -48,7 +61,7 @@ export function tipoDoArquivo(nome: string, mime: string): AnexoTipo {
   const ext = nome.toLowerCase().split(".").pop() ?? "";
   if (EXT_VIDEO.includes(ext)) return "video";
   if (mime === "application/pdf" || ext === "pdf") return "pdf";
-  if (mime.startsWith("image/") || ["png", "jpg", "jpeg"].includes(ext)) return "foto";
+  if (mime.startsWith("image/") || ["png", "jpg", "jpeg", "jxl"].includes(ext)) return "foto";
   if (mime.startsWith("video/") || ext === "mp4") return "video";
   if (mime.startsWith("audio/") || ext === "mp3") return "audio";
   return "outro";

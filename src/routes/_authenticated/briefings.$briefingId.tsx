@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, Hand, RotateCcw, SearchX, Trash2, UserRound } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Play, RotateCcw, SearchX, Trash2, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -20,6 +20,9 @@ import { useBriefing, useCurrentUser, useDataAction, usePessoasDaFuncao } from "
 import {
   BRIEFING_DESTINO_LABEL,
   briefingRepository,
+  BRIEFING_ACCEPT,
+  BRIEFING_FORMATOS,
+  briefingArquivoPermitido,
   canAtenderBriefing,
   canCriarBriefing,
 } from "@/lib/data";
@@ -103,7 +106,7 @@ function BriefingPage() {
             {b.status === "novo"
               ? `Aguardando alguém da ${BRIEFING_DESTINO_LABEL[b.destino]} assumir.`
               : b.status === "em_andamento"
-                ? `Com ${b.responsavelNome || "alguém da equipe"}.`
+                ? `Sendo feito por ${b.responsavelNome || "alguém da equipe"}${b.iniciadoEm ? ` desde ${formatDateTime(b.iniciadoEm)}` : ""}.`
                 : `Concluído${b.responsavelNome ? ` por ${b.responsavelNome}` : ""}${b.concluidoEm ? ` em ${formatDateTime(b.concluidoEm)}` : ""}.`}
           </p>
         </div>
@@ -142,12 +145,12 @@ function BriefingPage() {
                 onClick={() =>
                   run(
                     () => briefingRepository.setStatus(b.id, "em_andamento"),
-                    "Briefing assumido.",
+                    "Briefing iniciado. O comercial e a gestão foram avisados.",
                   )
                 }
               >
-                <Hand />
-                Assumir
+                <Play />
+                Iniciar
               </Button>
             )}
             {b.status === "em_andamento" && (
@@ -197,7 +200,25 @@ function BriefingPage() {
         entidade="briefing"
         entidadeId={b.id}
         className="mt-6"
-        aviso="Referências, logos, fotos, áudios do cliente… Os arquivos vão para o Google Drive da empresa."
+        titulo="Arquivos do briefing"
+        aviso={`Referências, logos e fotos do cliente (${BRIEFING_FORMATOS}). Vão para o Google Drive da empresa.`}
+        accept={BRIEFING_ACCEPT}
+        permitido={briefingArquivoPermitido}
+        formatos={BRIEFING_FORMATOS}
+        rotuloBotao="Enviar arquivo"
+      />
+
+      <AnexosPanel
+        entidade="briefing_entrega"
+        entidadeId={b.id}
+        className="mt-4"
+        titulo={`Entrega da ${BRIEFING_DESTINO_LABEL[b.destino]}`}
+        aviso={`O que foi produzido (${BRIEFING_FORMATOS}). Fica na pasta do briefing › Entrega da criação.`}
+        canAdd={atende}
+        accept={BRIEFING_ACCEPT}
+        permitido={briefingArquivoPermitido}
+        formatos={BRIEFING_FORMATOS}
+        rotuloBotao="Enviar entrega"
       />
 
       <ConfirmDialog

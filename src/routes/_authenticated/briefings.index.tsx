@@ -19,6 +19,7 @@ import {
   type BriefingStatus,
 } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { formatDateTime } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/briefings/")({
   head: () => ({
@@ -205,7 +206,11 @@ function BriefingsPage() {
                     {[
                       BRIEFING_DESTINO_LABEL[b.destino],
                       b.cliente,
-                      b.responsavelNome ? `com ${b.responsavelNome}` : "",
+                      b.responsavelNome
+                        ? b.status === "em_andamento"
+                          ? `sendo feito por ${b.responsavelNome}${b.iniciadoEm ? ` desde ${formatDateTime(b.iniciadoEm)}` : ""}`
+                          : `com ${b.responsavelNome}`
+                        : "",
                       `por ${b.createdByNome || "alguém"}`,
                     ]
                       .filter(Boolean)

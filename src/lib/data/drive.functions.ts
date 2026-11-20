@@ -7,6 +7,8 @@ const PASTA_RAIZ = "Patty One";
 const PASTAS = {
   liberacao: { tabela: "liberacoes", pasta: "Liberações" },
   briefing: { tabela: "briefings", pasta: "Briefings" },
+  // Criação delivery: same briefing folder, in a subfolder.
+  briefing_entrega: { tabela: "briefings", pasta: "Briefings" },
   visita: { tabela: "visitas", pasta: "Visitas técnicas" },
   ci: { tabela: "cis", pasta: "CIs de vinheta" },
   // Checking photos go in the CI's own folder, in a subfolder.
@@ -47,7 +49,7 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
-        entidade: z.enum(["liberacao", "briefing", "visita", "ci", "ci_foto"]),
+        entidade: z.enum(["liberacao", "briefing", "briefing_entrega", "visita", "ci", "ci_foto"]),
         entidadeId: z.string().uuid(),
         nome: z.string().trim().min(1).max(200),
         mime: z.string().max(100),
@@ -90,7 +92,9 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
       pasta:
         data.entidade === "ci_foto"
           ? [PASTA_RAIZ, cfg.pasta, subpasta, "Fotos do checking"]
-          : [PASTA_RAIZ, cfg.pasta, subpasta],
+          : data.entidade === "briefing_entrega"
+            ? [PASTA_RAIZ, cfg.pasta, subpasta, "Entrega da criação"]
+            : [PASTA_RAIZ, cfg.pasta, subpasta],
       nome: limpa(data.nome) || "arquivo",
       mime: data.mime,
       autor: perfil?.display_name ?? "",

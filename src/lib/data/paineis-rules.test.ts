@@ -89,3 +89,16 @@ describe("arquivo da vinheta", () => {
     expect(tipoDoArquivo("csfx.avi", "")).toBe("video");
   });
 });
+
+describe("arquivos do briefing", () => {
+  it("accepts JPEG, PNG, PDF and JPEG XL only", async () => {
+    const { briefingArquivoPermitido, tipoDoArquivo } = await import("./cloud-anexos");
+    expect(briefingArquivoPermitido("logo.jxl", "")).toBe(true);
+    expect(briefingArquivoPermitido("arte.JPG", "image/jpeg")).toBe(true);
+    expect(briefingArquivoPermitido("ref.png", "image/png")).toBe(true);
+    expect(briefingArquivoPermitido("briefing.pdf", "application/pdf")).toBe(true);
+    expect(briefingArquivoPermitido("video.mp4", "video/mp4")).toBe(false);
+    expect(briefingArquivoPermitido("planilha.xlsx", "")).toBe(false);
+    expect(tipoDoArquivo("logo.jxl", "")).toBe("foto");
+  });
+});

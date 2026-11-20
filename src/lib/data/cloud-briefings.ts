@@ -43,6 +43,8 @@ export interface Briefing extends BriefingInput {
   responsavelId: string | null;
   responsavelNome: string;
   concluidoEm: string | null;
+  /** When someone clicked "Iniciar" (null while new, or before migration 0017). */
+  iniciadoEm: string | null;
   createdBy: string | null;
   createdByNome: string;
   createdAt: string;
@@ -85,6 +87,7 @@ interface Row {
   responsavel_id: string | null;
   responsavel_nome: string;
   concluido_em: string | null;
+  iniciado_em?: string | null;
   created_by: string | null;
   created_by_nome: string;
   created_at: string;
@@ -111,6 +114,7 @@ const toBriefing = (r: Row): Briefing => ({
   responsavelId: r.responsavel_id,
   responsavelNome: r.responsavel_nome,
   concluidoEm: r.concluido_em,
+  iniciadoEm: r.iniciado_em ?? null,
   createdBy: r.created_by,
   createdByNome: r.created_by_nome,
   createdAt: r.created_at,

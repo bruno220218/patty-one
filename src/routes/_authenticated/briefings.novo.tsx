@@ -7,7 +7,18 @@ import { EmptyState } from "@/components/app/empty-state";
 import { DetailSkeleton } from "@/components/app/card-grid-skeleton";
 import { BriefingForm } from "@/components/app/briefing-form";
 import { useCurrentUser, useDataAction } from "@/hooks/use-data";
-import { BRIEFING_VAZIO, briefingRepository, canCriarBriefing } from "@/lib/data";
+import {
+  BRIEFING_ACCEPT,
+  BRIEFING_FORMATOS,
+  BRIEFING_VAZIO,
+  briefingArquivoPermitido,
+  briefingRepository,
+  canCriarBriefing,
+} from "@/lib/data";
+import { ArquivosPicker } from "@/components/app/arquivos-picker";
+import { anexarArquivo } from "@/lib/drive-upload";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/briefings/novo")({
   head: () => ({
@@ -18,6 +29,8 @@ export const Route = createFileRoute("/_authenticated/briefings/novo")({
 
 function NovoBriefingPage() {
   const { data: me, isPending } = useCurrentUser();
+  const [arquivos, setArquivos] = useState<File[]>([]);
+  const queryClient = useQueryClient();
   const run = useDataAction();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -50,8 +63,19 @@ function NovoBriefingPage() {
       {back}
       <PageHeader
         title="Novo briefing"
-        description="Depois de salvar, anexe referências, logos, fotos e áudios."
+        description="Os arquivos escolhidos vão para o Google Drive assim que o briefing for criado."
       />
+      <ArquivosPicker
+        id="briefing-arquivos"
+        titulo="Arquivos do briefing"
+        descricao={`Referências, logos e fotos do cliente (${BRIEFING_FORMATOS}).`}
+        accept={BRIEFING_ACCEPT}
+        permitido={briefingArquivoPermitido}
+        formatos={BRIEFING_FORMATOS}
+        arquivos={arquivos}
+        onChange={setArquivos}
+      />
+      <div className="h-6" />
       <BriefingForm
         initial={{ ...BRIEFING_VAZIO, vendedor: me?.name ?? "" }}
         readOnly={false}
@@ -63,6 +87,22 @@ function NovoBriefingPage() {
             () => briefingRepository.create(input),
             "Briefing criado e enviado para a equipe.",
           );
+          if (created) {
+            // Files go to Drive after the briefing exists (its folder is named after it).
+            for (const file of arquivos) {
+              const t = toast.loading(`Enviando "${file.name}" para o Drive…`);
+              try {
+                await anexarArquivo(file, "briefing", created.id);
+                toast.success(`"${file.name}" enviado para o Drive.`, { id: t });
+              } catch (e) {
+                toast.error(
+                  `O briefing foi criado, mas "${file.name}" não subiu: ${e instanceof Error ? e.message : "erro no envio"}. Anexe de novo no briefing.`,
+                  { id: t, duration: 10_000 },
+                );
+              }
+            }
+            await queryClient.invalidateQueries({ queryKey: ["anexos", "briefing", created.id] });
+          }
           setSaving(false);
           if (created) {
             void navigate({ to: "/briefings/$briefingId", params: { briefingId: created.id } });
