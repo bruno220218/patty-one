@@ -159,7 +159,9 @@ export const teamRepository = {
   },
   /** Set a password on someone's account (gestor only, checked on the server). */
   async setPassword(userId: string, password: string): Promise<void> {
-    if (password.length < 6) throw new Error("A senha precisa ter pelo menos 6 caracteres.");
+    // Same limits as setTeamMemberPassword on the server (8–72).
+    if (password.length < 8) throw new Error("A senha precisa ter pelo menos 8 caracteres.");
+    if (password.length > 72) throw new Error("Use no máximo 72 caracteres.");
     await setTeamMemberPassword({ data: { userId, password } });
   },
   async updateMyName(userId: string, name: string): Promise<void> {
