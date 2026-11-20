@@ -119,6 +119,29 @@ function NotificationText({ n }: { n: AppNotification }) {
         </span>
       );
     }
+    case "ci_checkout_solicitada":
+    case "ci_checkout_enviada": {
+      const ci = (
+        <span className="font-medium">
+          CI nº {n.refNumero} · {n.projectName}
+        </span>
+      );
+      return (
+        <span className="block break-words">
+          {n.tipo === "ci_checkout_solicitada" ? (
+            <>
+              {who} pediu o <span className="font-semibold">checkout</span> (foto do fim da
+              veiculação) da {ci}
+            </>
+          ) : (
+            <>
+              {who} enviou as <span className="font-semibold">fotos do checkout</span> da {ci}
+            </>
+          )}
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
+        </span>
+      );
+    }
     case "ci_nova":
     case "ci_vinheta_entrou":
     case "ci_recusada": {

@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Camera, FileText, Plus, Search, SearchX } from "lucide-react";
+import { Camera, FileText, LogOut, Plus, Search, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,16 +22,16 @@ import { formatDateOnly } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/cis/")({
-  // ?aba=fotos opens on the photo requests (menu: Checking Fotográfico).
-  validateSearch: (search: Record<string, unknown>): { aba?: "fotos" } =>
-    search["aba"] === "fotos" ? { aba: "fotos" } : {},
+  // ?aba=fotos / ?aba=checkout open on the photo requests (menu: Checking / Checkout Fotográfico).
+  validateSearch: (search: Record<string, unknown>): { aba?: "fotos" | "checkout" } =>
+    search["aba"] === "fotos" || search["aba"] === "checkout" ? { aba: search["aba"] } : {},
   head: () => ({
     meta: [{ title: "CI — Patty One" }, { name: "robots", content: "noindex" }],
   }),
   component: CisPage,
 });
 
-type Aba = "aguardando" | "fotos" | "todas";
+type Aba = "aguardando" | "fotos" | "checkout" | "todas";
 
 const periodo = (ci: Ci) =>
   ci.inicio || ci.fim
@@ -68,13 +68,22 @@ function CisPage() {
 
   const aguardando = useMemo(() => (cis ?? []).filter((c) => ciSituacao(c) !== "concluida"), [cis]);
   const fotos = useMemo(() => (cis ?? []).filter((c) => fotoPendente(c)), [cis]);
+  const checkouts = useMemo(() => (cis ?? []).filter((c) => fotoPendente(c, "checkout")), [cis]);
   const visiveis = useMemo(() => {
     const q = dobrar(query.trim());
-    return (aba === "aguardando" ? aguardando : aba === "fotos" ? fotos : (cis ?? [])).filter(
+    const lista =
+      aba === "aguardando"
+        ? aguardando
+        : aba === "fotos"
+          ? fotos
+          : aba === "checkout"
+            ? checkouts
+            : (cis ?? []);
+    return lista.filter(
       (c) =>
         !q || dobrar(`${c.rotulo} ${c.cliente} ${c.titulo} ${c.representanteNome}`).includes(q),
     );
-  }, [aba, aguardando, fotos, cis, query]);
+  }, [aba, aguardando, fotos, checkouts, cis, query]);
 
   return (
     <>
@@ -136,6 +145,19 @@ function CisPage() {
                     {fotos.length}
                   </span>
                 </TabsTrigger>
+                <TabsTrigger value="checkout" className="gap-1.5">
+                  Checkout pendente
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      checkouts.length > 0
+                        ? "bg-status-progress text-status-progress-foreground"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {checkouts.length}
+                  </span>
+                </TabsTrigger>
                 <TabsTrigger value="todas">Todas</TabsTrigger>
               </TabsList>
             </Tabs>
@@ -155,7 +177,15 @@ function CisPage() {
             <EmptyState
               icon={SearchX}
               title="Nada por aqui"
-              description={query ? "Ajuste a busca." : "Nenhuma CI aguardando entrada."}
+              description={
+                query
+                  ? "Ajuste a busca."
+                  : aba === "fotos"
+                    ? "Nenhuma foto pendente."
+                    : aba === "checkout"
+                      ? "Nenhum checkout pendente."
+                      : "Nenhuma CI aguardando entrada."
+              }
             />
           ) : (
             <ul className="surface-card divide-y divide-border overflow-hidden">
@@ -181,6 +211,11 @@ function CisPage() {
                     {fotoPendente(ci) && (
                       <StatusPill tone="progress" icon={Camera}>
                         Foto pedida
+                      </StatusPill>
+                    )}
+                    {fotoPendente(ci, "checkout") && (
+                      <StatusPill tone="progress" icon={LogOut}>
+                        Checkout pedido
                       </StatusPill>
                     )}
                     <CiSituacaoPill ci={ci} />

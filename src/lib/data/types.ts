@@ -216,7 +216,9 @@ export type NotificationTipo =
   | "ci_vinheta_entrou"
   | "ci_recusada"
   | "ci_foto_solicitada"
-  | "ci_foto_enviada";
+  | "ci_foto_enviada"
+  | "ci_checkout_solicitada"
+  | "ci_checkout_enviada";
 
 /** In-app notification: a task was completed, or a liberação moved in the approval flow. */
 export interface AppNotification {

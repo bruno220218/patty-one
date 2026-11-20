@@ -13,6 +13,8 @@ const PASTAS = {
   ci: { tabela: "cis", pasta: "CIs de vinheta" },
   // Checking photos go in the CI's own folder, in a subfolder.
   ci_foto: { tabela: "cis", pasta: "CIs de vinheta" },
+  // Checkout photos (end of the run): also in the CI's folder, in their own subfolder.
+  ci_checkout: { tabela: "cis", pasta: "CIs de vinheta" },
   // Operação: one folder per service/appointment, named by date.
   programacao: { tabela: "programacao_servicos", pasta: "Programação" },
   agendamento: { tabela: "planejamento_agendamentos", pasta: "Agendamentos" },
@@ -108,6 +110,7 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
           "visita",
           "ci",
           "ci_foto",
+          "ci_checkout",
           "programacao",
           "agendamento",
           "ponto_midia",
@@ -143,9 +146,11 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
       pasta:
         data.entidade === "ci_foto"
           ? [PASTA_RAIZ, cfg.pasta, subpasta, "Fotos do checking"]
-          : data.entidade === "briefing_entrega"
-            ? [PASTA_RAIZ, cfg.pasta, subpasta, "Entrega da criação"]
-            : [PASTA_RAIZ, cfg.pasta, subpasta],
+          : data.entidade === "ci_checkout"
+            ? [PASTA_RAIZ, cfg.pasta, subpasta, "Fotos do checkout"]
+            : data.entidade === "briefing_entrega"
+              ? [PASTA_RAIZ, cfg.pasta, subpasta, "Entrega da criação"]
+              : [PASTA_RAIZ, cfg.pasta, subpasta],
       nome: limpa(data.nome) || "arquivo",
       mime: data.mime,
       autor: perfil?.display_name ?? "",

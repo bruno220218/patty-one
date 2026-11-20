@@ -62,10 +62,13 @@ export interface CiPainel {
 }
 
 export type CiFotoStatus = "pendente" | "enviada" | "cancelada";
+/** Checking = vinheta running on the panels; checkout = end of the run (vinheta leaving). */
+export type CiFotoEtapa = "checking" | "checkout";
 
-/** A request for the checking fotográfico to photograph the vinheta on the panels. */
+/** A request for the checking fotográfico to photograph the panels (start or end of the run). */
 export interface CiFotoPedido {
   id: string;
+  etapa: CiFotoEtapa;
   status: CiFotoStatus;
   observacao: string;
   pedidoPorId: string | null;
@@ -189,6 +192,7 @@ const toCi = (r: CiRow): Ci => ({
   fotoPedidos: (r.ci_fotos_pedidos ?? [])
     .map((f): CiFotoPedido => ({
       id: f.id,
+      etapa: f.etapa ?? "checking",
       status: f.status,
       observacao: f.observacao,
       pedidoPorId: f.pedido_por,
@@ -235,6 +239,8 @@ function check(i: CiInput) {
 
 interface CiFotoPedidoRow {
   id: string;
+  /** Missing until migration 0028 runs (every request was a checking). */
+  etapa?: CiFotoEtapa;
   status: CiFotoStatus;
   observacao: string;
   pedido_por: string | null;
@@ -309,7 +315,21 @@ export const ciRepository = {
     if (error) throw dbError(error);
   },
 
-  /** Checking: photos are up, close the request (at least one photo is required). */
+  /** Asks the checking fotográfico for the checkout: photos at the end of the run. */
+  async solicitarCheckout(ciId: string, observacao: string): Promise<void> {
+    const { error } = await db.rpc("solicitar_checkout_ci", {
+      _ci_id: ciId,
+      _observacao: observacao.trim(),
+    });
+    if (error) {
+      if (error.code === "PGRST202" || error.code === "42883") {
+        throw new Error("O checkout fotográfico ainda não foi ativado no banco de dados.");
+      }
+      throw dbError(error);
+    }
+  },
+
+  /** Checking or checkout: photos are up, close the request (at least one photo is required). */
   async concluirFoto(pedidoId: string): Promise<void> {
     const { error } = await db.rpc("concluir_foto_ci", { _pedido_id: pedidoId });
     if (error) throw dbError(error);
@@ -348,9 +368,9 @@ export function ciVazia(representanteNome = ""): CiInput {
   };
 }
 
-/** The open photo request of a CI, if any. */
-export const fotoPendente = (ci: Pick<Ci, "fotoPedidos">) =>
-  ci.fotoPedidos.find((f) => f.status === "pendente") ?? null;
+/** The open photo request of a CI for that step (checking by default), if any. */
+export const fotoPendente = (ci: Pick<Ci, "fotoPedidos">, etapa: CiFotoEtapa = "checking") =>
+  ci.fotoPedidos.find((f) => f.status === "pendente" && f.etapa === etapa) ?? null;
 
 /** Comercial, criação and gestão ask for photos (also enforced in the database). */
 export function canPedirFoto(user: { funcoes: readonly string[] } | null | undefined) {
