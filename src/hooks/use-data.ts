@@ -16,6 +16,7 @@ import {
   operacaoRepository,
   type OrdemFiltros,
   comercialRepository,
+  financeiroRepository,
   midiaRepository,
   type VendaFiltros,
   type HistoricoFiltros,
@@ -293,4 +294,26 @@ export const useOcupacao = (ano: number, pontoId?: string) =>
     queryKey: ["midia", "ocupacao", ano, pontoId ?? "todos"],
     queryFn: () => midiaRepository.ocupacao(ano, pontoId),
     placeholderData: keepPreviousData,
+  });
+
+// ---------- Financeiro (only Gestão, Direção and Financeiro can read) ----------
+export const useContasReceber = (enabled = true) =>
+  useQuery({
+    queryKey: ["financeiro", "contas"],
+    queryFn: () => financeiroRepository.contas(),
+    enabled,
+  });
+
+export const useContratosAluguel = (enabled = true) =>
+  useQuery({
+    queryKey: ["financeiro", "aluguel"],
+    queryFn: () => financeiroRepository.alugueis(),
+    enabled,
+  });
+
+export const useContratosEnergia = (enabled = true) =>
+  useQuery({
+    queryKey: ["financeiro", "energia"],
+    queryFn: () => financeiroRepository.energia(),
+    enabled,
   });

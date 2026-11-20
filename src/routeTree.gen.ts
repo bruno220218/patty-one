@@ -35,6 +35,7 @@ import { Route as AuthenticatedCisNovaRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedComercialIndexRouteImport } from './routes/_authenticated/comercial.index'
 import { Route as AuthenticatedComercialVendaIdRouteImport } from './routes/_authenticated/comercial.$vendaId'
 import { Route as AuthenticatedComercialHistoricoRouteImport } from './routes/_authenticated/comercial.historico'
+import { Route as AuthenticatedFinanceiroIndexRouteImport } from './routes/_authenticated/financeiro.index'
 import { Route as AuthenticatedLiberacoesIndexRouteImport } from './routes/_authenticated/liberacoes.index'
 import { Route as AuthenticatedLiberacoesLiberacaoIdRouteImport } from './routes/_authenticated/liberacoes.$liberacaoId'
 import { Route as AuthenticatedLiberacoesNovaRouteImport } from './routes/_authenticated/liberacoes.nova'
@@ -199,6 +200,12 @@ const AuthenticatedComercialHistoricoRoute =
     path: '/comercial/historico',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFinanceiroIndexRoute =
+  AuthenticatedFinanceiroIndexRouteImport.update({
+    id: '/financeiro/',
+    path: '/financeiro/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLiberacoesIndexRoute =
   AuthenticatedLiberacoesIndexRouteImport.update({
     id: '/liberacoes/',
@@ -357,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/cadastros/': typeof AuthenticatedCadastrosIndexRoute
   '/cis/': typeof AuthenticatedCisIndexRoute
   '/comercial/': typeof AuthenticatedComercialIndexRoute
+  '/financeiro/': typeof AuthenticatedFinanceiroIndexRoute
   '/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/midia-ooh/': typeof AuthenticatedMidiaOohIndexRoute
   '/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
@@ -403,6 +411,7 @@ export interface FileRoutesByTo {
   '/cadastros': typeof AuthenticatedCadastrosIndexRoute
   '/cis': typeof AuthenticatedCisIndexRoute
   '/comercial': typeof AuthenticatedComercialIndexRoute
+  '/financeiro': typeof AuthenticatedFinanceiroIndexRoute
   '/liberacoes': typeof AuthenticatedLiberacoesIndexRoute
   '/midia-ooh': typeof AuthenticatedMidiaOohIndexRoute
   '/planejamento': typeof AuthenticatedPlanejamentoIndexRoute
@@ -452,6 +461,7 @@ export interface FileRoutesById {
   '/_authenticated/cadastros/': typeof AuthenticatedCadastrosIndexRoute
   '/_authenticated/cis/': typeof AuthenticatedCisIndexRoute
   '/_authenticated/comercial/': typeof AuthenticatedComercialIndexRoute
+  '/_authenticated/financeiro/': typeof AuthenticatedFinanceiroIndexRoute
   '/_authenticated/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/_authenticated/midia-ooh/': typeof AuthenticatedMidiaOohIndexRoute
   '/_authenticated/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
@@ -500,6 +510,7 @@ export interface FileRouteTypes {
     | '/cadastros/'
     | '/cis/'
     | '/comercial/'
+    | '/financeiro/'
     | '/liberacoes/'
     | '/midia-ooh/'
     | '/planejamento/'
@@ -546,6 +557,7 @@ export interface FileRouteTypes {
     | '/cadastros'
     | '/cis'
     | '/comercial'
+    | '/financeiro'
     | '/liberacoes'
     | '/midia-ooh'
     | '/planejamento'
@@ -594,6 +606,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cadastros/'
     | '/_authenticated/cis/'
     | '/_authenticated/comercial/'
+    | '/_authenticated/financeiro/'
     | '/_authenticated/liberacoes/'
     | '/_authenticated/midia-ooh/'
     | '/_authenticated/planejamento/'
@@ -794,6 +807,13 @@ declare module '@tanstack/react-router' {
       path: '/comercial/historico'
       fullPath: '/comercial/historico'
       preLoaderRoute: typeof AuthenticatedComercialHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/financeiro/': {
+      id: '/_authenticated/financeiro/'
+      path: '/financeiro'
+      fullPath: '/financeiro/'
+      preLoaderRoute: typeof AuthenticatedFinanceiroIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/liberacoes/': {
@@ -997,6 +1017,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCadastrosIndexRoute: typeof AuthenticatedCadastrosIndexRoute
   AuthenticatedCisIndexRoute: typeof AuthenticatedCisIndexRoute
   AuthenticatedComercialIndexRoute: typeof AuthenticatedComercialIndexRoute
+  AuthenticatedFinanceiroIndexRoute: typeof AuthenticatedFinanceiroIndexRoute
   AuthenticatedLiberacoesIndexRoute: typeof AuthenticatedLiberacoesIndexRoute
   AuthenticatedMidiaOohIndexRoute: typeof AuthenticatedMidiaOohIndexRoute
   AuthenticatedPlanejamentoIndexRoute: typeof AuthenticatedPlanejamentoIndexRoute
@@ -1038,6 +1059,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCadastrosIndexRoute: AuthenticatedCadastrosIndexRoute,
   AuthenticatedCisIndexRoute: AuthenticatedCisIndexRoute,
   AuthenticatedComercialIndexRoute: AuthenticatedComercialIndexRoute,
+  AuthenticatedFinanceiroIndexRoute: AuthenticatedFinanceiroIndexRoute,
   AuthenticatedLiberacoesIndexRoute: AuthenticatedLiberacoesIndexRoute,
   AuthenticatedMidiaOohIndexRoute: AuthenticatedMidiaOohIndexRoute,
   AuthenticatedPlanejamentoIndexRoute: AuthenticatedPlanejamentoIndexRoute,
