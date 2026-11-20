@@ -38,6 +38,9 @@ import { Route as AuthenticatedComercialHistoricoRouteImport } from './routes/_a
 import { Route as AuthenticatedLiberacoesIndexRouteImport } from './routes/_authenticated/liberacoes.index'
 import { Route as AuthenticatedLiberacoesLiberacaoIdRouteImport } from './routes/_authenticated/liberacoes.$liberacaoId'
 import { Route as AuthenticatedLiberacoesNovaRouteImport } from './routes/_authenticated/liberacoes.nova'
+import { Route as AuthenticatedMidiaOohIndexRouteImport } from './routes/_authenticated/midia-ooh.index'
+import { Route as AuthenticatedMidiaOohPontoIdRouteImport } from './routes/_authenticated/midia-ooh.$pontoId'
+import { Route as AuthenticatedMidiaOohBissemanasRouteImport } from './routes/_authenticated/midia-ooh.bissemanas'
 import { Route as AuthenticatedPlanejamentoIndexRouteImport } from './routes/_authenticated/planejamento.index'
 import { Route as AuthenticatedPlanejamentoCatalogosRouteImport } from './routes/_authenticated/planejamento.catalogos'
 import { Route as AuthenticatedPlanejamentoEquipesRouteImport } from './routes/_authenticated/planejamento.equipes'
@@ -214,6 +217,24 @@ const AuthenticatedLiberacoesNovaRoute =
     path: '/liberacoes/nova',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMidiaOohIndexRoute =
+  AuthenticatedMidiaOohIndexRouteImport.update({
+    id: '/midia-ooh/',
+    path: '/midia-ooh/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMidiaOohPontoIdRoute =
+  AuthenticatedMidiaOohPontoIdRouteImport.update({
+    id: '/midia-ooh/$pontoId',
+    path: '/midia-ooh/$pontoId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMidiaOohBissemanasRoute =
+  AuthenticatedMidiaOohBissemanasRouteImport.update({
+    id: '/midia-ooh/bissemanas',
+    path: '/midia-ooh/bissemanas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPlanejamentoIndexRoute =
   AuthenticatedPlanejamentoIndexRouteImport.update({
     id: '/planejamento/',
@@ -322,6 +343,8 @@ export interface FileRoutesByFullPath {
   '/comercial/historico': typeof AuthenticatedComercialHistoricoRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
+  '/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
+  '/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
   '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
   '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
@@ -335,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/cis/': typeof AuthenticatedCisIndexRoute
   '/comercial/': typeof AuthenticatedComercialIndexRoute
   '/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
+  '/midia-ooh/': typeof AuthenticatedMidiaOohIndexRoute
   '/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
   '/producao/': typeof AuthenticatedProducaoIndexRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
@@ -365,6 +389,8 @@ export interface FileRoutesByTo {
   '/comercial/historico': typeof AuthenticatedComercialHistoricoRoute
   '/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
+  '/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
+  '/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
   '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
   '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
@@ -378,6 +404,7 @@ export interface FileRoutesByTo {
   '/cis': typeof AuthenticatedCisIndexRoute
   '/comercial': typeof AuthenticatedComercialIndexRoute
   '/liberacoes': typeof AuthenticatedLiberacoesIndexRoute
+  '/midia-ooh': typeof AuthenticatedMidiaOohIndexRoute
   '/planejamento': typeof AuthenticatedPlanejamentoIndexRoute
   '/producao': typeof AuthenticatedProducaoIndexRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
@@ -411,6 +438,8 @@ export interface FileRoutesById {
   '/_authenticated/comercial/historico': typeof AuthenticatedComercialHistoricoRoute
   '/_authenticated/liberacoes/$liberacaoId': typeof AuthenticatedLiberacoesLiberacaoIdRoute
   '/_authenticated/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
+  '/_authenticated/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
+  '/_authenticated/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
   '/_authenticated/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/_authenticated/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
   '/_authenticated/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
@@ -424,6 +453,7 @@ export interface FileRoutesById {
   '/_authenticated/cis/': typeof AuthenticatedCisIndexRoute
   '/_authenticated/comercial/': typeof AuthenticatedComercialIndexRoute
   '/_authenticated/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
+  '/_authenticated/midia-ooh/': typeof AuthenticatedMidiaOohIndexRoute
   '/_authenticated/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
   '/_authenticated/producao/': typeof AuthenticatedProducaoIndexRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
@@ -456,6 +486,8 @@ export interface FileRouteTypes {
     | '/comercial/historico'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
+    | '/midia-ooh/$pontoId'
+    | '/midia-ooh/bissemanas'
     | '/planejamento/catalogos'
     | '/planejamento/equipes'
     | '/planejamento/programacao'
@@ -469,6 +501,7 @@ export interface FileRouteTypes {
     | '/cis/'
     | '/comercial/'
     | '/liberacoes/'
+    | '/midia-ooh/'
     | '/planejamento/'
     | '/producao/'
     | '/projetos/'
@@ -499,6 +532,8 @@ export interface FileRouteTypes {
     | '/comercial/historico'
     | '/liberacoes/$liberacaoId'
     | '/liberacoes/nova'
+    | '/midia-ooh/$pontoId'
+    | '/midia-ooh/bissemanas'
     | '/planejamento/catalogos'
     | '/planejamento/equipes'
     | '/planejamento/programacao'
@@ -512,6 +547,7 @@ export interface FileRouteTypes {
     | '/cis'
     | '/comercial'
     | '/liberacoes'
+    | '/midia-ooh'
     | '/planejamento'
     | '/producao'
     | '/projetos'
@@ -544,6 +580,8 @@ export interface FileRouteTypes {
     | '/_authenticated/comercial/historico'
     | '/_authenticated/liberacoes/$liberacaoId'
     | '/_authenticated/liberacoes/nova'
+    | '/_authenticated/midia-ooh/$pontoId'
+    | '/_authenticated/midia-ooh/bissemanas'
     | '/_authenticated/planejamento/catalogos'
     | '/_authenticated/planejamento/equipes'
     | '/_authenticated/planejamento/programacao'
@@ -557,6 +595,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cis/'
     | '/_authenticated/comercial/'
     | '/_authenticated/liberacoes/'
+    | '/_authenticated/midia-ooh/'
     | '/_authenticated/planejamento/'
     | '/_authenticated/producao/'
     | '/_authenticated/projetos/'
@@ -778,6 +817,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLiberacoesNovaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/midia-ooh/': {
+      id: '/_authenticated/midia-ooh/'
+      path: '/midia-ooh'
+      fullPath: '/midia-ooh/'
+      preLoaderRoute: typeof AuthenticatedMidiaOohIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/midia-ooh/$pontoId': {
+      id: '/_authenticated/midia-ooh/$pontoId'
+      path: '/midia-ooh/$pontoId'
+      fullPath: '/midia-ooh/$pontoId'
+      preLoaderRoute: typeof AuthenticatedMidiaOohPontoIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/midia-ooh/bissemanas': {
+      id: '/_authenticated/midia-ooh/bissemanas'
+      path: '/midia-ooh/bissemanas'
+      fullPath: '/midia-ooh/bissemanas'
+      preLoaderRoute: typeof AuthenticatedMidiaOohBissemanasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/planejamento/': {
       id: '/_authenticated/planejamento/'
       path: '/planejamento'
@@ -923,6 +983,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComercialHistoricoRoute: typeof AuthenticatedComercialHistoricoRoute
   AuthenticatedLiberacoesLiberacaoIdRoute: typeof AuthenticatedLiberacoesLiberacaoIdRoute
   AuthenticatedLiberacoesNovaRoute: typeof AuthenticatedLiberacoesNovaRoute
+  AuthenticatedMidiaOohPontoIdRoute: typeof AuthenticatedMidiaOohPontoIdRoute
+  AuthenticatedMidiaOohBissemanasRoute: typeof AuthenticatedMidiaOohBissemanasRoute
   AuthenticatedPlanejamentoCatalogosRoute: typeof AuthenticatedPlanejamentoCatalogosRoute
   AuthenticatedPlanejamentoEquipesRoute: typeof AuthenticatedPlanejamentoEquipesRoute
   AuthenticatedPlanejamentoProgramacaoRoute: typeof AuthenticatedPlanejamentoProgramacaoRoute
@@ -936,6 +998,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCisIndexRoute: typeof AuthenticatedCisIndexRoute
   AuthenticatedComercialIndexRoute: typeof AuthenticatedComercialIndexRoute
   AuthenticatedLiberacoesIndexRoute: typeof AuthenticatedLiberacoesIndexRoute
+  AuthenticatedMidiaOohIndexRoute: typeof AuthenticatedMidiaOohIndexRoute
   AuthenticatedPlanejamentoIndexRoute: typeof AuthenticatedPlanejamentoIndexRoute
   AuthenticatedProducaoIndexRoute: typeof AuthenticatedProducaoIndexRoute
   AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
@@ -958,6 +1021,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLiberacoesLiberacaoIdRoute:
     AuthenticatedLiberacoesLiberacaoIdRoute,
   AuthenticatedLiberacoesNovaRoute: AuthenticatedLiberacoesNovaRoute,
+  AuthenticatedMidiaOohPontoIdRoute: AuthenticatedMidiaOohPontoIdRoute,
+  AuthenticatedMidiaOohBissemanasRoute: AuthenticatedMidiaOohBissemanasRoute,
   AuthenticatedPlanejamentoCatalogosRoute:
     AuthenticatedPlanejamentoCatalogosRoute,
   AuthenticatedPlanejamentoEquipesRoute: AuthenticatedPlanejamentoEquipesRoute,
@@ -974,6 +1039,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCisIndexRoute: AuthenticatedCisIndexRoute,
   AuthenticatedComercialIndexRoute: AuthenticatedComercialIndexRoute,
   AuthenticatedLiberacoesIndexRoute: AuthenticatedLiberacoesIndexRoute,
+  AuthenticatedMidiaOohIndexRoute: AuthenticatedMidiaOohIndexRoute,
   AuthenticatedPlanejamentoIndexRoute: AuthenticatedPlanejamentoIndexRoute,
   AuthenticatedProducaoIndexRoute: AuthenticatedProducaoIndexRoute,
   AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,

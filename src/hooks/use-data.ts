@@ -16,6 +16,7 @@ import {
   operacaoRepository,
   type OrdemFiltros,
   comercialRepository,
+  midiaRepository,
   type VendaFiltros,
   type HistoricoFiltros,
   pessoasDaFuncao,
@@ -258,5 +259,38 @@ export const useHistoricoComercial = (filtros: HistoricoFiltros, pagina: number)
   useQuery({
     queryKey: ["comercial", "historico", filtros, pagina],
     queryFn: () => comercialRepository.historico(filtros, pagina),
+    placeholderData: keepPreviousData,
+  });
+
+// ---------- Mídia OOH ----------
+export const useTiposMidia = () =>
+  useQuery({
+    queryKey: ["midia", "tipos"],
+    queryFn: () => midiaRepository.tipos(),
+    staleTime: 5 * 60_000,
+  });
+
+export const usePontosMidia = () =>
+  useQuery({ queryKey: ["midia", "pontos"], queryFn: () => midiaRepository.pontos() });
+
+export const usePontoMidia = (id: string) =>
+  useQuery({
+    queryKey: ["midia", "ponto", id],
+    queryFn: () => midiaRepository.ponto(id),
+    enabled: Boolean(id),
+  });
+
+/** The official calendar changes rarely. */
+export const useCalendarioBissemanas = () =>
+  useQuery({
+    queryKey: ["midia", "calendario"],
+    queryFn: () => midiaRepository.calendario(),
+    staleTime: 60 * 60_000,
+  });
+
+export const useOcupacao = (ano: number, pontoId?: string) =>
+  useQuery({
+    queryKey: ["midia", "ocupacao", ano, pontoId ?? "todos"],
+    queryFn: () => midiaRepository.ocupacao(ano, pontoId),
     placeholderData: keepPreviousData,
   });

@@ -94,3 +94,5 @@ export * from "./planejamento-rules";
 export * from "./programacao-rules";
 export * from "./cloud-comercial";
 export * from "./comercial-rules";
+export * from "./cloud-midia";
+export * from "./midia-rules";

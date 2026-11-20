@@ -74,6 +74,8 @@ type NavTo =
   | "/cadastros"
   | "/comercial"
   | "/comercial/historico"
+  | "/midia-ooh"
+  | "/midia-ooh/bissemanas"
   | "/configuracoes"
   | "/importar"
   | "/producao"
@@ -111,6 +113,13 @@ const SETORES: Setor[] = [
             label: "Histórico SIGE",
             icon: History,
             to: "/comercial/historico",
+          },
+          { id: "pontos-midia", label: "Mapeamento das áreas", icon: MapIcon, to: "/midia-ooh" },
+          {
+            id: "bissemanas-comercial",
+            label: "Datas de colagens",
+            icon: CalendarDays,
+            to: "/midia-ooh/bissemanas",
           },
         ],
       },
@@ -204,8 +213,13 @@ const SETORES: Setor[] = [
       },
       {
         itens: [
-          { id: "mapeamento", label: "Mapeamento das áreas", icon: MapIcon },
-          { id: "datas-colagens", label: "Datas de colagens", icon: CalendarDays },
+          { id: "mapeamento", label: "Mapeamento das áreas", icon: MapIcon, to: "/midia-ooh" },
+          {
+            id: "datas-colagens",
+            label: "Datas de colagens",
+            icon: CalendarDays,
+            to: "/midia-ooh/bissemanas",
+          },
         ],
       },
       {
