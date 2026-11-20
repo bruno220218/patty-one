@@ -6,6 +6,7 @@ import {
   Archive,
   BarChart3,
   Calculator,
+  CalendarDays,
   CalendarRange,
   Camera,
   Images,
@@ -163,7 +164,8 @@ const SETORES: Setor[] = [
       },
       {
         itens: [
-          { id: "mapeamento", label: "Mapeamento das áreas / datas de colagens", icon: MapIcon },
+          { id: "mapeamento", label: "Mapeamento das áreas", icon: MapIcon },
+          { id: "datas-colagens", label: "Datas de colagens", icon: CalendarDays },
         ],
       },
     ],
