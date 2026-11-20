@@ -17,6 +17,7 @@ import {
   type OrdemFiltros,
   comercialRepository,
   financeiroRepository,
+  financeiroPagarRepository,
   midiaRepository,
   type VendaFiltros,
   type HistoricoFiltros,
@@ -315,5 +316,22 @@ export const useContratosEnergia = (enabled = true) =>
   useQuery({
     queryKey: ["financeiro", "energia"],
     queryFn: () => financeiroRepository.energia(),
+    enabled,
+  });
+
+export const useContasPagar = (enabled = true) =>
+  useQuery({
+    queryKey: ["financeiro", "pagar"],
+    queryFn: () => financeiroPagarRepository.contas(),
+    enabled,
+  });
+
+export const usePercentuaisVendedores = (enabled = true) =>
+  useQuery({
+    queryKey: ["financeiro", "percentuais"],
+    queryFn: async () => ({
+      percentuais: await financeiroPagarRepository.percentuais(),
+      vendedores: await financeiroPagarRepository.vendedoresDosPedidos(),
+    }),
     enabled,
   });

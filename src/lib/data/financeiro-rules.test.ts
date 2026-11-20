@@ -4,6 +4,12 @@ import {
   canExcluirFinanceiro,
   canFinanceiro,
   codigosMidias,
+  comissoesPorFavorecido,
+  parsePercentual,
+  resumoPagar,
+  situacaoPagar,
+  validarPagar,
+  type PagarForm,
   resumoFinanceiro,
   situacaoConta,
   somarDias,
@@ -120,5 +126,57 @@ describe("validação", () => {
     expect(validarAluguel({ ...aluguel, vencimento: "2027-02-01" }, 0)).toMatch(/vigência/);
     expect(validarEnergia(energia)).toMatch(/nº do cliente/);
     expect(validarEnergia({ ...energia, local: "Rua A" })).toBeNull();
+  });
+});
+
+describe("contas a pagar e comissões", () => {
+  it("situação e resumo do que está em aberto", () => {
+    expect(situacaoPagar("Aberto", "2026-11-19", "2026-11-20")).toBe("Vencido");
+    expect(situacaoPagar("Pago", "2026-11-19", "2026-11-20")).toBe("Pago");
+    expect(
+      resumoPagar(
+        [
+          { status: "Aberto", vencimento: "2026-11-01", valor: 10 },
+          { status: "Aberto", vencimento: "2026-12-10", valor: 20 },
+          { status: "Aberto", vencimento: "2027-02-01", valor: 40 },
+          { status: "Pago", vencimento: "2026-11-01", valor: 99 },
+        ],
+        "2026-11-20",
+      ),
+    ).toEqual({ vencido: 10, proximos30: 20 });
+  });
+  it("agrupa comissões por quem recebe", () => {
+    expect(
+      comissoesPorFavorecido([
+        { favorecido: "Ana", status: "Aberto", valor: 50 },
+        { favorecido: "Ana", status: "Pago", valor: 20 },
+        { favorecido: "Bia", status: "Aberto", valor: 80 },
+        { favorecido: "Bia", status: "Cancelado", valor: 999 },
+      ]),
+    ).toEqual([
+      { favorecido: "Bia", pendente: 80, pago: 0 },
+      { favorecido: "Ana", pendente: 50, pago: 20 },
+    ]);
+  });
+  it("valida a conta e o percentual", () => {
+    const f: PagarForm = {
+      categoria: "Fornecedor",
+      descricao: "Lona",
+      vencimento: "2026-12-01",
+      valor: "10",
+      cadastroId: "",
+      cadastroNome: "",
+      favorecido: "",
+      empresaId: "",
+      contratoAluguelId: "",
+      contratoEnergiaId: "",
+      observacao: "",
+    };
+    expect(validarPagar(f, 10)).toBeNull();
+    expect(validarPagar({ ...f, categoria: "Comissão" }, 10)).toMatch(/sozinhas/);
+    expect(validarPagar({ ...f, categoria: "Comissão" }, 10, false)).toBeNull();
+    expect(parsePercentual("12,5")).toBe(12.5);
+    expect(parsePercentual("101")).toBeNull();
+    expect(parsePercentual("")).toBeNull();
   });
 });
