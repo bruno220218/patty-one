@@ -75,6 +75,7 @@ type NavTo =
   | "/paineis"
   | "/paineis/midias"
   | "/medidas"
+  | "/status-servicos"
   | "/cis"
   | "/cadastros"
   | "/comercial"
@@ -190,7 +191,12 @@ const SETORES: Setor[] = [
             to: "/cis",
             search: { aba: "checkout" },
           },
-          { id: "status-servicos", label: "Status Serviços", icon: Activity },
+          {
+            id: "status-servicos",
+            label: "Status Serviços",
+            icon: Activity,
+            to: "/status-servicos",
+          },
         ],
       },
       {

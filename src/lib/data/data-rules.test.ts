@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canToggleTask,
   DEFAULT_PROJECT_FILTERS,
+  etapaAtual,
   filterAndSortProjects,
   groupTeamByRole,
   matchingOpenTasks,
@@ -29,6 +30,15 @@ describe("progress and status", () => {
     expect(projectStatus([task(false), task(false)])).toBe("not_started");
     expect(projectStatus([task(true), task(false)])).toBe("in_progress");
     expect(projectStatus([task(true), task(true)])).toBe("done");
+  });
+
+  it("shows the first open task as the current step (Status Serviços)", () => {
+    const t = (title: string, done: boolean) => ({ title, ...task(done) });
+    expect(etapaAtual([t("Arte", true), t("Impressão", false), t("Instalação", false)])).toBe(
+      "Impressão",
+    );
+    expect(etapaAtual([t("Arte", true)])).toBeNull();
+    expect(etapaAtual([])).toBeNull();
   });
 });
 

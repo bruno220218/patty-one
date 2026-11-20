@@ -16,6 +16,14 @@ export function projectStatus(tasks: TaskLike[]): ProjectStatus {
   return "in_progress";
 }
 
+/**
+ * Status Serviços: the step the project is on — its first unchecked task, in the order PCP keeps
+ * on the kanban. Null when every task is done or there are none.
+ */
+export function etapaAtual<T extends TaskLike & { title: string }>(tasks: T[]): string | null {
+  return tasks.find((t) => t.completedAt === null)?.title ?? null;
+}
+
 /** Returns a new array with the item at `index` moved one step. Out-of-range moves are no-ops. */
 export function moveItem<T>(items: T[], index: number, direction: MoveDirection): T[] {
   const target = direction === "up" ? index - 1 : index + 1;

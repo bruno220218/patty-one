@@ -54,6 +54,7 @@ export {
   EMPTY_CLIENT_INFO,
   filterAndSortProjects,
   isOverdue,
+  etapaAtual,
   localToday,
   groupTeamByRole,
   matchingOpenTasks,
