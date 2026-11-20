@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   AlertTriangle,
@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock3,
+  ExternalLink,
   History,
   Loader2,
   Save,
@@ -23,7 +24,13 @@ import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, OrdemStatusBadge, TOM, selectClass } from "@/components/app/operacao-ui";
-import { useCurrentUser, useDataAction, useOrdem, useRecursosOperacao } from "@/hooks/use-data";
+import {
+  useCurrentUser,
+  useDataAction,
+  useOrdem,
+  usePedidosAbertos,
+  useRecursosOperacao,
+} from "@/hooks/use-data";
 import {
   abreviarNome,
   alertaPrazo,
@@ -47,8 +54,10 @@ import {
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-/** "/producao/nova" opens an empty order. */
+/** "/producao/nova" opens an empty order; "?pedido=<id>" starts it linked to that pedido. */
 export const Route = createFileRoute("/_authenticated/producao/$ordemId")({
+  validateSearch: (s: Record<string, unknown>): { pedido?: string } =>
+    typeof s["pedido"] === "string" && s["pedido"] ? { pedido: s["pedido"] } : {},
   head: () => ({
     meta: [{ title: "Ordem de produção — Patty One" }, { name: "robots", content: "noindex" }],
   }),
@@ -84,6 +93,7 @@ type Form = {
   status: StatusOrdem;
   prioridade: string;
   cliente: { id: string; nome: string } | null;
+  vendaId: string;
   servicoId: string;
   descricao: string;
   dataPrevista: string;
@@ -95,6 +105,7 @@ type Form = {
 };
 
 function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undefined }) {
+  const { pedido: pedidoInicial } = Route.useSearch();
   const navigate = useNavigate();
   const run = useDataAction();
   const { data: me } = useCurrentUser();
@@ -110,6 +121,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           status: doc.status,
           prioridade: doc.prioridade,
           cliente: doc.cadastroId ? { id: doc.cadastroId, nome: doc.clienteNome } : null,
+          vendaId: doc.vendaId ?? "",
           servicoId: doc.servicoId ?? "",
           descricao: doc.descricao,
           dataPrevista: doc.dataPrevista ?? "",
@@ -124,6 +136,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           status: "Aguardando",
           prioridade: "Normal",
           cliente: null,
+          vendaId: pedidoInicial ?? "",
           servicoId: "",
           descricao: "",
           dataPrevista: "",
@@ -135,6 +148,42 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
         },
   );
   const set = (p: Partial<Form>) => setF((a) => ({ ...a, ...p }));
+  const pedidos = usePedidosAbertos();
+  // A cancelled pedido isn't offered, but stays visible while it's the linked one.
+  const pedidosVisiveis = (pedidos.data ?? []).concat(
+    f.vendaId && pedidos.data && !pedidos.data.some((p) => p.id === f.vendaId)
+      ? [
+          {
+            id: f.vendaId,
+            numero: 0,
+            cadastroId: null,
+            clienteNome: "pedido atual",
+            primeiroItem: "",
+          },
+        ]
+      : [],
+  );
+
+  /** Linking a pedido fills the client and the description when they are still empty. */
+  function escolherPedido(id: string) {
+    const p = pedidos.data?.find((x) => x.id === id);
+    setF((a) => ({
+      ...a,
+      vendaId: id,
+      cliente: !a.cliente && p?.cadastroId ? { id: p.cadastroId, nome: p.clienteNome } : a.cliente,
+      descricao: !a.descricao.trim() && p?.primeiroItem ? p.primeiroItem : a.descricao,
+    }));
+  }
+
+  // Opened from a pedido ("Nova ordem"): fill in its client and first item once the list loads.
+  const [pedidoAplicado, setPedidoAplicado] = useState(false);
+  useEffect(() => {
+    if (doc || !pedidoInicial || pedidoAplicado || !pedidos.data) return;
+    setPedidoAplicado(true);
+    escolherPedido(pedidoInicial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pedidos.data]);
+
   const servicosAtivos = recursos.servicos.filter((s) => s.ativo || s.id === f.servicoId);
   const servico = recursos.servicos.find((s) => s.id === f.servicoId);
   const colaboradores = recursos.colaboradores.filter((c) => c.ativo || f.equipe.includes(c.id));
@@ -182,6 +231,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             status: f.status,
             prioridade: f.prioridade,
             cadastroId: f.cliente?.id ?? "",
+            vendaId: f.vendaId,
             servicoId: f.servicoId,
             descricao: f.descricao,
             dataPrevista: f.dataPrevista,
@@ -211,7 +261,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
       () => operacaoRepository.excluirOrdem(doc.id).then(() => true),
       "Ordem excluída",
     );
-    if (ok) navigate({ to: "/producao" });
+    if (ok) navigate({ to: "/producao", search: { tipo: "", status: "", busca: "", pagina: 1 } });
   }
 
   const bloqueado = !podeGerir;
@@ -221,7 +271,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" asChild aria-label="Voltar às ordens">
-            <Link to="/producao">
+            <Link to="/producao" search={{ tipo: "", status: "", busca: "", pagina: 1 }}>
               <ArrowLeft />
             </Link>
           </Button>
@@ -336,7 +386,33 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             ))}
           </select>
         </div>
-        <div className="space-y-1.5 md:col-span-2 lg:col-span-4">
+        <div className="space-y-1.5 md:col-span-2">
+          <Label htmlFor="pedido">Pedido de venda (opcional)</Label>
+          <div className="flex gap-2">
+            <select
+              id="pedido"
+              className={selectClass}
+              value={f.vendaId}
+              disabled={bloqueado || pedidos.isPending}
+              onChange={(e) => escolherPedido(e.target.value)}
+            >
+              <option value="">Sem vínculo com pedido</option>
+              {pedidosVisiveis.map((p) => (
+                <option key={p.id} value={p.id}>
+                  Pedido {p.numero} — {p.clienteNome || "Sem cliente"}
+                </option>
+              ))}
+            </select>
+            {f.vendaId && (
+              <Button variant="outline" size="icon" asChild aria-label="Abrir o pedido">
+                <Link to="/comercial/$vendaId" params={{ vendaId: f.vendaId }}>
+                  <ExternalLink />
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="space-y-1.5 md:col-span-2">
           <Label>Cliente</Label>
           <ClientePicker
             value={f.cliente}

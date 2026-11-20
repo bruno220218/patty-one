@@ -92,3 +92,5 @@ export * from "./cloud-operacao";
 export * from "./producao-rules";
 export * from "./planejamento-rules";
 export * from "./programacao-rules";
+export * from "./cloud-comercial";
+export * from "./comercial-rules";

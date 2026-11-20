@@ -98,7 +98,11 @@ export function CadastroForm({
       () => cadastroRepository.remove(ficha.id).then(() => true),
       "Cadastro excluído",
     );
-    if (ok) navigate({ to: "/cadastros" });
+    if (ok)
+      navigate({
+        to: "/cadastros",
+        search: { busca: "", vendedor: "", estado: "", tipo: "", semVendedor: false, pagina: 1 },
+      });
   }
 
   async function buscarCep() {
@@ -234,7 +238,19 @@ export function CadastroForm({
           variant="ghost"
           size="icon"
           aria-label="Voltar aos cadastros"
-          onClick={() => navigate({ to: "/cadastros" })}
+          onClick={() =>
+            navigate({
+              to: "/cadastros",
+              search: {
+                busca: "",
+                vendedor: "",
+                estado: "",
+                tipo: "",
+                semVendedor: false,
+                pagina: 1,
+              },
+            })
+          }
         >
           <ArrowLeft />
         </Button>

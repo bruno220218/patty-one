@@ -19,6 +19,7 @@ import {
   FileCheck2,
   FileText,
   FolderOpen,
+  History,
   Hourglass,
   Lightbulb,
   ListChecks,
@@ -28,6 +29,7 @@ import {
   Package,
   MonitorPlay,
   Settings,
+  ShoppingCart,
   Trash2,
   Truck,
   Upload,
@@ -70,6 +72,8 @@ type NavTo =
   | "/paineis"
   | "/cis"
   | "/cadastros"
+  | "/comercial"
+  | "/comercial/historico"
   | "/configuracoes"
   | "/importar"
   | "/producao"
@@ -98,6 +102,18 @@ const SETORES: Setor[] = [
     titulo: "Comercial",
     funcoes: ["comercial"],
     subs: [
+      {
+        titulo: "Vendas",
+        itens: [
+          { id: "vendas", label: "Propostas e pedidos", icon: ShoppingCart, to: "/comercial" },
+          {
+            id: "historico-sige",
+            label: "Histórico SIGE",
+            icon: History,
+            to: "/comercial/historico",
+          },
+        ],
+      },
       {
         titulo: "Briefing",
         itens: [
@@ -264,6 +280,7 @@ const ALL_ITEMS = [...SETORES.flatMap((s) => s.subs.flatMap((sub) => sub.itens))
 /** Pages outside the menu still get a name in the "Início › …" trail. */
 const OUTRAS_PAGINAS: { to: string; label: string }[] = [
   { to: "/listas", label: "Listas da liberação" },
+  { to: "/importar-historico", label: "Importar histórico SIGE" },
 ];
 
 /**
