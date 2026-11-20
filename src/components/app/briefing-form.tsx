@@ -3,9 +3,8 @@ import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FormField } from "@/components/app/form-field";
-import { BRIEFING_DESTINO_LABEL, type BriefingDestino, type BriefingInput } from "@/lib/data";
+import type { BriefingInput } from "@/lib/data";
 
 const AREAS: {
   key: keyof Pick<
@@ -91,24 +90,6 @@ export function BriefingForm({
 
   return (
     <form onSubmit={submit} className="surface-card space-y-5 p-5" noValidate>
-      <FormField id="b-destino" label="Para quem é o briefing">
-        <ToggleGroup
-          id="b-destino"
-          type="single"
-          variant="outline"
-          value={v.destino}
-          onValueChange={(d) => d && set("destino", d as BriefingDestino)}
-          disabled={readOnly}
-          className="justify-start"
-        >
-          {(Object.keys(BRIEFING_DESTINO_LABEL) as BriefingDestino[]).map((d) => (
-            <ToggleGroupItem key={d} value={d} className="h-9 px-4">
-              {BRIEFING_DESTINO_LABEL[d]}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </FormField>
-
       <FormField id="b-titulo" label="Título *">
         <Input
           id="b-titulo"

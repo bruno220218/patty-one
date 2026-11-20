@@ -10,7 +10,7 @@ export type BriefingStatus = "novo" | "em_andamento" | "concluido";
 
 export const BRIEFING_DESTINO_LABEL: Record<BriefingDestino, string> = {
   criacao: "Criação",
-  projetos_especiais: "Projetos especiais",
+  projetos_especiais: "Projetos Especiais",
 };
 
 export const BRIEFING_STATUS_LABEL: Record<BriefingStatus, string> = {

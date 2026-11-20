@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { ListChecks, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app/page-header";
@@ -9,10 +9,20 @@ import { ChecklistCard } from "@/components/app/checklist-card";
 import { ChecklistFormDialog } from "@/components/app/checklist-form-dialog";
 import { ProjectFormDialog } from "@/components/app/project-form-dialog";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
-import { useChecklists, useDataAction } from "@/hooks/use-data";
-import { checklistRepository, projectRepository, type Checklist } from "@/lib/data";
+import { currentUserQuery, useChecklists, useDataAction } from "@/hooks/use-data";
+import {
+  canGerirChecklists,
+  checklistRepository,
+  projectRepository,
+  type Checklist,
+} from "@/lib/data";
 
-export const Route = createFileRoute("/_authenticated/_gestor/checklists/")({
+export const Route = createFileRoute("/_authenticated/checklists/")({
+  // Gestão and PCP only (the database applies the same rule).
+  beforeLoad: async ({ context }) => {
+    const me = await context.queryClient.fetchQuery(currentUserQuery());
+    if (!canGerirChecklists(me)) throw redirect({ to: "/projetos" });
+  },
   head: () => ({
     meta: [
       { title: "Checklists — Patty One" },

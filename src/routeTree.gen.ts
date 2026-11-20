@@ -17,6 +17,7 @@ import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenti
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedLixeiraRouteImport } from './routes/_authenticated/lixeira'
+import { Route as AuthenticatedMedidasRouteImport } from './routes/_authenticated/medidas'
 import { Route as AuthenticatedPaineisRouteImport } from './routes/_authenticated/paineis'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
@@ -29,6 +30,8 @@ import { Route as AuthenticatedBriefingsBriefingIdRouteImport } from './routes/_
 import { Route as AuthenticatedBriefingsNovoRouteImport } from './routes/_authenticated/briefings.novo'
 import { Route as AuthenticatedCadastrosIndexRouteImport } from './routes/_authenticated/cadastros.index'
 import { Route as AuthenticatedCadastrosCadastroIdRouteImport } from './routes/_authenticated/cadastros.$cadastroId'
+import { Route as AuthenticatedChecklistsIndexRouteImport } from './routes/_authenticated/checklists.index'
+import { Route as AuthenticatedChecklistsChecklistIdRouteImport } from './routes/_authenticated/checklists.$checklistId'
 import { Route as AuthenticatedCisIndexRouteImport } from './routes/_authenticated/cis.index'
 import { Route as AuthenticatedCisCiIdRouteImport } from './routes/_authenticated/cis.$ciId'
 import { Route as AuthenticatedCisNovaRouteImport } from './routes/_authenticated/cis.nova'
@@ -42,6 +45,7 @@ import { Route as AuthenticatedLiberacoesNovaRouteImport } from './routes/_authe
 import { Route as AuthenticatedMidiaOohIndexRouteImport } from './routes/_authenticated/midia-ooh.index'
 import { Route as AuthenticatedMidiaOohPontoIdRouteImport } from './routes/_authenticated/midia-ooh.$pontoId'
 import { Route as AuthenticatedMidiaOohBissemanasRouteImport } from './routes/_authenticated/midia-ooh.bissemanas'
+import { Route as AuthenticatedPaineisMidiasRouteImport } from './routes/_authenticated/paineis_.midias'
 import { Route as AuthenticatedPlanejamentoIndexRouteImport } from './routes/_authenticated/planejamento.index'
 import { Route as AuthenticatedPlanejamentoCatalogosRouteImport } from './routes/_authenticated/planejamento.catalogos'
 import { Route as AuthenticatedPlanejamentoEquipesRouteImport } from './routes/_authenticated/planejamento.equipes'
@@ -54,8 +58,6 @@ import { Route as AuthenticatedProjetosProjectIdRouteImport } from './routes/_au
 import { Route as AuthenticatedVisitasIndexRouteImport } from './routes/_authenticated/visitas.index'
 import { Route as AuthenticatedVisitasVisitaIdRouteImport } from './routes/_authenticated/visitas.$visitaId'
 import { Route as AuthenticatedVisitasNovaRouteImport } from './routes/_authenticated/visitas.nova'
-import { Route as AuthenticatedGestorChecklistsIndexRouteImport } from './routes/_authenticated/_gestor/checklists.index'
-import { Route as AuthenticatedGestorChecklistsChecklistIdRouteImport } from './routes/_authenticated/_gestor/checklists.$checklistId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -95,6 +97,11 @@ const AuthenticatedConfiguracoesRoute =
 const AuthenticatedLixeiraRoute = AuthenticatedLixeiraRouteImport.update({
   id: '/lixeira',
   path: '/lixeira',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMedidasRoute = AuthenticatedMedidasRouteImport.update({
+  id: '/medidas',
+  path: '/medidas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPaineisRoute = AuthenticatedPaineisRouteImport.update({
@@ -165,6 +172,18 @@ const AuthenticatedCadastrosCadastroIdRoute =
   AuthenticatedCadastrosCadastroIdRouteImport.update({
     id: '/cadastros/$cadastroId',
     path: '/cadastros/$cadastroId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedChecklistsIndexRoute =
+  AuthenticatedChecklistsIndexRouteImport.update({
+    id: '/checklists/',
+    path: '/checklists/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedChecklistsChecklistIdRoute =
+  AuthenticatedChecklistsChecklistIdRouteImport.update({
+    id: '/checklists/$checklistId',
+    path: '/checklists/$checklistId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCisIndexRoute = AuthenticatedCisIndexRouteImport.update({
@@ -242,6 +261,12 @@ const AuthenticatedMidiaOohBissemanasRoute =
     path: '/midia-ooh/bissemanas',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPaineisMidiasRoute =
+  AuthenticatedPaineisMidiasRouteImport.update({
+    id: '/paineis_/midias',
+    path: '/paineis/midias',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPlanejamentoIndexRoute =
   AuthenticatedPlanejamentoIndexRouteImport.update({
     id: '/planejamento/',
@@ -314,18 +339,6 @@ const AuthenticatedVisitasNovaRoute =
     path: '/visitas/nova',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedGestorChecklistsIndexRoute =
-  AuthenticatedGestorChecklistsIndexRouteImport.update({
-    id: '/checklists/',
-    path: '/checklists/',
-    getParentRoute: () => AuthenticatedGestorRouteRoute,
-  } as any)
-const AuthenticatedGestorChecklistsChecklistIdRoute =
-  AuthenticatedGestorChecklistsChecklistIdRouteImport.update({
-    id: '/checklists/$checklistId',
-    path: '/checklists/$checklistId',
-    getParentRoute: () => AuthenticatedGestorRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -334,6 +347,7 @@ export interface FileRoutesByFullPath {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
+  '/medidas': typeof AuthenticatedMedidasRoute
   '/paineis': typeof AuthenticatedPaineisRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
@@ -344,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
   '/cadastros/$cadastroId': typeof AuthenticatedCadastrosCadastroIdRoute
+  '/checklists/$checklistId': typeof AuthenticatedChecklistsChecklistIdRoute
   '/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/cis/nova': typeof AuthenticatedCisNovaRoute
   '/comercial/$vendaId': typeof AuthenticatedComercialVendaIdRoute
@@ -352,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
   '/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
+  '/paineis/midias': typeof AuthenticatedPaineisMidiasRoute
   '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
   '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
@@ -362,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/briefings/': typeof AuthenticatedBriefingsIndexRoute
   '/cadastros/': typeof AuthenticatedCadastrosIndexRoute
+  '/checklists/': typeof AuthenticatedChecklistsIndexRoute
   '/cis/': typeof AuthenticatedCisIndexRoute
   '/comercial/': typeof AuthenticatedComercialIndexRoute
   '/financeiro/': typeof AuthenticatedFinanceiroIndexRoute
@@ -371,8 +388,6 @@ export interface FileRoutesByFullPath {
   '/producao/': typeof AuthenticatedProducaoIndexRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/visitas/': typeof AuthenticatedVisitasIndexRoute
-  '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
-  '/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -381,6 +396,7 @@ export interface FileRoutesByTo {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
+  '/medidas': typeof AuthenticatedMedidasRoute
   '/paineis': typeof AuthenticatedPaineisRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
@@ -391,6 +407,7 @@ export interface FileRoutesByTo {
   '/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
   '/cadastros/$cadastroId': typeof AuthenticatedCadastrosCadastroIdRoute
+  '/checklists/$checklistId': typeof AuthenticatedChecklistsChecklistIdRoute
   '/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/cis/nova': typeof AuthenticatedCisNovaRoute
   '/comercial/$vendaId': typeof AuthenticatedComercialVendaIdRoute
@@ -399,6 +416,7 @@ export interface FileRoutesByTo {
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
   '/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
+  '/paineis/midias': typeof AuthenticatedPaineisMidiasRoute
   '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
   '/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
@@ -409,6 +427,7 @@ export interface FileRoutesByTo {
   '/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/briefings': typeof AuthenticatedBriefingsIndexRoute
   '/cadastros': typeof AuthenticatedCadastrosIndexRoute
+  '/checklists': typeof AuthenticatedChecklistsIndexRoute
   '/cis': typeof AuthenticatedCisIndexRoute
   '/comercial': typeof AuthenticatedComercialIndexRoute
   '/financeiro': typeof AuthenticatedFinanceiroIndexRoute
@@ -418,8 +437,6 @@ export interface FileRoutesByTo {
   '/producao': typeof AuthenticatedProducaoIndexRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
   '/visitas': typeof AuthenticatedVisitasIndexRoute
-  '/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
-  '/checklists': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -431,6 +448,7 @@ export interface FileRoutesById {
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/lixeira': typeof AuthenticatedLixeiraRoute
+  '/_authenticated/medidas': typeof AuthenticatedMedidasRoute
   '/_authenticated/paineis': typeof AuthenticatedPaineisRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
@@ -441,6 +459,7 @@ export interface FileRoutesById {
   '/_authenticated/briefings/$briefingId': typeof AuthenticatedBriefingsBriefingIdRoute
   '/_authenticated/briefings/novo': typeof AuthenticatedBriefingsNovoRoute
   '/_authenticated/cadastros/$cadastroId': typeof AuthenticatedCadastrosCadastroIdRoute
+  '/_authenticated/checklists/$checklistId': typeof AuthenticatedChecklistsChecklistIdRoute
   '/_authenticated/cis/$ciId': typeof AuthenticatedCisCiIdRoute
   '/_authenticated/cis/nova': typeof AuthenticatedCisNovaRoute
   '/_authenticated/comercial/$vendaId': typeof AuthenticatedComercialVendaIdRoute
@@ -449,6 +468,7 @@ export interface FileRoutesById {
   '/_authenticated/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/_authenticated/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
   '/_authenticated/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
+  '/_authenticated/paineis_/midias': typeof AuthenticatedPaineisMidiasRoute
   '/_authenticated/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/_authenticated/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
   '/_authenticated/planejamento/programacao': typeof AuthenticatedPlanejamentoProgramacaoRoute
@@ -459,6 +479,7 @@ export interface FileRoutesById {
   '/_authenticated/visitas/nova': typeof AuthenticatedVisitasNovaRoute
   '/_authenticated/briefings/': typeof AuthenticatedBriefingsIndexRoute
   '/_authenticated/cadastros/': typeof AuthenticatedCadastrosIndexRoute
+  '/_authenticated/checklists/': typeof AuthenticatedChecklistsIndexRoute
   '/_authenticated/cis/': typeof AuthenticatedCisIndexRoute
   '/_authenticated/comercial/': typeof AuthenticatedComercialIndexRoute
   '/_authenticated/financeiro/': typeof AuthenticatedFinanceiroIndexRoute
@@ -468,8 +489,6 @@ export interface FileRoutesById {
   '/_authenticated/producao/': typeof AuthenticatedProducaoIndexRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
   '/_authenticated/visitas/': typeof AuthenticatedVisitasIndexRoute
-  '/_authenticated/_gestor/checklists/$checklistId': typeof AuthenticatedGestorChecklistsChecklistIdRoute
-  '/_authenticated/_gestor/checklists/': typeof AuthenticatedGestorChecklistsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -480,6 +499,7 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/configuracoes'
     | '/lixeira'
+    | '/medidas'
     | '/paineis'
     | '/api/next-steps'
     | '/equipe'
@@ -490,6 +510,7 @@ export interface FileRouteTypes {
     | '/briefings/$briefingId'
     | '/briefings/novo'
     | '/cadastros/$cadastroId'
+    | '/checklists/$checklistId'
     | '/cis/$ciId'
     | '/cis/nova'
     | '/comercial/$vendaId'
@@ -498,6 +519,7 @@ export interface FileRouteTypes {
     | '/liberacoes/nova'
     | '/midia-ooh/$pontoId'
     | '/midia-ooh/bissemanas'
+    | '/paineis/midias'
     | '/planejamento/catalogos'
     | '/planejamento/equipes'
     | '/planejamento/programacao'
@@ -508,6 +530,7 @@ export interface FileRouteTypes {
     | '/visitas/nova'
     | '/briefings/'
     | '/cadastros/'
+    | '/checklists/'
     | '/cis/'
     | '/comercial/'
     | '/financeiro/'
@@ -517,8 +540,6 @@ export interface FileRouteTypes {
     | '/producao/'
     | '/projetos/'
     | '/visitas/'
-    | '/checklists/$checklistId'
-    | '/checklists/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -527,6 +548,7 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/configuracoes'
     | '/lixeira'
+    | '/medidas'
     | '/paineis'
     | '/api/next-steps'
     | '/equipe'
@@ -537,6 +559,7 @@ export interface FileRouteTypes {
     | '/briefings/$briefingId'
     | '/briefings/novo'
     | '/cadastros/$cadastroId'
+    | '/checklists/$checklistId'
     | '/cis/$ciId'
     | '/cis/nova'
     | '/comercial/$vendaId'
@@ -545,6 +568,7 @@ export interface FileRouteTypes {
     | '/liberacoes/nova'
     | '/midia-ooh/$pontoId'
     | '/midia-ooh/bissemanas'
+    | '/paineis/midias'
     | '/planejamento/catalogos'
     | '/planejamento/equipes'
     | '/planejamento/programacao'
@@ -555,6 +579,7 @@ export interface FileRouteTypes {
     | '/visitas/nova'
     | '/briefings'
     | '/cadastros'
+    | '/checklists'
     | '/cis'
     | '/comercial'
     | '/financeiro'
@@ -564,8 +589,6 @@ export interface FileRouteTypes {
     | '/producao'
     | '/projetos'
     | '/visitas'
-    | '/checklists/$checklistId'
-    | '/checklists'
   id:
     | '__root__'
     | '/'
@@ -576,6 +599,7 @@ export interface FileRouteTypes {
     | '/_authenticated/arquivados'
     | '/_authenticated/configuracoes'
     | '/_authenticated/lixeira'
+    | '/_authenticated/medidas'
     | '/_authenticated/paineis'
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
@@ -586,6 +610,7 @@ export interface FileRouteTypes {
     | '/_authenticated/briefings/$briefingId'
     | '/_authenticated/briefings/novo'
     | '/_authenticated/cadastros/$cadastroId'
+    | '/_authenticated/checklists/$checklistId'
     | '/_authenticated/cis/$ciId'
     | '/_authenticated/cis/nova'
     | '/_authenticated/comercial/$vendaId'
@@ -594,6 +619,7 @@ export interface FileRouteTypes {
     | '/_authenticated/liberacoes/nova'
     | '/_authenticated/midia-ooh/$pontoId'
     | '/_authenticated/midia-ooh/bissemanas'
+    | '/_authenticated/paineis_/midias'
     | '/_authenticated/planejamento/catalogos'
     | '/_authenticated/planejamento/equipes'
     | '/_authenticated/planejamento/programacao'
@@ -604,6 +630,7 @@ export interface FileRouteTypes {
     | '/_authenticated/visitas/nova'
     | '/_authenticated/briefings/'
     | '/_authenticated/cadastros/'
+    | '/_authenticated/checklists/'
     | '/_authenticated/cis/'
     | '/_authenticated/comercial/'
     | '/_authenticated/financeiro/'
@@ -613,8 +640,6 @@ export interface FileRouteTypes {
     | '/_authenticated/producao/'
     | '/_authenticated/projetos/'
     | '/_authenticated/visitas/'
-    | '/_authenticated/_gestor/checklists/$checklistId'
-    | '/_authenticated/_gestor/checklists/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -681,6 +706,13 @@ declare module '@tanstack/react-router' {
       path: '/lixeira'
       fullPath: '/lixeira'
       preLoaderRoute: typeof AuthenticatedLixeiraRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/medidas': {
+      id: '/_authenticated/medidas'
+      path: '/medidas'
+      fullPath: '/medidas'
+      preLoaderRoute: typeof AuthenticatedMedidasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/paineis': {
@@ -765,6 +797,20 @@ declare module '@tanstack/react-router' {
       path: '/cadastros/$cadastroId'
       fullPath: '/cadastros/$cadastroId'
       preLoaderRoute: typeof AuthenticatedCadastrosCadastroIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checklists/': {
+      id: '/_authenticated/checklists/'
+      path: '/checklists'
+      fullPath: '/checklists/'
+      preLoaderRoute: typeof AuthenticatedChecklistsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checklists/$checklistId': {
+      id: '/_authenticated/checklists/$checklistId'
+      path: '/checklists/$checklistId'
+      fullPath: '/checklists/$checklistId'
+      preLoaderRoute: typeof AuthenticatedChecklistsChecklistIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cis/': {
@@ -858,6 +904,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMidiaOohBissemanasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/paineis_/midias': {
+      id: '/_authenticated/paineis_/midias'
+      path: '/paineis/midias'
+      fullPath: '/paineis/midias'
+      preLoaderRoute: typeof AuthenticatedPaineisMidiasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/planejamento/': {
       id: '/_authenticated/planejamento/'
       path: '/planejamento'
@@ -942,20 +995,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVisitasNovaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/_gestor/checklists/': {
-      id: '/_authenticated/_gestor/checklists/'
-      path: '/checklists'
-      fullPath: '/checklists/'
-      preLoaderRoute: typeof AuthenticatedGestorChecklistsIndexRouteImport
-      parentRoute: typeof AuthenticatedGestorRouteRoute
-    }
-    '/_authenticated/_gestor/checklists/$checklistId': {
-      id: '/_authenticated/_gestor/checklists/$checklistId'
-      path: '/checklists/$checklistId'
-      fullPath: '/checklists/$checklistId'
-      preLoaderRoute: typeof AuthenticatedGestorChecklistsChecklistIdRouteImport
-      parentRoute: typeof AuthenticatedGestorRouteRoute
-    }
   }
 }
 
@@ -965,8 +1004,6 @@ interface AuthenticatedGestorRouteRouteChildren {
   AuthenticatedGestorImportarHistoricoRoute: typeof AuthenticatedGestorImportarHistoricoRoute
   AuthenticatedGestorListasRoute: typeof AuthenticatedGestorListasRoute
   AuthenticatedGestorRelatoriosRoute: typeof AuthenticatedGestorRelatoriosRoute
-  AuthenticatedGestorChecklistsChecklistIdRoute: typeof AuthenticatedGestorChecklistsChecklistIdRoute
-  AuthenticatedGestorChecklistsIndexRoute: typeof AuthenticatedGestorChecklistsIndexRoute
 }
 
 const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildren =
@@ -977,10 +1014,6 @@ const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildr
       AuthenticatedGestorImportarHistoricoRoute,
     AuthenticatedGestorListasRoute: AuthenticatedGestorListasRoute,
     AuthenticatedGestorRelatoriosRoute: AuthenticatedGestorRelatoriosRoute,
-    AuthenticatedGestorChecklistsChecklistIdRoute:
-      AuthenticatedGestorChecklistsChecklistIdRoute,
-    AuthenticatedGestorChecklistsIndexRoute:
-      AuthenticatedGestorChecklistsIndexRoute,
   }
 
 const AuthenticatedGestorRouteRouteWithChildren =
@@ -993,10 +1026,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
+  AuthenticatedMedidasRoute: typeof AuthenticatedMedidasRoute
   AuthenticatedPaineisRoute: typeof AuthenticatedPaineisRoute
   AuthenticatedBriefingsBriefingIdRoute: typeof AuthenticatedBriefingsBriefingIdRoute
   AuthenticatedBriefingsNovoRoute: typeof AuthenticatedBriefingsNovoRoute
   AuthenticatedCadastrosCadastroIdRoute: typeof AuthenticatedCadastrosCadastroIdRoute
+  AuthenticatedChecklistsChecklistIdRoute: typeof AuthenticatedChecklistsChecklistIdRoute
   AuthenticatedCisCiIdRoute: typeof AuthenticatedCisCiIdRoute
   AuthenticatedCisNovaRoute: typeof AuthenticatedCisNovaRoute
   AuthenticatedComercialVendaIdRoute: typeof AuthenticatedComercialVendaIdRoute
@@ -1005,6 +1040,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLiberacoesNovaRoute: typeof AuthenticatedLiberacoesNovaRoute
   AuthenticatedMidiaOohPontoIdRoute: typeof AuthenticatedMidiaOohPontoIdRoute
   AuthenticatedMidiaOohBissemanasRoute: typeof AuthenticatedMidiaOohBissemanasRoute
+  AuthenticatedPaineisMidiasRoute: typeof AuthenticatedPaineisMidiasRoute
   AuthenticatedPlanejamentoCatalogosRoute: typeof AuthenticatedPlanejamentoCatalogosRoute
   AuthenticatedPlanejamentoEquipesRoute: typeof AuthenticatedPlanejamentoEquipesRoute
   AuthenticatedPlanejamentoProgramacaoRoute: typeof AuthenticatedPlanejamentoProgramacaoRoute
@@ -1015,6 +1051,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVisitasNovaRoute: typeof AuthenticatedVisitasNovaRoute
   AuthenticatedBriefingsIndexRoute: typeof AuthenticatedBriefingsIndexRoute
   AuthenticatedCadastrosIndexRoute: typeof AuthenticatedCadastrosIndexRoute
+  AuthenticatedChecklistsIndexRoute: typeof AuthenticatedChecklistsIndexRoute
   AuthenticatedCisIndexRoute: typeof AuthenticatedCisIndexRoute
   AuthenticatedComercialIndexRoute: typeof AuthenticatedComercialIndexRoute
   AuthenticatedFinanceiroIndexRoute: typeof AuthenticatedFinanceiroIndexRoute
@@ -1031,10 +1068,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
+  AuthenticatedMedidasRoute: AuthenticatedMedidasRoute,
   AuthenticatedPaineisRoute: AuthenticatedPaineisRoute,
   AuthenticatedBriefingsBriefingIdRoute: AuthenticatedBriefingsBriefingIdRoute,
   AuthenticatedBriefingsNovoRoute: AuthenticatedBriefingsNovoRoute,
   AuthenticatedCadastrosCadastroIdRoute: AuthenticatedCadastrosCadastroIdRoute,
+  AuthenticatedChecklistsChecklistIdRoute:
+    AuthenticatedChecklistsChecklistIdRoute,
   AuthenticatedCisCiIdRoute: AuthenticatedCisCiIdRoute,
   AuthenticatedCisNovaRoute: AuthenticatedCisNovaRoute,
   AuthenticatedComercialVendaIdRoute: AuthenticatedComercialVendaIdRoute,
@@ -1044,6 +1084,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLiberacoesNovaRoute: AuthenticatedLiberacoesNovaRoute,
   AuthenticatedMidiaOohPontoIdRoute: AuthenticatedMidiaOohPontoIdRoute,
   AuthenticatedMidiaOohBissemanasRoute: AuthenticatedMidiaOohBissemanasRoute,
+  AuthenticatedPaineisMidiasRoute: AuthenticatedPaineisMidiasRoute,
   AuthenticatedPlanejamentoCatalogosRoute:
     AuthenticatedPlanejamentoCatalogosRoute,
   AuthenticatedPlanejamentoEquipesRoute: AuthenticatedPlanejamentoEquipesRoute,
@@ -1057,6 +1098,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVisitasNovaRoute: AuthenticatedVisitasNovaRoute,
   AuthenticatedBriefingsIndexRoute: AuthenticatedBriefingsIndexRoute,
   AuthenticatedCadastrosIndexRoute: AuthenticatedCadastrosIndexRoute,
+  AuthenticatedChecklistsIndexRoute: AuthenticatedChecklistsIndexRoute,
   AuthenticatedCisIndexRoute: AuthenticatedCisIndexRoute,
   AuthenticatedComercialIndexRoute: AuthenticatedComercialIndexRoute,
   AuthenticatedFinanceiroIndexRoute: AuthenticatedFinanceiroIndexRoute,

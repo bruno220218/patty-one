@@ -9,11 +9,13 @@ import { BriefingForm } from "@/components/app/briefing-form";
 import { useCurrentUser, useDataAction } from "@/hooks/use-data";
 import {
   BRIEFING_ACCEPT,
+  BRIEFING_DESTINO_LABEL,
   BRIEFING_FORMATOS,
   BRIEFING_VAZIO,
   briefingArquivoPermitido,
   briefingRepository,
   canCriarBriefing,
+  type BriefingDestino,
 } from "@/lib/data";
 import { ArquivosPicker } from "@/components/app/arquivos-picker";
 import { anexarArquivo } from "@/lib/drive-upload";
@@ -21,6 +23,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/briefings/novo")({
+  // ?destino=criacao|projetos_especiais: each menu entry creates only its own kind (default: criacao).
+  validateSearch: (search: Record<string, unknown>): { destino: BriefingDestino } => ({
+    destino: search["destino"] === "projetos_especiais" ? "projetos_especiais" : "criacao",
+  }),
   head: () => ({
     meta: [{ title: "Novo briefing — Patty One" }, { name: "robots", content: "noindex" }],
   }),
@@ -28,6 +34,7 @@ export const Route = createFileRoute("/_authenticated/briefings/novo")({
 });
 
 function NovoBriefingPage() {
+  const { destino } = Route.useSearch();
   const { data: me, isPending } = useCurrentUser();
   const [arquivos, setArquivos] = useState<File[]>([]);
   const queryClient = useQueryClient();
@@ -37,9 +44,9 @@ function NovoBriefingPage() {
 
   const back = (
     <Button variant="outline" asChild className="mb-6">
-      <Link to="/briefings">
+      <Link to="/briefings" search={{ destino }}>
         <ArrowLeft />
-        Briefings
+        Briefings {BRIEFING_DESTINO_LABEL[destino]}
       </Link>
     </Button>
   );
@@ -62,7 +69,7 @@ function NovoBriefingPage() {
     <>
       {back}
       <PageHeader
-        title="Novo briefing"
+        title={`Novo briefing — ${BRIEFING_DESTINO_LABEL[destino]}`}
         description="Os arquivos escolhidos vão para o Google Drive assim que o briefing for criado."
       />
       <ArquivosPicker
@@ -77,7 +84,7 @@ function NovoBriefingPage() {
       />
       <div className="h-6" />
       <BriefingForm
-        initial={{ ...BRIEFING_VAZIO, vendedor: me?.name ?? "" }}
+        initial={{ ...BRIEFING_VAZIO, destino, vendedor: me?.name ?? "" }}
         readOnly={false}
         saving={saving}
         submitLabel="Criar briefing"

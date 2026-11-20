@@ -15,6 +15,8 @@ export interface Painel {
   loopPadrao: string;
   insercoesPadrao: number;
   ordem: number;
+  /** Where the panel's media live (Drive folder; PA01 uses vnnox). Empty when not set. */
+  midiasLink: string;
 }
 
 export interface VinhetaInput {
@@ -73,6 +75,8 @@ interface PainelRow {
   loop_padrao: string;
   insercoes_padrao: number;
   ordem: number;
+  /** Missing until migration 0022 runs. */
+  midias_link?: string;
 }
 
 interface VinhetaRow {
@@ -117,6 +121,7 @@ const toPainel = (r: PainelRow): Painel => ({
   loopPadrao: r.loop_padrao,
   insercoesPadrao: r.insercoes_padrao,
   ordem: r.ordem,
+  midiasLink: r.midias_link ?? "",
 });
 
 const toVinheta = (r: VinhetaRow): Vinheta => ({
@@ -242,6 +247,21 @@ export const paineisRepository = {
       .update({ retirada_em: new Date().toISOString() })
       .eq("id", id);
     if (error) throw dbError(error);
+  },
+
+  /** Criação/gestão: link of the panel's media (empty clears it). Checked again in the database. */
+  async salvarLinkMidias(painelId: string, link: string): Promise<void> {
+    const { error } = await db.rpc("salvar_link_midias_painel", {
+      _painel_id: painelId,
+      _link: link.trim(),
+    });
+    if (error) {
+      if (error.code === "PGRST202" || error.code === "42883") {
+        throw new Error("Os links das mídias ainda não foram ativados no banco de dados.");
+      }
+      if (["23514", "42501", "P0002"].includes(error.code ?? "")) throw new Error(error.message);
+      throw dbError(error);
+    }
   },
 
   /** Creates due-date notices that are still pending. Safe to call any number of times. */

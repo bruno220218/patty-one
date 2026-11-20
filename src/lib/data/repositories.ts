@@ -59,8 +59,10 @@ export interface LiberacaoRepository {
   aprovar(id: string, projectId: string): Promise<void>;
   /** PCP/direção/gestão: reject with a reason; it goes back to comercial for editing. */
   reprovar(id: string, motivo: string): Promise<void>;
-  /** History: criada, reprovada, reenviada, aprovada. */
+  /** History: criada, reprovada, reenviada, aprovada, comentários. */
   eventos(id: string): Promise<LiberacaoEvento[]>;
+  /** Any approved team member comments (database function `comentar_liberacao`, which notifies). */
+  comentar(id: string, texto: string): Promise<void>;
   /** Every history event (for reports). */
   todosEventos(): Promise<
     { liberacaoId: string; tipo: LiberacaoEvento["tipo"]; createdAt: string }[]

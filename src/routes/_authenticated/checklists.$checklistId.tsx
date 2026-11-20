@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Copy, Pencil, Play, SearchX, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaskList } from "@/components/app/task-list";
@@ -9,11 +9,16 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { DetailSkeleton } from "@/components/app/card-grid-skeleton";
 import { FixedParamsBadge } from "@/components/app/status-badge";
 import { EmptyState } from "@/components/app/empty-state";
-import { useChecklist, useChecklists, useDataAction } from "@/hooks/use-data";
-import { checklistRepository, projectRepository } from "@/lib/data";
+import { currentUserQuery, useChecklist, useChecklists, useDataAction } from "@/hooks/use-data";
+import { canGerirChecklists, checklistRepository, projectRepository } from "@/lib/data";
 import { pluralTasks } from "@/lib/format";
 
-export const Route = createFileRoute("/_authenticated/_gestor/checklists/$checklistId")({
+export const Route = createFileRoute("/_authenticated/checklists/$checklistId")({
+  // Gestão and PCP only (the database applies the same rule).
+  beforeLoad: async ({ context }) => {
+    const me = await context.queryClient.fetchQuery(currentUserQuery());
+    if (!canGerirChecklists(me)) throw redirect({ to: "/projetos" });
+  },
   head: () => ({
     meta: [
       { title: "Checklist — Patty One" },
@@ -109,7 +114,8 @@ function ChecklistDetailPage() {
               () => checklistRepository.duplicate(checklist.id),
               "Checklist duplicado.",
             );
-            if (copy) navigate({ to: "/checklists/$checklistId", params: { checklistId: copy.id } });
+            if (copy)
+              navigate({ to: "/checklists/$checklistId", params: { checklistId: copy.id } });
           }}
         >
           <Copy />
