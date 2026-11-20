@@ -18,7 +18,7 @@ import {
   type TeamMember,
   type TeamRole,
 } from "@/lib/data";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 
 const ROLE_LABEL: Record<TeamRole, string> = {
   pendente: "Aguardando aprovação",
@@ -92,6 +92,13 @@ function TeamPage() {
                           ? `Entrou em ${formatDate(m.joinedAt)}`
                           : "Aguardando aprovação · confira o e-mail antes de liberar"}
                       </p>
+                      {m.senhaDefinida && (
+                        <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <LockKeyhole className="h-3 w-3" aria-hidden />
+                          Senha definida por {m.senhaDefinida.por} em{" "}
+                          {formatDateTime(m.senhaDefinida.em)}
+                        </p>
+                      )}
                       <div className="mt-1">
                         <FuncoesChips funcoes={m.funcoes} />
                       </div>
