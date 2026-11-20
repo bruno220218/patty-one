@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -70,6 +71,7 @@ export const renameTeamMember = createServerFn({ method: "POST" })
  * Sets a password on a team member's existing account (e.g. people who signed up with
  * Google and have no password), so they can sign in with e-mail + password on any host.
  * Gestor-only; also marks the e-mail as confirmed. Needs SUPABASE_SERVICE_ROLE_KEY on the server.
+ * Every change is logged in equipe_eventos (who set whose password, when) before it happens.
  */
 export const setTeamMemberPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -108,12 +110,49 @@ export const setTeamMemberPassword = createServerFn({ method: "POST" })
       );
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // equipe_eventos (migration 0027) is newer than the generated database types.
+    const admin = supabaseAdmin as unknown as SupabaseClient;
+
+    const { data: alvo, error: alvoUserError } = await supabaseAdmin.auth.admin.getUserById(
+      data.userId,
+    );
+    if (alvoUserError || !alvo?.user) throw new Error("Pessoa não encontrada.");
+    const { data: perfis } = await admin
+      .from("profiles")
+      .select("id, display_name")
+      .in("id", [context.userId, data.userId]);
+    const nomeDe = (id: string) =>
+      (perfis as { id: string; display_name: string }[] | null)?.find((p) => p.id === id)
+        ?.display_name ?? "";
+
+    // Log first: no password changes without a record of who did it.
+    const { data: evento, error: logError } = await admin
+      .from("equipe_eventos")
+      .insert({
+        tipo: "senha_definida",
+        alvo_id: data.userId,
+        alvo_nome: nomeDe(data.userId),
+        alvo_email: alvo.user.email ?? "",
+        autor_id: context.userId,
+        autor_nome: nomeDe(context.userId),
+      })
+      .select("id")
+      .single();
+    if (logError || !evento) {
+      console.error("setTeamMemberPassword log failed", logError);
+      throw new Error("Não foi possível registrar quem definiu a senha. Tente novamente.");
+    }
+
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
       password: data.password,
       email_confirm: true,
     });
     if (updateError) {
       console.error("setTeamMemberPassword failed", updateError);
+      await admin
+        .from("equipe_eventos")
+        .delete()
+        .eq("id", (evento as { id: string }).id);
       throw new Error("Não foi possível definir a senha. Tente novamente.");
     }
     return { ok: true };

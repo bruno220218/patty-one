@@ -15,6 +15,8 @@ export interface TeamMember {
   joinedAt: string;
   /** Account e-mail, shown to gestão so nobody approves an impostor ("" when unknown). */
   email: string;
+  /** Last time a gestor set this person's password (gestão only; null when never/unknown). */
+  senhaDefinida: { por: string; em: string } | null;
 }
 
 const FUNCAO_VALUES: Funcao[] = [
@@ -54,15 +56,37 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
 
 export const teamRepository = {
   async list(): Promise<TeamMember[]> {
-    const [profiles, roles, emails] = await Promise.all([
+    const [profiles, roles, emails, senhas] = await Promise.all([
       supabase.from("profiles").select("id, display_name, created_at").order("display_name"),
       supabase.from("user_roles").select("user_id, role"),
       // Gestão only (database rule); empty for everyone else or before migration 0015.
       (supabase as unknown as SupabaseClient)
         .rpc("equipe_emails")
         .then((r) => (r.error ? [] : ((r.data ?? []) as { id: string; email: string }[]))),
+      // Gestão only (database rule); empty for everyone else or before migration 0027.
+      (supabase as unknown as SupabaseClient)
+        .from("equipe_eventos")
+        .select("alvo_id, autor_nome, created_at")
+        .eq("tipo", "senha_definida")
+        .order("created_at", { ascending: false })
+        .then((r) =>
+          r.error
+            ? []
+            : ((r.data ?? []) as {
+                alvo_id: string | null;
+                autor_nome: string;
+                created_at: string;
+              }[]),
+        ),
     ]);
     const emailOf = new Map(emails.map((e) => [e.id, e.email]));
+    // Newest first, so the first entry per person is the latest.
+    const senhaOf = new Map<string, { por: string; em: string }>();
+    for (const s of senhas) {
+      if (s.alvo_id && !senhaOf.has(s.alvo_id)) {
+        senhaOf.set(s.alvo_id, { por: s.autor_nome || "alguém da gestão", em: s.created_at });
+      }
+    }
     if (profiles.error) throw dbError(profiles.error);
     if (roles.error) throw dbError(roles.error);
     const members = new Set((roles.data ?? []).map((r) => r.user_id));
@@ -82,6 +106,7 @@ export const teamRepository = {
       funcoes: asFuncoes(rolesOf.get(p.id) ?? []),
       joinedAt: p.created_at,
       email: emailOf.get(p.id) ?? "",
+      senhaDefinida: senhaOf.get(p.id) ?? null,
     }));
   },
   /** Approve (or remove) someone's access to the team's projects. */
