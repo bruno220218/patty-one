@@ -24,7 +24,7 @@
 - [x] Configurações: aparência, perfil e sair
 - [x] Operação (setor Produção): ordens de produção com alertas de prazo, cronograma, equipes de planejamento, veículos, produtos/serviços/colaboradores e "Programação Produção" com resumo para WhatsApp (imagens no Drive) — migração 0019
 - [x] Comercial: propostas e pedidos (PDF, proposta → pedido), histórico do SIGE (importação só gestão) e ordem de produção ligada ao pedido — migração 0020
-- [ ] Mídia OOH: pontos com fotos no Drive (mesma estrutura dos briefings) e bi-semanas → itens "Mapeamento das áreas" e "Datas de colagens"
+- [x] Mídia OOH: pontos com fotos no Drive, mapa (chave própria do Google Maps), calendário oficial das bi-semanas e ocupação → itens "Mapeamento das áreas" e "Datas de colagens" — migração 0022
 - [ ] Trazer os dados reais do PattyOne (cadastros, pontos, calendário, colaboradores, veículos, serviços)
 
 ## Tarefas futuras (agendadas)

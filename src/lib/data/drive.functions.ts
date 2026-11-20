@@ -16,6 +16,8 @@ const PASTAS = {
   // Operação: one folder per service/appointment, named by date.
   programacao: { tabela: "programacao_servicos", pasta: "Programação" },
   agendamento: { tabela: "planejamento_agendamentos", pasta: "Agendamentos" },
+  // Mídia OOH: one folder per point, named by code and name.
+  ponto_midia: { tabela: "pontos_midia", pasta: "Mídia OOH" },
 } as const;
 
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -56,6 +58,15 @@ async function nomeDaSubpasta(
       .maybeSingle<{ data: string; cliente: string | null; servico: string }>();
     if (!r) throw new Error("Registro não encontrado.");
     return limpa([r.data, r.cliente, r.servico].filter(Boolean).join(" - "));
+  }
+  if (tabela === "pontos_midia") {
+    const { data: r } = await db
+      .from(tabela)
+      .select("codigo, nome")
+      .eq("id", id)
+      .maybeSingle<{ codigo: string | null; nome: string }>();
+    if (!r) throw new Error("Registro não encontrado.");
+    return limpa([r.codigo, r.nome].filter(Boolean).join(" - "));
   }
   if (tabela === "planejamento_agendamentos") {
     const { data: r } = await db
@@ -99,6 +110,7 @@ export const prepararUploadDrive = createServerFn({ method: "POST" })
           "ci_foto",
           "programacao",
           "agendamento",
+          "ponto_midia",
         ]),
         entidadeId: z.string().uuid(),
         nome: z.string().trim().min(1).max(200),

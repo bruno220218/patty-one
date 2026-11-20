@@ -13,7 +13,8 @@ export type AnexoEntidade =
   | "ci"
   | "ci_foto"
   | "programacao"
-  | "agendamento";
+  | "agendamento"
+  | "ponto_midia";
 export type AnexoTipo = "pdf" | "foto" | "video" | "audio" | "outro";
 
 export interface Anexo {
