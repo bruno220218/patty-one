@@ -5,8 +5,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Removes a person from the team by deleting their account. Only gestores may do it,
- * and never on themselves (so at least one gestor always remains). Task completions
- * and blockers keep the person's name.
+ * never on themselves (so at least one gestor always remains) and never on another
+ * gestor (one gestor can't wipe out another's account). Task completions and blockers
+ * keep the person's name.
  */
 export const removeTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -19,6 +20,12 @@ export const removeTeamMember = createServerFn({ method: "POST" })
     if (error) throw new Error("Não foi possível confirmar sua permissão. Tente novamente.");
     if (!isGestor) throw new Error("Somente gestores podem remover pessoas da equipe.");
     if (data.userId === context.userId) throw new Error("Você não pode remover a si mesmo(a).");
+    const { data: alvoGestor, error: alvoError } = await context.supabase.rpc("has_role", {
+      _user_id: data.userId,
+      _role: "gestor",
+    });
+    if (alvoError) throw new Error("Não foi possível confirmar a conta. Tente novamente.");
+    if (alvoGestor) throw new Error("Não é possível remover a conta de outro gestor.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(data.userId);

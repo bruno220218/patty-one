@@ -147,7 +147,8 @@ function TeamPage() {
                         label={`Renomear ${m.name}`}
                         onClick={() => setRenaming(m)}
                       />
-                      {m.id === me?.id ? (
+                      {/* Nobody removes themselves or another gestor (also checked on the server). */}
+                      {m.id === me?.id || m.isGestor ? (
                         <span className="h-8 w-8" aria-hidden />
                       ) : (
                         <IconAction
