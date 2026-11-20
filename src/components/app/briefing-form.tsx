@@ -10,7 +10,7 @@ import { BRIEFING_DESTINO_LABEL, type BriefingDestino, type BriefingInput } from
 const AREAS: {
   key: keyof Pick<
     BriefingInput,
-    "descricao" | "objetivo" | "publico" | "formatos" | "identidade" | "referencias" | "observacoes"
+    "descricao" | "objetivo" | "formatos" | "referencias" | "observacoes"
   >;
   label: string;
   placeholder: string;
@@ -29,21 +29,9 @@ const AREAS: {
     rows: 3,
   },
   {
-    key: "publico",
-    label: "Público e local de uso",
-    placeholder: "Quem vai ver? Onde vai ficar (interno, fachada, evento…)?",
-    rows: 2,
-  },
-  {
     key: "formatos",
     label: "Medidas e formatos",
     placeholder: "Ex.: 3 placas 30 x 10 cm, banner 1 x 2 m…",
-    rows: 2,
-  },
-  {
-    key: "identidade",
-    label: "Identidade visual",
-    placeholder: "Cores, logo, fontes, manual da marca…",
     rows: 2,
   },
   {
@@ -54,6 +42,23 @@ const AREAS: {
   },
   { key: "observacoes", label: "Observações", placeholder: "", rows: 2 },
 ];
+
+/**
+ * Lista de itens para orçamento (Projetos especiais).
+ * Espaço reservado: os itens da lista serão informados depois; aqui fica só o lugar da função.
+ */
+function ItensOrcamento() {
+  return (
+    <FormField id="b-itens-orcamento" label="Itens para orçamento">
+      <div
+        id="b-itens-orcamento"
+        className="rounded-md border border-dashed px-3 py-4 text-sm text-muted-foreground"
+      >
+        Lista de itens para orçamento em breve.
+      </div>
+    </FormField>
+  );
+}
 
 /** Create/edit form of a briefing (comercial fills it; criação / projetos especiais read it). */
 export function BriefingForm({
@@ -161,6 +166,8 @@ export function BriefingForm({
           </FormField>
         ))}
       </div>
+
+      {v.destino !== "criacao" && <ItensOrcamento />}
 
       {erro && <p className="text-sm text-destructive">{erro}</p>}
       {!readOnly && (
