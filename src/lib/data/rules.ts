@@ -319,6 +319,11 @@ export const FUNCOES = [
     label: "Checking fotográfico",
     descricao: "Tira as fotos de comprovação das vinhetas nos painéis",
   },
+  {
+    value: "financeiro",
+    label: "Financeiro",
+    descricao: "Vê e edita os dados bancários dos cadastros",
+  },
 ] as const;
 
 export const LIBERACAO_STATUS_LABEL: Record<"aguardando" | "reprovada" | "aprovada", string> = {

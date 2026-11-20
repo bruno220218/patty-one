@@ -18,3 +18,17 @@
 - [x] Checklists area visible only to gestores
 - [x] Apply uploaded migration: liberações, approval flow, team functions
 - [ ] Tela de gestão: charts of progress per project, per checklist, and blockers, for the team to see what is in progress (waiting on user go-ahead)
+
+## Migração do PattyOne (sistema antigo) para cá
+- [x] Cadastros: lista, filtros, atribuir vendedor, ficha em abas (CEP pelo ViaCEP), importação do SIGE (só gestão); dados bancários só para Direção e Financeiro (função nova "Financeiro") — migração 0018
+- [x] Configurações: aparência, perfil e sair
+- [ ] Operação (setor Produção): ordens de produção com alertas de prazo, planejamento (cronograma), equipes de planejamento, veículos, catálogos e "Programação Produção" (imagens no Drive)
+- [ ] Comercial: propostas e pedidos (PDF) e histórico do SIGE; liga a ordem de produção ao pedido
+- [ ] Mídia OOH: pontos com fotos no Drive (mesma estrutura dos briefings) e bi-semanas → itens "Mapeamento das áreas" e "Datas de colagens"
+- [ ] Trazer os dados reais do PattyOne (cadastros, pontos, calendário, colaboradores, veículos, serviços)
+
+## Tarefas futuras (agendadas)
+- [ ] Financeiro: a receber, contratos de aluguel e de energia (já existiam no PattyOne) + contas a pagar e comissões (faltam) — por último
+- [ ] Dashboard com números reais (no PattyOne eram fixos); juntar com a "Tela de gestão" acima
+- [ ] Telas que eram só "Em breve" no PattyOne: Balcão, Compras e Estoque, Administrativo, Painel de Gestão
+

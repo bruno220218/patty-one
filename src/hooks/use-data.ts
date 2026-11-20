@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   checklistRepository,
@@ -11,6 +11,8 @@ import {
   visitaRepository,
   paineisRepository,
   ciRepository,
+  cadastroRepository,
+  type CadastroFiltros,
   pessoasDaFuncao,
   type AnexoEntidade,
   emailDestinatariosRepository,
@@ -167,3 +169,22 @@ export const usePainelHistorico = (painelId: string | null) =>
 export const useCis = () => useQuery({ queryKey: ["cis"], queryFn: () => ciRepository.list() });
 export const useCi = (id: string) =>
   useQuery({ queryKey: ["cis", id], queryFn: () => ciRepository.get(id) });
+
+// ---------- Cadastros ----------
+export const cadastrosQuery = (filtros: CadastroFiltros, pagina: number) =>
+  queryOptions({
+    queryKey: ["cadastros", "lista", filtros, pagina],
+    queryFn: () => cadastroRepository.list(filtros, pagina),
+    placeholderData: keepPreviousData,
+  });
+
+export const useCadastros = (filtros: CadastroFiltros, pagina: number) =>
+  useQuery(cadastrosQuery(filtros, pagina));
+
+/** The person's id is in the key so bank details never carry over to another account. */
+export const useCadastro = (id: string, comBancario: boolean, userId: string | undefined) =>
+  useQuery({
+    queryKey: ["cadastros", "ficha", id, comBancario, userId],
+    queryFn: () => cadastroRepository.get(id, comBancario),
+    enabled: Boolean(userId),
+  });

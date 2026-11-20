@@ -25,8 +25,11 @@ import {
   MapPin,
   Menu,
   MonitorPlay,
+  Settings,
   Trash2,
+  Upload,
   Users,
+  UsersRound,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser, useNotifications } from "@/hooks/use-data";
@@ -62,7 +65,10 @@ type NavTo =
   | "/visitas"
   | "/visitas/nova"
   | "/paineis"
-  | "/cis";
+  | "/cis"
+  | "/cadastros"
+  | "/configuracoes"
+  | "/importar";
 
 type NavItem = {
   id: string;
@@ -197,6 +203,13 @@ const SETORES: Setor[] = [
             to: "/relatorios",
             gestorOnly: true,
           },
+          {
+            id: "importar",
+            label: "Importar cadastros",
+            icon: Upload,
+            to: "/importar",
+            gestorOnly: true,
+          },
         ],
       },
     ],
@@ -204,8 +217,10 @@ const SETORES: Setor[] = [
 ];
 
 const FOOTER_ITEMS: NavItem[] = [
+  { id: "cadastros", label: "Cadastros", icon: UsersRound, to: "/cadastros" },
   { id: "arquivados", label: "Arquivados", icon: Archive, to: "/arquivados" },
   { id: "lixeira", label: "Lixeira", icon: Trash2, to: "/lixeira" },
+  { id: "configuracoes", label: "Configurações", icon: Settings, to: "/configuracoes" },
 ];
 
 const ALL_ITEMS = [...SETORES.flatMap((s) => s.subs.flatMap((sub) => sub.itens)), ...FOOTER_ITEMS];
@@ -434,6 +449,12 @@ function UserMenu({
           <span className="block truncate text-xs text-muted-foreground">{funcoesTexto(me)}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/configuracoes">
+            <Settings className="mr-2 h-4 w-4" />
+            Configurações
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={onSignOut} className="text-destructive">
           <LogOut className="mr-2 h-4 w-4" />
           Sair
@@ -694,6 +715,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                       </span>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/configuracoes">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Configurações
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={signOut} className="text-destructive">
                       <LogOut className="mr-2 h-4 w-4" />
                       Sair
