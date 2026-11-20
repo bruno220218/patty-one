@@ -109,7 +109,8 @@ function TeamPage() {
                         <span className="hidden sm:inline">Acesso</span>
                         <Switch
                           checked={m.isMember}
-                          disabled={m.id === me?.id}
+                          // Your own access, or another gestor's (database rule 0030).
+                          disabled={m.id === me?.id || m.isGestor}
                           aria-label={`Acesso à equipe para ${m.name}`}
                           onCheckedChange={(v) =>
                             run(
@@ -125,7 +126,7 @@ function TeamPage() {
                         personName={m.name}
                         funcoes={m.funcoes}
                         disabled={!m.isMember}
-                        lockGestor={m.id === me?.id}
+                        lockGestor={m.id === me?.id || m.isGestor}
                         onToggle={(funcao, on) => {
                           const label = FUNCOES.find((f) => f.value === funcao)?.label ?? funcao;
                           run(
