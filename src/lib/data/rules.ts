@@ -295,6 +295,11 @@ export function canAgendarVisita(user: WithFuncoes) {
   return hasFuncao(user, "gestor", "pcp");
 }
 
+/** Gestão and PCP manage checklists and start projects from them (database: can_gerir_checklists). */
+export function canGerirChecklists(user: WithFuncoes) {
+  return hasFuncao(user, "gestor", "pcp");
+}
+
 /** Montagem, PCP and gestão fill in and conclude visits. */
 export function canRealizarVisita(user: WithFuncoes) {
   return hasFuncao(user, "gestor", "pcp", "montagem");

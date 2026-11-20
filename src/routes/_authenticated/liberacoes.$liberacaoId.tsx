@@ -179,7 +179,18 @@ function LiberacaoPage() {
         aviso="Escopo do serviço, fotos do local, layouts, áudios… Os arquivos vão para o Google Drive da empresa."
       />
 
-      <LiberacaoHistorico eventos={eventos} />
+      <LiberacaoHistorico
+        eventos={eventos}
+        onComentar={
+          me?.isMember
+            ? async (texto) =>
+                (await run(async () => {
+                  await liberacaoRepository.comentar(lib.id, texto);
+                  return true;
+                }, "Comentário enviado.")) === true
+            : undefined
+        }
+      />
 
       <AprovarDialog
         open={aprovarOpen}

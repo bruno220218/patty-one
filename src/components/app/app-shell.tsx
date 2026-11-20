@@ -35,6 +35,7 @@ import {
   Upload,
   Users,
   UsersRound,
+  Wallet,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser, useNotifications } from "@/hooks/use-data";
@@ -70,6 +71,8 @@ type NavTo =
   | "/visitas"
   | "/visitas/nova"
   | "/paineis"
+  | "/paineis/midias"
+  | "/medidas"
   | "/cis"
   | "/cadastros"
   | "/comercial"
@@ -95,7 +98,13 @@ type NavItem = {
 };
 type NavSub = { titulo?: string; itens: NavItem[] };
 /** Top level of the menu: a sector, shown to people with one of its functions (and gestão). */
-type Setor = { titulo: string; funcoes?: string[]; subs: NavSub[] };
+type Setor = {
+  titulo: string;
+  funcoes?: string[];
+  /** Only for people with one of its functions: gestão already has these items elsewhere. */
+  soParaFuncao?: boolean;
+  subs: NavSub[];
+};
 
 const SETORES: Setor[] = [
   {
@@ -124,7 +133,13 @@ const SETORES: Setor[] = [
             to: "/briefings",
             search: { destino: "criacao" },
           },
-          { id: "briefing-orcamento", label: "Briefing Orçamento", icon: Calculator },
+          {
+            id: "briefing-orcamento",
+            label: "Briefing Orçamento",
+            icon: Calculator,
+            to: "/briefings",
+            search: { destino: "projetos_especiais" },
+          },
         ],
       },
       {
@@ -162,13 +177,15 @@ const SETORES: Setor[] = [
       },
       {
         itens: [
-          { id: "medidas", label: "Medidas", icon: Ruler },
+          { id: "medidas", label: "Medidas", icon: Ruler, to: "/medidas" },
           {
             id: "solicitar-visita",
             label: "Solicitar Visita Técnica",
             icon: MapPin,
             to: "/visitas/nova",
           },
+          { id: "com-cadastros", label: "Cadastros", icon: UsersRound, to: "/cadastros" },
+          { id: "com-ci", label: "CI", icon: FileText, to: "/cis" },
         ],
       },
     ],
@@ -229,37 +246,120 @@ const SETORES: Setor[] = [
     ],
   },
   {
-    // Everything already built that isn't in the sector lists yet.
-    titulo: "Gestão",
+    titulo: "Criação",
+    funcoes: ["criacao"],
     subs: [
       {
         itens: [
-          { id: "projetos", label: "Projetos", icon: FolderOpen, to: "/projetos" },
-          { id: "liberacoes", label: "Liberações", icon: FileCheck2, to: "/liberacoes" },
-          { id: "briefings", label: "Briefings", icon: Lightbulb, to: "/briefings" },
-          { id: "visitas", label: "Visitas técnicas", icon: MapPin, to: "/visitas" },
-          { id: "paineis", label: "Painéis RGB", icon: MonitorPlay, to: "/paineis" },
-          { id: "cis", label: "CI", icon: FileText, to: "/cis" },
           {
-            id: "checklists",
-            label: "Checklists",
+            id: "cri-briefings",
+            label: "Briefings",
+            icon: Lightbulb,
+            to: "/briefings",
+            search: { destino: "criacao" },
+          },
+          { id: "cri-liberacoes", label: "Liberações", icon: FileCheck2, to: "/liberacoes" },
+          { id: "cri-medidas", label: "Medidas", icon: Ruler, to: "/medidas" },
+          { id: "cri-projetos", label: "Projetos", icon: FolderOpen, to: "/projetos" },
+        ],
+      },
+      {
+        titulo: "Painéis RGB",
+        itens: [
+          { id: "cri-paineis", label: "Painéis", icon: MonitorPlay, to: "/paineis" },
+          { id: "cri-cis", label: "CI's", icon: FileText, to: "/cis" },
+          { id: "cri-midias", label: "Mídias", icon: Images, to: "/paineis/midias" },
+        ],
+      },
+    ],
+  },
+  {
+    titulo: "Projetos Especiais",
+    funcoes: ["projetos_especiais"],
+    subs: [
+      {
+        itens: [
+          {
+            id: "pe-briefings",
+            label: "Briefings",
+            icon: Lightbulb,
+            to: "/briefings",
+            search: { destino: "projetos_especiais" },
+          },
+          { id: "pe-liberacoes", label: "Liberações", icon: FileCheck2, to: "/liberacoes" },
+          { id: "pe-medidas", label: "Medidas", icon: Ruler, to: "/medidas" },
+          { id: "pe-projetos", label: "Projetos", icon: FolderOpen, to: "/projetos" },
+        ],
+      },
+    ],
+  },
+  {
+    titulo: "PCP",
+    // Direção approves liberações; montagem and produção carry out projects and visitas.
+    funcoes: ["pcp", "direcao", "montagem", "producao"],
+    subs: [
+      {
+        itens: [
+          {
+            id: "pcp-checklists",
+            label: "Checklist",
             icon: ListChecks,
             to: "/checklists",
-            gestorOnly: true,
           },
-          { id: "equipe", label: "Equipe", icon: Users, to: "/equipe", gestorOnly: true },
+          { id: "pcp-projetos", label: "Projetos", icon: FolderOpen, to: "/projetos" },
+          { id: "pcp-liberacoes", label: "Liberações", icon: FileCheck2, to: "/liberacoes" },
+          { id: "pcp-visitas", label: "Visitas técnicas", icon: MapPin, to: "/visitas" },
+        ],
+      },
+    ],
+  },
+  {
+    // Checking fotográfico only needs its own page (the rest of Comercial isn't theirs).
+    titulo: "Checking",
+    funcoes: ["checking"],
+    soParaFuncao: true,
+    subs: [
+      {
+        itens: [
           {
-            id: "relatorios",
-            label: "Relatórios",
-            icon: BarChart3,
-            to: "/relatorios",
-            gestorOnly: true,
+            id: "chk-checking",
+            label: "Checking Fotográfico",
+            icon: Camera,
+            to: "/cis",
+            search: { aba: "fotos" },
           },
+        ],
+      },
+    ],
+  },
+  {
+    titulo: "Financeiro",
+    funcoes: ["financeiro"],
+    subs: [{ itens: [{ id: "financeiro", label: "Financeiro", icon: Wallet }] }],
+  },
+  {
+    // Gestão also sees every sector above.
+    titulo: "Gestão",
+    funcoes: ["gestor"],
+    subs: [
+      {
+        itens: [
           {
             id: "importar",
             label: "Importar cadastros",
             icon: Upload,
             to: "/importar",
+            gestorOnly: true,
+          },
+          { id: "equipe", label: "Equipe", icon: Users, to: "/equipe", gestorOnly: true },
+          { id: "cadastros", label: "Cadastros", icon: UsersRound, to: "/cadastros" },
+          { id: "arquivados", label: "Arquivados", icon: Archive, to: "/arquivados" },
+          { id: "lixeira", label: "Lixeira", icon: Trash2, to: "/lixeira" },
+          {
+            id: "relatorios",
+            label: "Relatórios",
+            icon: BarChart3,
+            to: "/relatorios",
             gestorOnly: true,
           },
         ],
@@ -269,11 +369,11 @@ const SETORES: Setor[] = [
 ];
 
 const FOOTER_ITEMS: NavItem[] = [
-  { id: "cadastros", label: "Cadastros", icon: UsersRound, to: "/cadastros" },
-  { id: "arquivados", label: "Arquivados", icon: Archive, to: "/arquivados" },
-  { id: "lixeira", label: "Lixeira", icon: Trash2, to: "/lixeira" },
   { id: "configuracoes", label: "Configurações", icon: Settings, to: "/configuracoes" },
 ];
+
+/** Same page in several sectors (e.g. Projetos) lights up wherever it appears. */
+const chaveItem = (i: NavItem) => `${i.to ?? i.id}?${new URLSearchParams(i.search).toString()}`;
 
 const ALL_ITEMS = [...SETORES.flatMap((s) => s.subs.flatMap((sub) => sub.itens)), ...FOOTER_ITEMS];
 
@@ -562,7 +662,7 @@ function SidebarBody({
         {SETORES.map((setor) => {
           const veSetor =
             !setor.funcoes ||
-            Boolean(me?.isGestor) ||
+            (Boolean(me?.isGestor) && !setor.soParaFuncao) ||
             setor.funcoes.some((f) => me?.funcoes.includes(f as never));
           if (!veSetor) return null;
           const subs = setor.subs
@@ -572,7 +672,7 @@ function SidebarBody({
           // With the menu shrunk to icons there are no titles, so every sector stays open.
           const fechado = !collapsed && fechados.includes(setor.titulo);
           const listaId = `menu-setor-${setor.titulo.toLowerCase()}`;
-          const temAtivo = subs.some((sub) => sub.itens.some((it) => it.id === ativoId));
+          const temAtivo = subs.some((sub) => sub.itens.some((it) => chaveItem(it) === ativoId));
           return (
             <div key={setor.titulo}>
               {collapsed ? (
@@ -613,7 +713,7 @@ function SidebarBody({
                       <NavLink
                         key={it.id}
                         item={it}
-                        active={it.id === ativoId}
+                        active={chaveItem(it) === ativoId}
                         collapsed={collapsed}
                         recuo={Boolean(sub.titulo)}
                       />
@@ -628,7 +728,7 @@ function SidebarBody({
 
       <div className="space-y-1 border-t border-sidebar-border px-3 py-3">
         {FOOTER_ITEMS.filter(visible).map((it) => (
-          <NavLink key={it.id} item={it} active={it.id === ativoId} collapsed={collapsed} />
+          <NavLink key={it.id} item={it} active={chaveItem(it) === ativoId} collapsed={collapsed} />
         ))}
         {me && <UserMenu me={me} collapsed={collapsed} onSignOut={onSignOut} />}
       </div>
@@ -692,7 +792,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             me={me}
             pending={pending}
             collapsed={collapsed}
-            ativoId={ativo?.id}
+            ativoId={ativo ? chaveItem(ativo) : undefined}
             onSignOut={signOut}
             fechados={fechados}
             onAlternarGrupo={alternar}
@@ -720,7 +820,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               me={me}
               pending={pending}
               collapsed={false}
-              ativoId={ativo?.id}
+              ativoId={ativo ? chaveItem(ativo) : undefined}
               onSignOut={signOut}
               fechados={fechados}
               onAlternarGrupo={alternar}

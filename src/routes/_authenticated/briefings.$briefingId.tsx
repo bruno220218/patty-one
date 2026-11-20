@@ -53,9 +53,9 @@ function BriefingPage() {
 
   const back = (
     <Button variant="outline" asChild className="mb-6">
-      <Link to="/briefings">
+      <Link to="/briefings" search={b ? { destino: b.destino } : {}}>
         <ArrowLeft />
-        Briefings
+        {b ? `Briefings ${BRIEFING_DESTINO_LABEL[b.destino]}` : "Briefings"}
       </Link>
     </Button>
   );
@@ -232,7 +232,7 @@ function BriefingPage() {
             () => briefingRepository.remove(b.id).then(() => true),
             "Briefing excluído.",
           );
-          if (ok) void navigate({ to: "/briefings" });
+          if (ok) void navigate({ to: "/briefings", search: { destino: b.destino } });
         }}
       />
     </>

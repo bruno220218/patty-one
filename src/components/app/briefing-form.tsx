@@ -3,14 +3,13 @@ import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FormField } from "@/components/app/form-field";
-import { BRIEFING_DESTINO_LABEL, type BriefingDestino, type BriefingInput } from "@/lib/data";
+import type { BriefingInput } from "@/lib/data";
 
 const AREAS: {
   key: keyof Pick<
     BriefingInput,
-    "descricao" | "objetivo" | "publico" | "formatos" | "identidade" | "referencias" | "observacoes"
+    "descricao" | "objetivo" | "formatos" | "referencias" | "observacoes"
   >;
   label: string;
   placeholder: string;
@@ -29,21 +28,9 @@ const AREAS: {
     rows: 3,
   },
   {
-    key: "publico",
-    label: "Público e local de uso",
-    placeholder: "Quem vai ver? Onde vai ficar (interno, fachada, evento…)?",
-    rows: 2,
-  },
-  {
     key: "formatos",
     label: "Medidas e formatos",
     placeholder: "Ex.: 3 placas 30 x 10 cm, banner 1 x 2 m…",
-    rows: 2,
-  },
-  {
-    key: "identidade",
-    label: "Identidade visual",
-    placeholder: "Cores, logo, fontes, manual da marca…",
     rows: 2,
   },
   {
@@ -54,6 +41,23 @@ const AREAS: {
   },
   { key: "observacoes", label: "Observações", placeholder: "", rows: 2 },
 ];
+
+/**
+ * Lista de itens para orçamento (Projetos especiais).
+ * Espaço reservado: os itens da lista serão informados depois; aqui fica só o lugar da função.
+ */
+function ItensOrcamento() {
+  return (
+    <FormField id="b-itens-orcamento" label="Itens para orçamento">
+      <div
+        id="b-itens-orcamento"
+        className="rounded-md border border-dashed px-3 py-4 text-sm text-muted-foreground"
+      >
+        Lista de itens para orçamento em breve.
+      </div>
+    </FormField>
+  );
+}
 
 /** Create/edit form of a briefing (comercial fills it; criação / projetos especiais read it). */
 export function BriefingForm({
@@ -86,24 +90,6 @@ export function BriefingForm({
 
   return (
     <form onSubmit={submit} className="surface-card space-y-5 p-5" noValidate>
-      <FormField id="b-destino" label="Para quem é o briefing">
-        <ToggleGroup
-          id="b-destino"
-          type="single"
-          variant="outline"
-          value={v.destino}
-          onValueChange={(d) => d && set("destino", d as BriefingDestino)}
-          disabled={readOnly}
-          className="justify-start"
-        >
-          {(Object.keys(BRIEFING_DESTINO_LABEL) as BriefingDestino[]).map((d) => (
-            <ToggleGroupItem key={d} value={d} className="h-9 px-4">
-              {BRIEFING_DESTINO_LABEL[d]}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </FormField>
-
       <FormField id="b-titulo" label="Título *">
         <Input
           id="b-titulo"
@@ -161,6 +147,8 @@ export function BriefingForm({
           </FormField>
         ))}
       </div>
+
+      {v.destino !== "criacao" && <ItensOrcamento />}
 
       {erro && <p className="text-sm text-destructive">{erro}</p>}
       {!readOnly && (

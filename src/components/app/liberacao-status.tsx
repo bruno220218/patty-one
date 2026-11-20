@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   CheckCircle2,
@@ -5,11 +6,14 @@ import {
   FolderOpen,
   History,
   Mail,
+  MessageSquare,
   PencilLine,
+  Send,
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   LIBERACAO_STATUS_LABEL,
   type Liberacao,
@@ -155,15 +159,33 @@ const EVENTO: Record<LiberacaoEvento["tipo"], { label: string; icon: typeof Cloc
       tone: "text-status-done-foreground",
     },
     email_enviado: { label: "Enviada por e-mail", icon: Mail, tone: "text-muted-foreground" },
+    comentario: { label: "Comentou", icon: MessageSquare, tone: "text-primary" },
   };
 
-/** Timeline: criada → reprovada → reenviada → aprovada. */
-export function LiberacaoHistorico({ eventos }: { eventos: LiberacaoEvento[] | undefined }) {
+/** Timeline: criada → reprovada → reenviada → aprovada, with the team's comments in between. */
+export function LiberacaoHistorico({
+  eventos,
+  onComentar,
+}: {
+  eventos: LiberacaoEvento[] | undefined;
+  /** Missing for people who can't comment (account not approved yet). Resolves true when saved. */
+  onComentar?: ((texto: string) => Promise<boolean>) | undefined;
+}) {
+  const [texto, setTexto] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const enviar = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!onComentar || !texto.trim()) return;
+    setEnviando(true);
+    const ok = await onComentar(texto);
+    setEnviando(false);
+    if (ok) setTexto("");
+  };
   return (
     <section className="surface-card mt-6 p-5" aria-labelledby="historico">
       <h2 id="historico" className="mb-3 flex items-center gap-2 text-sm font-semibold">
         <History className="h-4 w-4 text-muted-foreground" />
-        Histórico
+        Histórico e comentários
       </h2>
       {!eventos || eventos.length === 0 ? (
         <p className="text-sm text-muted-foreground">Sem registros.</p>
@@ -190,6 +212,27 @@ export function LiberacaoHistorico({ eventos }: { eventos: LiberacaoEvento[] | u
             );
           })}
         </ol>
+      )}
+      {onComentar && (
+        <form onSubmit={enviar} className="mt-4 space-y-2 border-t pt-4">
+          <label htmlFor="lib-comentario" className="text-sm font-medium">
+            Comentar
+          </label>
+          <Textarea
+            id="lib-comentario"
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            placeholder="Dúvida, aviso ou combinado sobre esta liberação. Quem criou e o PCP são avisados."
+            rows={2}
+            maxLength={2000}
+          />
+          <div className="flex justify-end">
+            <Button type="submit" disabled={enviando || !texto.trim()} className="h-9">
+              <Send />
+              {enviando ? "Enviando…" : "Comentar"}
+            </Button>
+          </div>
+        </form>
       )}
     </section>
   );

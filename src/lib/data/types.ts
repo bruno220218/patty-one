@@ -188,7 +188,7 @@ export interface Liberacao extends LiberacaoInput {
 
 export interface LiberacaoEvento {
   id: string;
-  tipo: "criada" | "reprovada" | "reenviada" | "aprovada" | "email_enviado";
+  tipo: "criada" | "reprovada" | "reenviada" | "aprovada" | "email_enviado" | "comentario";
   detalhe: string;
   autorNome: string;
   createdAt: string;
@@ -201,6 +201,7 @@ export type NotificationTipo =
   | "liberacao_reenviada"
   | "liberacao_reprovada"
   | "liberacao_aprovada"
+  | "liberacao_comentario"
   | "briefing_novo"
   | "briefing_andamento"
   | "briefing_concluido"

@@ -46,6 +46,13 @@ function NotificationText({ n }: { n: AppNotification }) {
           já está em produção
         </span>
       );
+    case "liberacao_comentario":
+      return (
+        <span className="block break-words">
+          {who} comentou na {lib}
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">“{n.detalhe}”</span>}
+        </span>
+      );
     case "briefing_novo":
     case "briefing_andamento":
     case "briefing_concluido": {

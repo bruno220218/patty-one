@@ -274,6 +274,19 @@ export const cloudLiberacaoRepository: LiberacaoRepository = {
     }));
   },
 
+  async comentar(id, texto) {
+    const clean = texto.trim();
+    if (!clean) throw new Error("Escreva o comentário.");
+    const { error } = await db.rpc("comentar_liberacao", { _liberacao_id: id, _texto: clean });
+    if (error) {
+      if (error.code === "PGRST202" || error.code === "42883") {
+        throw new Error("Os comentários ainda não foram ativados no banco de dados.");
+      }
+      if (["23514", "42501", "P0002"].includes(error.code ?? "")) throw new Error(error.message);
+      throw friendly(error);
+    }
+  },
+
   async todosEventos() {
     const { data, error } = await db
       .from("liberacao_eventos")

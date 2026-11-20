@@ -33,6 +33,7 @@ export {
   canCriarBriefing,
   canRealizarVisita,
   canSolicitarVisita,
+  canGerirChecklists,
   canEditLiberacoes,
   filaPcp,
   FUNCOES,

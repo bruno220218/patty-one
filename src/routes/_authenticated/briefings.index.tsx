@@ -1,10 +1,9 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Lightbulb, Plus, Search, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
@@ -47,14 +46,25 @@ const ABAS: { value: Aba; label: string }[] = [
   { value: "todos", label: "Todos" },
 ];
 
-function NovoBriefingButton() {
+function NovoBriefingButton({ destino }: { destino: BriefingDestino }) {
   return (
     <Button asChild className="h-10">
-      <Link to="/briefings/novo">
+      <Link to="/briefings/novo" search={{ destino }}>
         <Plus />
-        Novo briefing
+        {destino === "criacao" ? "Novo briefing Criação" : "Novo briefing Projetos Especiais"}
       </Link>
     </Button>
+  );
+}
+
+/** Each menu entry opens one area; the gestão overview (no area) offers both. */
+function NovoBriefingButtons({ destino }: { destino: "todos" | BriefingDestino }) {
+  if (destino !== "todos") return <NovoBriefingButton destino={destino} />;
+  return (
+    <div className="flex flex-wrap gap-2">
+      <NovoBriefingButton destino="criacao" />
+      <NovoBriefingButton destino="projetos_especiais" />
+    </div>
   );
 }
 
@@ -65,10 +75,10 @@ function BriefingsPage() {
   const atende = canAtenderBriefing(me);
   const [aba, setAba] = useState<Aba>("novo");
   const search = Route.useSearch();
-  const [destino, setDestino] = useState<"todos" | BriefingDestino>(search.destino ?? "todos");
   const [query, setQuery] = useState("");
 
-  // Who handles only one area starts filtered on it.
+  // The menu opens one area (?destino=). Without it, who handles only one area sees that one;
+  // everyone else (gestão) sees all, each row labelled with its area.
   const meuDestino: BriefingDestino | null =
     me && !me.isGestor
       ? me.funcoes.includes("projetos_especiais") && !me.funcoes.includes("criacao")
@@ -77,13 +87,7 @@ function BriefingsPage() {
           ? "criacao"
           : null
       : null;
-  const [destinoTocado, setDestinoTocado] = useState(Boolean(search.destino));
-  useEffect(() => {
-    if (!search.destino) return;
-    setDestino(search.destino);
-    setDestinoTocado(true);
-  }, [search.destino]);
-  const destinoAtual = destinoTocado ? destino : (meuDestino ?? "todos");
+  const destinoAtual: "todos" | BriefingDestino = search.destino ?? meuDestino ?? "todos";
 
   const porAba = useMemo(() => {
     const all = (briefings ?? []).filter(
@@ -110,9 +114,19 @@ function BriefingsPage() {
   return (
     <>
       <PageHeader
-        title="Briefings"
-        description="Comercial descreve o pedido → Criação ou Projetos especiais assumem e entregam."
-        action={podeCriar ? <NovoBriefingButton /> : undefined}
+        title={
+          destinoAtual === "todos"
+            ? "Briefings"
+            : `Briefings ${BRIEFING_DESTINO_LABEL[destinoAtual]}`
+        }
+        description={
+          destinoAtual === "projetos_especiais"
+            ? "Comercial descreve o pedido de orçamento → Projetos Especiais assume e entrega."
+            : destinoAtual === "criacao"
+              ? "Comercial descreve o pedido → Criação assume e entrega."
+              : "Comercial descreve o pedido → Criação ou Projetos Especiais assumem e entregam."
+        }
+        action={podeCriar ? <NovoBriefingButtons destino={destinoAtual} /> : undefined}
       />
 
       {isPending ? (
@@ -134,7 +148,7 @@ function BriefingsPage() {
               ? "Crie o primeiro: diga o que o cliente precisa e para quem vai."
               : "Quando o comercial criar briefings, eles aparecem aqui."
           }
-          action={podeCriar ? <NovoBriefingButton /> : undefined}
+          action={podeCriar ? <NovoBriefingButtons destino={destinoAtual} /> : undefined}
         />
       ) : (
         <>
@@ -169,27 +183,6 @@ function BriefingsPage() {
                 className="h-9 pl-9"
               />
             </div>
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              value={destinoAtual}
-              onValueChange={(v) => {
-                if (!v) return;
-                setDestinoTocado(true);
-                setDestino(v as typeof destino);
-              }}
-              aria-label="Área"
-            >
-              <ToggleGroupItem value="todos" className="h-9 px-3">
-                Todos
-              </ToggleGroupItem>
-              <ToggleGroupItem value="criacao" className="h-9 px-3">
-                Criação
-              </ToggleGroupItem>
-              <ToggleGroupItem value="projetos_especiais" className="h-9 px-3">
-                Proj. especiais
-              </ToggleGroupItem>
-            </ToggleGroup>
           </div>
 
           {visiveis.length === 0 ? (
