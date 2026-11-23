@@ -5,6 +5,7 @@ import {
   CalendarClock,
   CalendarDays,
   CheckCircle2,
+  ClipboardList,
   Clock3,
   Copy,
   Loader2,
@@ -46,6 +47,7 @@ import {
   textoWhatsApp,
   type Conflito,
   type GrupoResumo,
+  type OrdemResumo,
   type ProgramacaoDia,
   type ServicoProgramado,
   type StatusProgramacao,
@@ -292,17 +294,29 @@ function GrupoCard({
           {g.pendentes} pendente(s)
         </span>
       </div>
-      <ol className="mt-3 divide-y">
+      <ol className="mt-3">
         {g.itens.map((it, i) => {
           const noDia = quantidadeServicosNoDia(it.id, conflitos);
           return (
-            <li key={it.id} className="flex items-start gap-3 py-3 text-sm">
+            <li
+              key={it.id}
+              className={cn(
+                "my-2 flex items-start gap-3 rounded-lg border border-l-4 bg-background p-3 text-sm",
+                TOM_STATUS_PROGRAMACAO[it.status],
+                "text-foreground",
+              )}
+            >
               <span className="mt-0.5 w-5 text-xs text-muted-foreground">{i + 1}.</span>
               <div className="min-w-0 flex-1 space-y-1.5">
-                <p className="font-medium">
-                  {[it.cliente, [it.servico, it.produto].filter(Boolean).join(" ")]
-                    .filter(Boolean)
-                    .join(" — ")}
+                {it.horaInicio && (
+                  <p className="text-xs font-semibold text-primary">{it.horaInicio.slice(0, 5)}</p>
+                )}
+                <p className="text-base leading-tight font-semibold">{it.cliente || it.servico}</p>
+                <p>
+                  {it.cliente ? [it.servico, it.produto].filter(Boolean).join(" · ") : it.produto}
+                  {it.quantidade && it.quantidade !== 1
+                    ? ` (${it.quantidade.toLocaleString("pt-BR")}x)`
+                    : ""}
                   {alertas.has(it.id) && (
                     <span
                       className={cn(
@@ -322,7 +336,6 @@ function GrupoCard({
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {it.setor}
-                  {it.horaInicio ? ` · ${it.horaInicio.slice(0, 5)}` : ""}
                   {it.detalhamento ? ` · ${it.detalhamento}` : ""}
                 </p>
                 {it.observacao && (
@@ -371,8 +384,235 @@ function GrupoCard({
   );
 }
 
-/** Services marked "Não realizado" or "Aguardando equipe", with one-click rescheduling. */
+/** Total shown on the "Pendências" tab: nothing here may be forgotten. */
+export const totalPendencias = (d: ProgramacaoDia) =>
+  d.semBaixa.length + d.pendencias.length + d.ordensAProgramar.length;
+
+function TituloSecao({
+  icone: Icone,
+  titulo,
+  descricao,
+  qtd,
+  tom,
+}: {
+  icone: typeof Clock3;
+  titulo: string;
+  descricao: string;
+  qtd: number;
+  tom: string;
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <Icone className="mt-0.5 size-5 shrink-0" />
+      <div>
+        <h2 className="flex items-center gap-2 font-semibold">
+          {titulo}
+          <span className={cn("rounded-full border px-2 py-0.5 text-xs", tom)}>{qtd}</span>
+        </h2>
+        <p className="text-xs text-muted-foreground">{descricao}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Everything that still needs attention: no final status, not done, and orders not yet programmed. */
 export function Pendencias({
+  dados,
+  podeReagendar,
+  podeMudarStatus,
+  onProgramarOrdem,
+}: {
+  dados: ProgramacaoDia;
+  podeReagendar: boolean;
+  podeMudarStatus: boolean;
+  onProgramarOrdem: (o: OrdemResumo) => void;
+}) {
+  if (!totalPendencias(dados)) {
+    return (
+      <div className="rounded-2xl border border-dashed bg-card p-10 text-center text-sm text-muted-foreground">
+        Tudo em dia. Aparecem aqui sozinhos: serviços de dias passados sem baixa, serviços “Não
+        realizado” ou “Aguardando equipe” e ordens de produção ainda sem programação.
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-6">
+      {dados.semBaixa.length > 0 && (
+        <section className="space-y-3">
+          <TituloSecao
+            icone={AlertTriangle}
+            titulo="Sem baixa"
+            descricao="Dias que já passaram e o serviço continua “Programado” ou “Em andamento”. Diga o que aconteceu."
+            qtd={dados.semBaixa.length}
+            tom={TOM.perigo}
+          />
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {dados.semBaixa.map((s) => (
+              <SemBaixaCard
+                key={s.id}
+                s={s}
+                dados={dados}
+                podeMudarStatus={podeMudarStatus}
+                podeReagendar={podeReagendar}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+      {dados.pendencias.length > 0 && (
+        <section className="space-y-3">
+          <TituloSecao
+            icone={CalendarClock}
+            titulo="Não realizados / aguardando equipe"
+            descricao="Precisam de nova data. Reagende com um clique."
+            qtd={dados.pendencias.length}
+            tom={TOM.aviso}
+          />
+          <NaoRealizados dados={dados} podeReagendar={podeReagendar} />
+        </section>
+      )}
+      {dados.ordensAProgramar.length > 0 && (
+        <section className="space-y-3">
+          <TituloSecao
+            icone={ClipboardList}
+            titulo="Ordens de produção ainda não programadas"
+            descricao="Ordens abertas sem serviço de hoje em diante e sem agendamento no cronograma."
+            qtd={dados.ordensAProgramar.length}
+            tom={TOM.primario}
+          />
+          <OrdensAProgramar
+            ordens={dados.ordensAProgramar}
+            podeProgramar={podeReagendar}
+            onProgramar={onProgramarOrdem}
+          />
+        </section>
+      )}
+    </div>
+  );
+}
+
+function SemBaixaCard({
+  s,
+  dados,
+  podeMudarStatus,
+  podeReagendar,
+}: {
+  s: ServicoProgramado;
+  dados: ProgramacaoDia;
+  podeMudarStatus: boolean;
+  podeReagendar: boolean;
+}) {
+  const run = useDataAction();
+  const [ocupado, setOcupado] = useState(false);
+  const dias = diasEmAberto(s.data, hojeISO());
+  const marcar = async (status: StatusProgramacao) => {
+    setOcupado(true);
+    await run(() => operacaoRepository.mudarStatusServico(s.id, status), `Marcado como ${status}.`);
+    setOcupado(false);
+  };
+  return (
+    <article className="space-y-2 rounded-xl border border-l-4 border-l-destructive bg-card p-3 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-semibold leading-tight">{s.cliente || "Sem cliente"}</p>
+          <p className="text-sm">{[s.servico, s.produto].filter(Boolean).join(" · ")}</p>
+        </div>
+        <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-xs", TOM.perigo)}>
+          {dataCurtaBR(s.data).slice(0, 5)} · há {dias} dia{dias === 1 ? "" : "s"}
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {s.setor} · {s.equipeNome || (s.liderNome ? abreviarNome(s.liderNome) : "sem equipe")} ·{" "}
+        {s.status}
+      </p>
+      <div className="flex flex-wrap gap-1.5 border-t pt-2">
+        {podeMudarStatus && (
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={ocupado}
+              onClick={() => void marcar("Concluído")}
+            >
+              <CheckCircle2 className="text-emerald-600" />
+              Foi feito
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={ocupado}
+              onClick={() => void marcar("Não realizado")}
+            >
+              <AlertTriangle className="text-destructive" />
+              Não foi feito
+            </Button>
+          </>
+        )}
+        {podeReagendar && <Reagendar servico={s} dados={dados} />}
+      </div>
+    </article>
+  );
+}
+
+function OrdensAProgramar({
+  ordens,
+  podeProgramar,
+  onProgramar,
+}: {
+  ordens: OrdemResumo[];
+  podeProgramar: boolean;
+  onProgramar: (o: OrdemResumo) => void;
+}) {
+  const hoje = hojeISO();
+  return (
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {ordens.map((o) => {
+        const atrasada = o.dataPrevista && o.dataPrevista < hoje;
+        return (
+          <article key={o.id} className="space-y-2 rounded-xl border bg-card p-3 shadow-sm">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-semibold leading-tight">
+                  OP nº {o.numero} · {o.clienteNome || "Sem cliente"}
+                </p>
+                <p className="text-sm">{o.servicoNome || o.descricao || "—"}</p>
+              </div>
+              {o.dataPrevista && (
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full border px-2 py-0.5 text-xs",
+                    atrasada ? TOM.perigo : TOM.neutro,
+                  )}
+                >
+                  prazo {dataCurtaBR(o.dataPrevista).slice(0, 5)}
+                </span>
+              )}
+            </div>
+            {o.descricao && o.servicoNome && (
+              <p className="text-xs text-muted-foreground">{o.descricao}</p>
+            )}
+            <div className="flex flex-wrap gap-1.5 border-t pt-2">
+              {podeProgramar && (
+                <Button size="sm" onClick={() => onProgramar(o)}>
+                  <CalendarDays />
+                  Programar
+                </Button>
+              )}
+              <Button size="sm" variant="ghost" asChild>
+                <Link to="/producao/$ordemId" params={{ ordemId: o.id }}>
+                  Abrir ordem
+                </Link>
+              </Button>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Services marked "Não realizado" or "Aguardando equipe", with one-click rescheduling. */
+function NaoRealizados({
   dados,
   podeReagendar,
 }: {
@@ -380,14 +620,6 @@ export function Pendencias({
   podeReagendar: boolean;
 }) {
   const hoje = hojeISO();
-  if (!dados.pendencias.length) {
-    return (
-      <div className="rounded-2xl border border-dashed bg-card p-10 text-center text-sm text-muted-foreground">
-        Nenhuma pendência. Serviços marcados como “Não realizado” ou “Aguardando equipe” aparecem
-        aqui sozinhos.
-      </div>
-    );
-  }
   return (
     <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
       <table className="w-full min-w-[960px] text-sm">

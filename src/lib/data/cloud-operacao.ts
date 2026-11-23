@@ -8,9 +8,10 @@ import {
   type StatusOrdem,
   type TipoOrdem,
 } from "./producao-rules";
-import type { TipoAgendamento } from "./planejamento-rules";
+import { hojeISO, type TipoAgendamento } from "./planejamento-rules";
 import {
   grupoDaLinha,
+  ordensSemProgramacao,
   type Alocacao,
   type ImagemResumo,
   type ItemResumo,
@@ -244,6 +245,10 @@ export interface PlanejamentoPeriodo {
 export interface ProgramacaoDia {
   itens: ServicoProgramado[];
   pendencias: ServicoProgramado[];
+  /** Past days' services still "Programado"/"Em andamento" (nobody gave them a final status). */
+  semBaixa: ServicoProgramado[];
+  /** Open production orders with no service from today on and no current appointment. */
+  ordensAProgramar: OrdemResumo[];
   agendamentos: Agendamento[];
   ordensAbertas: { id: string; numero: number; descricao: string }[];
   recursos: Recursos;
@@ -900,46 +905,87 @@ export const operacaoRepository = {
   // ----- Programação de serviços -----
   async programacao(data: string): Promise<ProgramacaoDia> {
     const recursos = await carregarRecursos();
-    const [itens, pendencias, agendamentos, ordens] = await Promise.all([
-      carregarServicos(
-        db
-          .from("programacao_servicos")
-          .select(SERVICO_COLUNAS)
-          .eq("data", data)
-          .order("setor")
-          .order("posicao"),
-        recursos,
-      ),
-      carregarServicos(
-        db
-          .from("programacao_servicos")
-          .select(SERVICO_COLUNAS)
-          .in("status", ["Não realizado", "Aguardando equipe"])
-          .order("data")
-          .limit(500),
-        recursos,
-        false,
-      ),
-      carregarAgendamentos(
-        db
-          .from("planejamento_agendamentos")
-          .select("*")
-          .lte("data_inicio", data)
-          .gte("data_fim", data),
-        recursos,
-      ),
-      rows(
-        db
-          .from("ordens_producao")
-          .select("id, numero, descricao")
-          .not("status", "in", '("Concluída","Cancelada")')
-          .order("numero", { ascending: false })
-          .limit(300),
-      ),
-    ]);
+    const hoje = hojeISO();
+    const [itens, pendencias, agendamentos, ordens, semBaixa, abertas, comServico, comAgenda] =
+      await Promise.all([
+        carregarServicos(
+          db
+            .from("programacao_servicos")
+            .select(SERVICO_COLUNAS)
+            .eq("data", data)
+            .order("setor")
+            .order("posicao"),
+          recursos,
+        ),
+        carregarServicos(
+          db
+            .from("programacao_servicos")
+            .select(SERVICO_COLUNAS)
+            .in("status", ["Não realizado", "Aguardando equipe"])
+            .order("data")
+            .limit(500),
+          recursos,
+          false,
+        ),
+        carregarAgendamentos(
+          db
+            .from("planejamento_agendamentos")
+            .select("*")
+            .lte("data_inicio", data)
+            .gte("data_fim", data),
+          recursos,
+        ),
+        rows(
+          db
+            .from("ordens_producao")
+            .select("id, numero, descricao")
+            .not("status", "in", '("Concluída","Cancelada")')
+            .order("numero", { ascending: false })
+            .limit(300),
+        ),
+        carregarServicos(
+          db
+            .from("programacao_servicos")
+            .select(SERVICO_COLUNAS)
+            .lt("data", hoje)
+            .in("status", ["Programado", "Em andamento"])
+            .order("data")
+            .limit(500),
+          recursos,
+          false,
+        ),
+        carregarOrdens(
+          db
+            .from("ordens_producao")
+            .select(ORDEM_COLUNAS)
+            .not("status", "in", '("Concluída","Cancelada")')
+            .order("numero", { ascending: false })
+            .limit(300),
+          recursos,
+        ),
+        rows(
+          db
+            .from("programacao_servicos")
+            .select("ordem_id")
+            .gte("data", hoje)
+            .not("ordem_id", "is", null),
+        ),
+        rows(
+          db
+            .from("planejamento_agendamentos")
+            .select("ordem_id")
+            .gte("data_fim", hoje)
+            .not("ordem_id", "is", null),
+        ),
+      ]);
     return {
       itens,
       pendencias,
+      semBaixa,
+      ordensAProgramar: ordensSemProgramacao(
+        abertas,
+        [...comServico, ...comAgenda].map((r) => txt(r["ordem_id"])),
+      ).sort((a, b) => (a.dataPrevista ?? "9999").localeCompare(b.dataPrevista ?? "9999")),
       agendamentos,
       ordensAbertas: ordens.map((o) => ({
         id: txt(o["id"]),
@@ -958,6 +1004,52 @@ export const operacaoRepository = {
     });
     if (error) throw dbError(error);
     return Number(data) || 0;
+  },
+
+  /** Ids of the services with this service/sector on these dates (to find rows just created). */
+  async idsDosServicos(datas: string[], servico: string, setor: string): Promise<string[]> {
+    const r = await rows(
+      db
+        .from("programacao_servicos")
+        .select("id, data")
+        .in("data", datas)
+        .eq("servico", servico.trim())
+        .eq("setor", setor)
+        .order("data"),
+    );
+    return r.map((x) => txt(x["id"]));
+  },
+
+  /** Quick add from the service form; returns the new person's id. */
+  async criarColaborador(nome: string): Promise<string> {
+    const limpo = nome.trim();
+    if (!limpo) throw new Error("Informe o nome do funcionário.");
+    const { data, error } = await db
+      .from("producao_colaboradores")
+      .insert({ nome: limpo, ativo: true })
+      .select("id")
+      .single();
+    if (error) {
+      if (error.code === "23505") throw new Error("Já existe um funcionário com este nome.");
+      throw dbError(error);
+    }
+    return txt((data as Row)["id"]);
+  },
+
+  /** Quick add from the service form; returns the new vehicle's id. */
+  async criarVeiculo(placa: string, apelido: string): Promise<string> {
+    const p = placa.trim().toLocaleUpperCase("pt-BR").replace(/\s+/g, "");
+    if (!p) throw new Error("Informe a placa do veículo.");
+    const { data, error } = await db
+      .from("producao_veiculos")
+      .insert({ placa: p, apelido: apelido.trim() || null, status: "ATIVO" })
+      .select("id")
+      .single();
+    if (error) {
+      if (error.code === "23505") throw new Error("Já existe um veículo com esta placa.");
+      throw dbError(error);
+    }
+    return txt((data as Row)["id"]);
   },
 
   /** Moves one service (same id and links) to another date/team. */
