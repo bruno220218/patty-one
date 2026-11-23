@@ -408,3 +408,89 @@ describe("resumo do dia e WhatsApp", () => {
     expect(textoWhatsApp("2026-11-16", [])).toContain("Nenhum serviço programado.");
   });
 });
+
+describe("programação: vários dias e pendências", () => {
+  it("lista os dias do período pulando fim de semana", async () => {
+    const { datasDoPeriodo } = await import("./programacao-rules");
+    // 2026-11-20 is a Friday
+    expect(datasDoPeriodo("2026-11-20", "2026-11-24", { sabado: false, domingo: false })).toEqual([
+      "2026-11-20",
+      "2026-11-23",
+      "2026-11-24",
+    ]);
+    expect(
+      datasDoPeriodo("2026-11-20", "2026-11-22", { sabado: true, domingo: true }),
+    ).toHaveLength(3);
+    expect(datasDoPeriodo("2026-11-20", "", { sabado: false, domingo: false })).toEqual([
+      "2026-11-20",
+    ]);
+  });
+
+  it("valida o período", async () => {
+    const { validarPeriodo } = await import("./programacao-rules");
+    const op = { sabado: false, domingo: false };
+    expect(validarPeriodo("2026-11-20", "", op)).toMatch(/até quando/);
+    expect(validarPeriodo("2026-11-20", "2026-11-19", op)).toMatch(/depois/);
+    expect(validarPeriodo("2026-11-21", "2026-11-22", op)).toMatch(/Nenhum dia/);
+    expect(validarPeriodo("2026-01-01", "2026-12-31", op)).toMatch(/no máximo/);
+    expect(validarPeriodo("2026-11-20", "2026-11-27", op)).toBeNull();
+  });
+
+  it("gera uma linha por dia, a primeira mantém o id", async () => {
+    const { linhaVazia, linhasDoPeriodo } = await import("./programacao-rules");
+    const base = { ...linhaVazia("2026-11-20"), id: "x", chave: "x", servico: "Lona" };
+    const ls = linhasDoPeriodo(base, ["2026-11-20", "2026-11-23"]);
+    expect(ls.map((l) => l.data)).toEqual(["2026-11-20", "2026-11-23"]);
+    expect(ls[0]!.id).toBe("x");
+    expect(ls[1]!.id).toBeUndefined();
+    expect(ls[1]!.chave).not.toBe("x");
+  });
+
+  it("serviço de dia passado sem baixa", async () => {
+    const { estaSemBaixa } = await import("./programacao-rules");
+    expect(estaSemBaixa({ data: "2026-11-20", status: "Programado" }, "2026-11-22")).toBe(true);
+    expect(estaSemBaixa({ data: "2026-11-20", status: "Em andamento" }, "2026-11-22")).toBe(true);
+    expect(estaSemBaixa({ data: "2026-11-20", status: "Concluído" }, "2026-11-22")).toBe(false);
+    expect(estaSemBaixa({ data: "2026-11-22", status: "Programado" }, "2026-11-22")).toBe(false);
+  });
+
+  it("ordens sem programação", async () => {
+    const { ordensSemProgramacao } = await import("./programacao-rules");
+    expect(ordensSemProgramacao([{ id: "a" }, { id: "b" }], ["b", ""])).toEqual([{ id: "a" }]);
+  });
+});
+
+describe("programação: sugestões ao digitar", () => {
+  const ops = [
+    { id: "1", rotulo: "Instalação de lona" },
+    { id: "2", rotulo: "Lona impressa" },
+    { id: "3", rotulo: "Adesivo" },
+    { id: "4", rotulo: "Retirada de lona", busca: "remoção" },
+  ];
+  it("acha por qualquer parte, sem acento, começando pelos que iniciam igual", async () => {
+    const { filtrarSugestoes } = await import("./programacao-rules");
+    expect(filtrarSugestoes(ops, "lona").map((o) => o.id)).toEqual(["2", "1", "4"]);
+    expect(filtrarSugestoes(ops, "instalacao").map((o) => o.id)).toEqual(["1"]);
+    expect(filtrarSugestoes(ops, "remoção").map((o) => o.id)).toEqual(["4"]);
+    expect(filtrarSugestoes(ops, "lona ret").map((o) => o.id)).toEqual(["4"]);
+    expect(filtrarSugestoes(ops, "")).toHaveLength(4);
+  });
+  it("completa o resto da palavra", async () => {
+    const { completarPalavra } = await import("./programacao-rules");
+    expect(completarPalavra("lo", "Lona impressa")).toBe("na impressa");
+    expect(completarPalavra("imp", "Lona impressa")).toBe("");
+    expect(completarPalavra("", "Lona")).toBe("");
+  });
+  it("monta o endereço do ponto", async () => {
+    const { enderecoDoPonto } = await import("./programacao-rules");
+    expect(
+      enderecoDoPonto({
+        endereco: "Av. Brasil, 100",
+        bairro: "Centro",
+        cidade: "Goiânia",
+        estado: "GO",
+      }),
+    ).toBe("Av. Brasil, 100, Centro, Goiânia/GO");
+    expect(enderecoDoPonto({ endereco: "Rua 1", referencia: "posto" })).toBe("Rua 1 — ref.: posto");
+  });
+});

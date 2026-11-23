@@ -70,7 +70,7 @@ const CAMPOS_DE_RECURSO: (keyof LinhaProgramacao)[] = [
 
 type Confirmacao = { mensagens: string[]; ids: string[] };
 
-function ClienteCell({
+export function ClienteCell({
   linha,
   disabled,
   onChange,
@@ -118,7 +118,7 @@ function ClienteCell({
   );
 }
 
-function AjudantesCell({
+export function AjudantesCell({
   linha,
   dados,
   disabled,

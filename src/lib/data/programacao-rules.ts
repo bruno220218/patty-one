@@ -106,6 +106,124 @@ export function validarLinha(
   return null;
 }
 
+// ---------- Período (um serviço em vários dias = uma linha por dia) ----------
+
+export const MAX_DIAS_PERIODO = 60;
+
+export type OpcoesPeriodo = { sabado: boolean; domingo: boolean };
+
+/** Every date from `inicio` to `fim` (inclusive), skipping Saturdays/Sundays unless asked. */
+export function datasDoPeriodo(inicio: string, fim: string, op: OpcoesPeriodo): string[] {
+  if (!inicio) return [];
+  if (!fim || fim <= inicio) return [inicio];
+  const datas: string[] = [];
+  let atual = Date.parse(`${inicio}T00:00:00Z`);
+  const ate = Date.parse(`${fim}T00:00:00Z`);
+  while (atual <= ate && datas.length < MAX_DIAS_PERIODO) {
+    const d = new Date(atual);
+    const dia = d.getUTCDay();
+    if ((dia !== 6 || op.sabado) && (dia !== 0 || op.domingo)) {
+      datas.push(d.toISOString().slice(0, 10));
+    }
+    atual += 86_400_000;
+  }
+  return datas;
+}
+
+/** Error for the "vários dias" fields, or null. */
+export function validarPeriodo(inicio: string, fim: string, op: OpcoesPeriodo): string | null {
+  if (!fim) return "Informe até quando o serviço vai.";
+  if (fim < inicio) return "A data final deve ser depois da data inicial.";
+  const dias = (Date.parse(`${fim}T00:00:00Z`) - Date.parse(`${inicio}T00:00:00Z`)) / 86_400_000;
+  if (dias + 1 > MAX_DIAS_PERIODO) return `O período pode ter no máximo ${MAX_DIAS_PERIODO} dias.`;
+  if (!datasDoPeriodo(inicio, fim, op).length) return "Nenhum dia útil no período escolhido.";
+  return null;
+}
+
+/** Copies of a row, one per date (the first keeps the row's key/id). */
+export function linhasDoPeriodo(l: LinhaProgramacao, datas: string[]): LinhaProgramacao[] {
+  return datas.map((data, i) =>
+    i === 0 ? { ...l, data } : { ...duplicarLinha(l), data, status: l.status },
+  );
+}
+
+// ---------- Sugestões ao digitar ----------
+
+/** Lower case without accents, for "contains" searches ("lona" finds "Lona impressa"). */
+export const semAcento = (t: string) =>
+  t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLocaleLowerCase("pt-BR").trim();
+
+export type OpcaoSugestao = {
+  id: string;
+  rotulo: string;
+  detalhe?: string | undefined;
+  busca?: string | undefined;
+};
+
+/** Options containing every typed word; the ones that start with the text come first. */
+export function filtrarSugestoes<T extends OpcaoSugestao>(
+  opcoes: T[],
+  termo: string,
+  max = 8,
+): T[] {
+  const t = semAcento(termo);
+  if (!t) return opcoes.slice(0, max);
+  const palavras = t.split(/\s+/);
+  const achadas = opcoes.filter((o) => {
+    const alvo = semAcento(`${o.rotulo} ${o.busca ?? ""}`);
+    return palavras.every((p) => alvo.includes(p));
+  });
+  const nota = (o: T) => {
+    const r = semAcento(o.rotulo);
+    if (r === t) return 0;
+    if (r.startsWith(t)) return 1;
+    if (r.split(/\s+/).some((w) => w.startsWith(palavras[0]!))) return 2;
+    return 3;
+  };
+  return achadas
+    .sort((a, b) => nota(a) - nota(b) || a.rotulo.localeCompare(b.rotulo, "pt-BR"))
+    .slice(0, max);
+}
+
+/** Rest of the word to show in grey: "lo" + "Lona" → "na" (only when it starts the same way). */
+export function completarPalavra(digitado: string, sugestao: string | undefined): string {
+  if (!digitado || !sugestao) return "";
+  return sugestao.toLocaleLowerCase("pt-BR").startsWith(digitado.toLocaleLowerCase("pt-BR"))
+    ? sugestao.slice(digitado.length)
+    : "";
+}
+
+/** Address of a mídia point for the "Endereço / local" field. */
+export function enderecoDoPonto(p: {
+  endereco?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  referencia?: string;
+}): string {
+  const cidade = [p.cidade, p.estado].filter(Boolean).join("/");
+  const base = [p.endereco, p.bairro, cidade].filter(Boolean).join(", ");
+  return p.referencia ? `${base}${base ? " — " : ""}ref.: ${p.referencia}` : base;
+}
+
+// ---------- Para não se perder ----------
+
+export const STATUS_EM_ABERTO: StatusProgramacao[] = ["Programado", "Em andamento"];
+
+/** A past day's service still "Programado"/"Em andamento": nobody gave it a final status. */
+export function estaSemBaixa(s: { data: string; status: StatusProgramacao }, hoje: string) {
+  return s.data < hoje && STATUS_EM_ABERTO.includes(s.status);
+}
+
+/** Open orders with no service from `hoje` on and no current appointment in the schedule. */
+export function ordensSemProgramacao<T extends { id: string }>(
+  ordens: T[],
+  programadas: Iterable<string>,
+): T[] {
+  const ja = new Set(programadas);
+  return ordens.filter((o) => !ja.has(o.id));
+}
+
 export function diasEmAberto(data: string, hoje: string): number {
   const ms = Date.parse(`${hoje}T00:00:00Z`) - Date.parse(`${data}T00:00:00Z`);
   return Math.max(0, Math.round(ms / 86_400_000));
