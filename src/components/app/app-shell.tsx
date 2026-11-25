@@ -5,6 +5,7 @@ import {
   Activity,
   Archive,
   BarChart3,
+  LayoutDashboard,
   Calculator,
   CalendarDays,
   CalendarRange,
@@ -92,7 +93,8 @@ type NavTo =
   | "/planejamento/equipes"
   | "/planejamento/veiculos"
   | "/planejamento/catalogos"
-  | "/financeiro";
+  | "/financeiro"
+  | "/dashboard";
 
 type NavItem = {
   id: string;
@@ -422,6 +424,13 @@ const SETORES: Setor[] = [
     subs: [
       {
         itens: [
+          {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: LayoutDashboard,
+            to: "/dashboard",
+            gestorOnly: true,
+          },
           {
             id: "importar",
             label: "Importar cadastros",

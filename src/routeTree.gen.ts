@@ -21,6 +21,7 @@ import { Route as AuthenticatedMedidasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPaineisRouteImport } from './routes/_authenticated/paineis'
 import { Route as AuthenticatedStatusServicosRouteImport } from './routes/_authenticated/status-servicos'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
+import { Route as AuthenticatedGestorDashboardRouteImport } from './routes/_authenticated/_gestor/dashboard'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorImportarRouteImport } from './routes/_authenticated/_gestor/importar'
 import { Route as AuthenticatedGestorImportarHistoricoRouteImport } from './routes/_authenticated/_gestor/importar-historico'
@@ -121,6 +122,12 @@ const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
   path: '/api/next-steps',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedGestorDashboardRoute =
+  AuthenticatedGestorDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
 const AuthenticatedGestorEquipeRoute =
   AuthenticatedGestorEquipeRouteImport.update({
     id: '/equipe',
@@ -358,6 +365,7 @@ export interface FileRoutesByFullPath {
   '/paineis': typeof AuthenticatedPaineisRoute
   '/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
+  '/dashboard': typeof AuthenticatedGestorDashboardRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
   '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -408,6 +416,7 @@ export interface FileRoutesByTo {
   '/paineis': typeof AuthenticatedPaineisRoute
   '/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
+  '/dashboard': typeof AuthenticatedGestorDashboardRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
   '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -461,6 +470,7 @@ export interface FileRoutesById {
   '/_authenticated/paineis': typeof AuthenticatedPaineisRoute
   '/_authenticated/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
+  '/_authenticated/_gestor/dashboard': typeof AuthenticatedGestorDashboardRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/importar': typeof AuthenticatedGestorImportarRoute
   '/_authenticated/_gestor/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -513,6 +523,7 @@ export interface FileRouteTypes {
     | '/paineis'
     | '/status-servicos'
     | '/api/next-steps'
+    | '/dashboard'
     | '/equipe'
     | '/importar'
     | '/importar-historico'
@@ -563,6 +574,7 @@ export interface FileRouteTypes {
     | '/paineis'
     | '/status-servicos'
     | '/api/next-steps'
+    | '/dashboard'
     | '/equipe'
     | '/importar'
     | '/importar-historico'
@@ -615,6 +627,7 @@ export interface FileRouteTypes {
     | '/_authenticated/paineis'
     | '/_authenticated/status-servicos'
     | '/api/next-steps'
+    | '/_authenticated/_gestor/dashboard'
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/importar'
     | '/_authenticated/_gestor/importar-historico'
@@ -748,6 +761,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/next-steps'
       preLoaderRoute: typeof ApiNextStepsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_gestor/dashboard': {
+      id: '/_authenticated/_gestor/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedGestorDashboardRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
     }
     '/_authenticated/_gestor/equipe': {
       id: '/_authenticated/_gestor/equipe'
@@ -1019,6 +1039,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedGestorRouteRouteChildren {
+  AuthenticatedGestorDashboardRoute: typeof AuthenticatedGestorDashboardRoute
   AuthenticatedGestorEquipeRoute: typeof AuthenticatedGestorEquipeRoute
   AuthenticatedGestorImportarRoute: typeof AuthenticatedGestorImportarRoute
   AuthenticatedGestorImportarHistoricoRoute: typeof AuthenticatedGestorImportarHistoricoRoute
@@ -1028,6 +1049,7 @@ interface AuthenticatedGestorRouteRouteChildren {
 
 const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildren =
   {
+    AuthenticatedGestorDashboardRoute: AuthenticatedGestorDashboardRoute,
     AuthenticatedGestorEquipeRoute: AuthenticatedGestorEquipeRoute,
     AuthenticatedGestorImportarRoute: AuthenticatedGestorImportarRoute,
     AuthenticatedGestorImportarHistoricoRoute:

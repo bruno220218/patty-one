@@ -25,11 +25,11 @@
 - [x] Operação (setor Produção): ordens de produção com alertas de prazo, cronograma, equipes de planejamento, veículos, produtos/serviços/colaboradores e "Programação Produção" com resumo para WhatsApp (imagens no Drive) — migração 0019
 - [x] Comercial: propostas e pedidos (PDF, proposta → pedido), histórico do SIGE (importação só gestão) e ordem de produção ligada ao pedido — migração 0020
 - [x] Mídia OOH: pontos com fotos no Drive, mapa (chave própria do Google Maps), calendário oficial das bi-semanas e ocupação → itens "Mapeamento das áreas" e "Datas de colagens" — migração 0022
-- [ ] Trazer os dados reais do PattyOne (cadastros, pontos, calendário, colaboradores, veículos, serviços)
+- [x] Trazer os dados reais do PattyOne (cadastros, pontos, calendário, colaboradores, veículos, serviços)
 
 ## Tarefas futuras (agendadas)
 - [x] Financeiro: a receber, contratos de aluguel e de energia (vindos do PattyOne; só Gestão, Direção e Financeiro) — migração 0026
 - [x] Financeiro: contas a pagar (fornecedores, aluguel com parcelas geradas, energia, impostos e outros) e comissões geradas quando o cliente paga (vendedor + agência) — migração 0029
-- [ ] Dashboard com números reais (no PattyOne eram fixos); juntar com a "Tela de gestão" acima
+- [ ] Dashboard com números reais (no PattyOne eram fixos); juntar com a "Tela de gestão" acima — tela pré-configurada em Gestão › Dashboard; os números esperam as decisões do Vitor em `docs/dashboard-indicadores.md`
 - [ ] Telas que eram só "Em breve" no PattyOne: Balcão, Compras e Estoque, Administrativo, Painel de Gestão
 
