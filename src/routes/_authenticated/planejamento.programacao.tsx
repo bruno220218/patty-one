@@ -1,12 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarDays, ChevronLeft, ChevronRight, ListChecks } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
-import { ProgramacaoGrid } from "@/components/app/programacao-grid";
-import { AgendamentosDoDia, Pendencias, ResumoDia } from "@/components/app/programacao-paineis";
+import { linhaDaOrdem, ProgramacaoLista } from "@/components/app/programacao-formulario";
+import {
+  AgendamentosDoDia,
+  Pendencias,
+  ResumoDia,
+  totalPendencias,
+} from "@/components/app/programacao-paineis";
 import { useCurrentUser, useProgramacao } from "@/hooks/use-data";
 import {
   adicionarDias,
@@ -14,6 +20,7 @@ import {
   canGerirOperacao,
   hojeISO,
   tituloDoPeriodo,
+  type LinhaProgramacao,
 } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -39,11 +46,12 @@ function ProgramacaoPage() {
   const navegar = Route.useNavigate();
   const { data: me } = useCurrentUser();
   const { data: dados, isPending, error } = useProgramacao(search.data);
+  const [novoInicial, setNovoInicial] = useState<LinhaProgramacao | null>(null);
   const irPara = (data: string) => void navegar({ search: (a) => ({ ...a, data }) });
   const abas: [Aba, string][] = [
-    ["lancamento", "Lançamento rápido"],
+    ["lancamento", "Programar"],
     ["resumo", "Resumo do dia"],
-    ["pendencias", `Pendências${dados ? ` (${dados.pendencias.length})` : ""}`],
+    ["pendencias", `Pendências${dados ? ` (${totalPendencias(dados)})` : ""}`],
   ];
 
   return (
@@ -110,6 +118,19 @@ function ProgramacaoPage() {
           </div>
         </div>
         <h2 className="text-lg font-semibold">{tituloDoPeriodo(search.data, "diario")}</h2>
+        {dados && dados.semBaixa.length > 0 && search.aba !== "pendencias" && (
+          <button
+            type="button"
+            onClick={() => void navegar({ search: (a) => ({ ...a, aba: "pendencias" }) })}
+            className="flex w-full items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-left text-sm text-destructive"
+          >
+            <AlertTriangle className="size-4 shrink-0" />
+            <span>
+              <b>{dados.semBaixa.length}</b> serviço(s) de dias anteriores ainda sem baixa. Toque
+              aqui para dizer se foram feitos.
+            </span>
+          </button>
+        )}
 
         {isPending ? (
           <CardGridSkeleton />
@@ -124,11 +145,13 @@ function ProgramacaoPage() {
             {search.aba === "lancamento" && (
               <>
                 <AgendamentosDoDia dados={dados} data={search.data} />
-                <ProgramacaoGrid
+                <ProgramacaoLista
                   key={search.data}
                   dados={dados}
                   data={search.data}
                   podeEditar={canGerirOperacao(me)}
+                  novoInicial={novoInicial}
+                  onNovoInicialUsado={() => setNovoInicial(null)}
                 />
               </>
             )}
@@ -140,7 +163,15 @@ function ProgramacaoPage() {
               />
             )}
             {search.aba === "pendencias" && (
-              <Pendencias dados={dados} podeReagendar={canGerirOperacao(me)} />
+              <Pendencias
+                dados={dados}
+                podeReagendar={canGerirOperacao(me)}
+                podeMudarStatus={canExecutarOperacao(me)}
+                onProgramarOrdem={(o) => {
+                  setNovoInicial(linhaDaOrdem(o, search.data));
+                  void navegar({ search: (a) => ({ ...a, aba: "lancamento" }) });
+                }}
+              />
             )}
           </>
         )}
