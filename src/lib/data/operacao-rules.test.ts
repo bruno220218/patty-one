@@ -33,6 +33,7 @@ import {
   duplicarLinha,
   idsComAlertaPendente,
   linhaVazia,
+  ordenarPorSetor,
   quantidadeServicosNoDia,
   SETORES_PROGRAMACAO,
   textoWhatsApp,
@@ -257,6 +258,16 @@ describe("programação de serviços", () => {
       "Produção",
       "Corte",
       "Pintura",
+    ]);
+  });
+  it("ordena os grupos pela ordem da lista de setores; nomes fora da lista vão para o fim", () => {
+    const lista = ["Impressão", "Corte", "Pintura"];
+    expect(ordenarPorSetor(lista, ["Pintura", "Zeta", "Impressão", "Alfa", "Corte"])).toEqual([
+      "Impressão",
+      "Corte",
+      "Pintura",
+      "Alfa",
+      "Zeta",
     ]);
   });
   it("nova linha é vazia exceto pela data; duplicar cria outro serviço", () => {

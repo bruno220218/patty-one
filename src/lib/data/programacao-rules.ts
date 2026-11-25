@@ -3,6 +3,10 @@
  * summary and the WhatsApp text. Pure functions, tested in programacao-rules.test.ts.
  */
 
+/**
+ * The original seven sectors. Since migration 0031 the list lives in `producao_setores`
+ * (editable, see `cloud-setores.ts`); this is only the fallback before that migration.
+ */
 export const SETORES_PROGRAMACAO = [
   "Externa",
   "Projetos especiais",
@@ -12,7 +16,17 @@ export const SETORES_PROGRAMACAO = [
   "Corte",
   "Pintura",
 ] as const;
-export type SetorProgramacao = (typeof SETORES_PROGRAMACAO)[number];
+/** A sector name from the editable list (`producao_setores`). */
+export type SetorProgramacao = string;
+
+/** Sorts group keys (sector names) by the list order; unknown names go last, A–Z. */
+export function ordenarPorSetor<T extends string>(setores: readonly string[], nomes: T[]): T[] {
+  const pos = (n: string) => {
+    const i = setores.indexOf(n);
+    return i < 0 ? setores.length : i;
+  };
+  return [...nomes].sort((a, b) => pos(a) - pos(b) || a.localeCompare(b, "pt-BR"));
+}
 
 export const STATUS_PROGRAMACAO = [
   "Programado",

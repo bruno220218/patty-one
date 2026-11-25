@@ -2,8 +2,10 @@ import { useState, type FormEvent } from "react";
 import { ArrowDown, ArrowUp, Check, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { LiberacaoOpcao } from "@/lib/data";
 import { cn } from "@/lib/utils";
+
+/** Any list item with an id and a text (liberação options, production sectors…). */
+export type OpcaoLista = { id: string; valor: string };
 
 const fold = (s: string) =>
   s
@@ -13,7 +15,7 @@ const fold = (s: string) =>
     .trim();
 
 /** One editable list: add (also filters while typing), rename, reorder and remove. */
-export function OpcoesListCard({
+export function OpcoesListCard<T extends OpcaoLista>({
   titulo,
   opcoes,
   disabled,
@@ -23,11 +25,11 @@ export function OpcoesListCard({
   onReorder,
 }: {
   titulo: string;
-  opcoes: LiberacaoOpcao[];
+  opcoes: T[];
   disabled?: boolean;
   onAdd: (valor: string) => Promise<unknown>;
   onRename: (id: string, valor: string) => Promise<unknown>;
-  onRemove: (opcao: LiberacaoOpcao) => void;
+  onRemove: (opcao: T) => void;
   onReorder: (ids: string[]) => Promise<unknown>;
 }) {
   const [texto, setTexto] = useState("");

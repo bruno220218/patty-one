@@ -18,11 +18,13 @@ import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
-import { useCurrentUser, useDataAction, useRecursosOperacao } from "@/hooks/use-data";
+import { OpcoesListCard } from "@/components/app/opcoes-list-card";
+import { useCurrentUser, useDataAction, useRecursosOperacao, useSetores } from "@/hooks/use-data";
 import {
   abreviarNome,
   canGerirOperacao,
   operacaoRepository,
+  setoresRepository,
   type Colaborador,
   type Produto,
   type ServicoCatalogo,
@@ -163,6 +165,7 @@ function CatalogosPage() {
               podeGerir={podeGerir}
             />
           </div>
+          <SetoresCard podeGerir={podeGerir} />
         </div>
       )}
       {editor && data && (
@@ -390,5 +393,58 @@ function ItemDialog({
         />
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * Setores da Produção (Impressão, Corte, Pintura…): the sectors of the programação and the
+ * teams, and where each person of Produção works (chosen in Equipe). Renaming renames them
+ * everywhere; a sector in use can't be removed (database rules, migration 0031).
+ */
+function SetoresCard({ podeGerir }: { podeGerir: boolean }) {
+  const { data: setores } = useSetores();
+  const run = useDataAction();
+  const [removendo, setRemovendo] = useState<{ id: string; valor: string } | null>(null);
+  // Before migration 0031 there is no editable list yet.
+  if (!setores) return null;
+  const opcoes = setores.map((s) => ({ id: s.id, valor: s.nome }));
+  return (
+    <section className="max-w-xl space-y-2">
+      <OpcoesListCard
+        titulo="Setores da Produção"
+        opcoes={opcoes}
+        disabled={!podeGerir}
+        onAdd={(valor) =>
+          run(
+            () => setoresRepository.add(valor).then(() => true),
+            `Setor "${valor.trim()}" criado.`,
+          )
+        }
+        onRename={(id, valor) =>
+          run(
+            () => setoresRepository.rename(id, valor).then(() => true),
+            "Setor renomeado na programação e nas equipes.",
+          )
+        }
+        onReorder={(ids) => run(() => setoresRepository.reorder(ids).then(() => true))}
+        onRemove={setRemovendo}
+      />
+      <p className="text-xs text-muted-foreground">
+        Usados na programação e nas equipes. Quem é de cada setor se define em Equipe. Renomear muda
+        em todo lugar; setor em uso não pode ser removido.
+      </p>
+      <ConfirmDialog
+        open={removendo !== null}
+        onOpenChange={(open) => !open && setRemovendo(null)}
+        title={`Remover o setor "${removendo?.valor ?? ""}"?`}
+        description="Só dá para remover um setor que nenhum serviço da programação nem equipe usa. As pessoas desse setor deixam de estar nele."
+        confirmLabel="Remover"
+        onConfirm={async () => {
+          const alvo = removendo;
+          setRemovendo(null);
+          if (alvo) await run(() => setoresRepository.remove(alvo.id), "Setor removido.");
+        }}
+      />
+    </section>
   );
 }

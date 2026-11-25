@@ -16,7 +16,7 @@ import {
 import { AnexosPanel } from "@/components/app/anexos-panel";
 import { CampoSugestao } from "@/components/app/campo-sugestao";
 import { ConfirmacaoConflitos } from "@/components/app/operacao-ui";
-import { useDataAction, usePontosMidia } from "@/hooks/use-data";
+import { useDataAction, usePontosMidia, useSetores } from "@/hooks/use-data";
 import { enviarParaDrive } from "@/lib/drive-upload";
 import {
   abreviarNome,
@@ -32,7 +32,7 @@ import {
   imagemPermitida,
   linhasDoPeriodo,
   operacaoRepository,
-  SETORES_PROGRAMACAO,
+  nomesDosSetores,
   STATUS_PROGRAMACAO,
   validarLinha,
   validarPeriodo,
@@ -113,6 +113,8 @@ export function ServicoDialog({
   onFechar: () => void;
 }) {
   const run = useDataAction();
+  const { data: setoresDb } = useSetores();
+  const setores = nomesDosSetores(setoresDb);
   const editando = Boolean(inicial.id);
   const [l, setL] = useState<LinhaProgramacao>(inicial);
   const [variosDias, setVariosDias] = useState(false);
@@ -212,9 +214,7 @@ export function ServicoDialog({
       liderId: membros[0] ?? "",
       ajudantes: membros.slice(1),
       veiculoId,
-      setor: (SETORES_PROGRAMACAO as readonly string[]).includes(eq.setor)
-        ? (eq.setor as SetorProgramacao)
-        : l.setor,
+      setor: eq.setor || l.setor,
     });
   }
 
@@ -411,7 +411,7 @@ export function ServicoDialog({
                   onChange={(e) => atualizar({ setor: e.target.value as SetorProgramacao })}
                 >
                   <option value="">Selecione</option>
-                  {SETORES_PROGRAMACAO.map((s) => (
+                  {setores.map((s) => (
                     <option key={s}>{s}</option>
                   ))}
                 </select>
