@@ -27,7 +27,7 @@ import {
 import { ImagensButton, ImagensLinks, TOM_STATUS_PROGRAMACAO } from "@/components/app/operacao-ui";
 import { ProgramacaoGrid } from "@/components/app/programacao-grid";
 import { ServicoDialog } from "@/components/app/servico-dialog";
-import { useDataAction } from "@/hooks/use-data";
+import { useCurrentUser, useDataAction, useSetores } from "@/hooks/use-data";
 import {
   abreviarNome,
   agruparResumo,
@@ -36,8 +36,9 @@ import {
   itemResumoDoServico,
   linhaDoServico,
   linhaVazia,
+  nomesDosSetores,
   operacaoRepository,
-  SETORES_PROGRAMACAO,
+  ordenarPorSetor,
   textoWhatsApp,
   type LinhaProgramacao,
   type OrdemResumo,
@@ -80,14 +81,22 @@ export function ProgramacaoLista({
   const [excluir, setExcluir] = useState<ServicoProgramado | null>(null);
   const [planilha, setPlanilha] = useState(false);
   const aberto = editando ?? novoInicial ?? null;
+  const { data: me } = useCurrentUser();
+  const { data: setoresDb } = useSetores();
+  const setores = nomesDosSetores(setoresDb);
+  // People of Produção with sectors (chosen in Equipe) open on their own sectors first.
+  const meusSetores = me?.setores ?? [];
+  const [soMeus, setSoMeus] = useState(true);
+  const filtrando = soMeus && meusSetores.length > 0;
+  const itens = filtrando ? dados.itens.filter((s) => meusSetores.includes(s.setor)) : dados.itens;
 
   const porSetor = useMemo(() => {
     const mapa = new Map<string, ServicoProgramado[]>();
-    for (const s of dados.itens) mapa.set(s.setor, [...(mapa.get(s.setor) ?? []), s]);
+    for (const s of itens) mapa.set(s.setor, [...(mapa.get(s.setor) ?? []), s]);
     for (const lista of mapa.values())
       lista.sort((a, b) => (a.horaInicio ?? "99").localeCompare(b.horaInicio ?? "99"));
-    return SETORES_PROGRAMACAO.filter((s) => mapa.has(s)).map((s) => [s, mapa.get(s)!] as const);
-  }, [dados.itens]);
+    return ordenarPorSetor(setores, [...mapa.keys()]).map((s) => [s, mapa.get(s)!] as const);
+  }, [itens, setores]);
 
   if (planilha) {
     return (
@@ -104,9 +113,37 @@ export function ProgramacaoLista({
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">
-          <b className="text-foreground">{dados.itens.length}</b> serviço(s) neste dia
-        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm text-muted-foreground">
+            <b className="text-foreground">{itens.length}</b> serviço(s) neste dia
+            {filtrando && ` em ${meusSetores.join(", ")}`}
+          </p>
+          {meusSetores.length > 0 && (
+            <div className="inline-flex rounded-lg border bg-muted p-0.5 text-xs">
+              {(
+                [
+                  [true, "Meus setores"],
+                  [false, `Todos (${dados.itens.length})`],
+                ] as const
+              ).map(([valor, rotulo]) => (
+                <button
+                  key={rotulo}
+                  type="button"
+                  aria-pressed={soMeus === valor}
+                  onClick={() => setSoMeus(valor)}
+                  className={cn(
+                    "rounded-md px-3 py-1 font-medium transition",
+                    soMeus === valor
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {rotulo}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="ghost" size="sm" onClick={() => setPlanilha(true)}>
             <Table2 />
@@ -120,6 +157,15 @@ export function ProgramacaoLista({
           )}
         </div>
       </div>
+
+      {dados.itens.length > 0 && !itens.length && (
+        <div className="rounded-2xl border border-dashed bg-card p-10 text-center text-sm text-muted-foreground">
+          Nada programado para os seus setores neste dia.{" "}
+          <button type="button" className="font-medium underline" onClick={() => setSoMeus(false)}>
+            Ver todos
+          </button>
+        </div>
+      )}
 
       {!dados.itens.length && (
         <div className="rounded-2xl border border-dashed bg-card p-10 text-center text-sm text-muted-foreground">

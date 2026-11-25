@@ -58,7 +58,7 @@ function ProgramacaoPage() {
     <>
       <PageHeader
         title="Programação Produção"
-        description="Externa, Projetos especiais, Serralheria, Acabamento e montagem, Produção, Corte e Pintura."
+        description="Os serviços do dia por setor. A lista de setores fica em Produtos, serviços e colaboradores."
         action={
           <Button variant="outline" asChild>
             <Link to="/planejamento" search={{ visao: "diario", data: search.data }}>

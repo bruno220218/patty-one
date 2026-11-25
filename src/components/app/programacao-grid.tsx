@@ -29,7 +29,7 @@ import {
   ImagensLinks,
   TOM,
 } from "@/components/app/operacao-ui";
-import { useDataAction } from "@/hooks/use-data";
+import { useDataAction, useSetores } from "@/hooks/use-data";
 import {
   abreviarNome,
   alocacaoDaLinha,
@@ -43,7 +43,7 @@ import {
   linhaVazia,
   operacaoRepository,
   quantidadeServicosNoDia,
-  SETORES_PROGRAMACAO,
+  nomesDosSetores,
   STATUS_PROGRAMACAO,
   validarLinha,
   type Alocacao,
@@ -202,6 +202,8 @@ export function ProgramacaoGrid({
   const [linhas, setLinhas] = useState<LinhaProgramacao[]>(() => dados.itens.map(linhaDoServico));
   const [excluidos, setExcluidos] = useState<string[]>([]);
   const [setorFiltro, setSetorFiltro] = useState<"" | SetorProgramacao>("");
+  const { data: setoresDb } = useSetores();
+  const setores = nomesDosSetores(setoresDb);
   const [sujo, setSujo] = useState(false);
   const [verificando, setVerificando] = useState(false);
   const [salvando, setSalvando] = useState(false);
@@ -277,9 +279,7 @@ export function ProgramacaoGrid({
       liderId: membros[0] ?? "",
       ajudantes: membros.slice(1),
       veiculoId: eq.veiculos[0]?.id ?? l.veiculoId,
-      setor: (SETORES_PROGRAMACAO as readonly string[]).includes(eq.setor)
-        ? (eq.setor as SetorProgramacao)
-        : l.setor,
+      setor: eq.setor || l.setor,
     });
   }
   function escolherVeiculo(l: LinhaProgramacao, veiculoId: string) {
@@ -405,7 +405,7 @@ export function ProgramacaoGrid({
           >
             Todos ({linhas.length})
           </button>
-          {SETORES_PROGRAMACAO.map((s) => (
+          {setores.map((s) => (
             <button
               type="button"
               key={s}
@@ -542,7 +542,7 @@ export function ProgramacaoGrid({
                         }
                       >
                         <option value="">Selecione</option>
-                        {SETORES_PROGRAMACAO.map((s) => (
+                        {setores.map((s) => (
                           <option key={s}>{s}</option>
                         ))}
                       </select>

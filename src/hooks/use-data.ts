@@ -14,6 +14,7 @@ import {
   cadastroRepository,
   type CadastroFiltros,
   operacaoRepository,
+  setoresRepository,
   type OrdemFiltros,
   comercialRepository,
   financeiroRepository,
@@ -144,6 +145,9 @@ export const teamQuery = () =>
   queryOptions({ queryKey: ["team"], queryFn: () => teamRepository.list() });
 
 export const useCurrentUser = () => useQuery(currentUserQuery());
+/** Production sectors in list order (null before migration 0031). */
+export const useSetores = () =>
+  useQuery({ queryKey: ["setores"], queryFn: () => setoresRepository.list(), staleTime: 60_000 });
 export const useTeam = () => useQuery(teamQuery());
 
 export const notificationsQuery = () =>

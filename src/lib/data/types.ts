@@ -11,6 +11,8 @@ export interface CurrentUser {
   isComercial: boolean;
   /** Every function (role) the person has, besides basic access. */
   funcoes: Funcao[];
+  /** Production sectors the person works in (names; empty before migration 0031). */
+  setores?: string[];
 }
 
 /** Team functions. "gestor" = Gestão (everything). */

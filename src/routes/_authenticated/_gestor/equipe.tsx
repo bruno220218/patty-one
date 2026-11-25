@@ -10,7 +10,8 @@ import { IconAction } from "@/components/app/icon-action";
 import { RenameMemberDialog } from "@/components/app/rename-member-dialog";
 import { SetPasswordDialog } from "@/components/app/set-password-dialog";
 import { FuncoesChips, FuncoesPicker } from "@/components/app/funcoes-picker";
-import { useCurrentUser, useDataAction, useTeam } from "@/hooks/use-data";
+import { SetoresChips, SetoresPicker } from "@/components/app/setores-picker";
+import { useCurrentUser, useDataAction, useSetores, useTeam } from "@/hooks/use-data";
 import {
   FUNCOES,
   groupTeamByRole,
@@ -44,6 +45,8 @@ export const Route = createFileRoute("/_authenticated/_gestor/equipe")({
 function TeamPage() {
   const { data: team, isPending } = useTeam();
   const { data: me } = useCurrentUser();
+  // Null before migration 0031: the "Setores" button stays hidden.
+  const { data: setores } = useSetores();
   const run = useDataAction();
   const [removing, setRemoving] = useState<TeamMember | null>(null);
   const [renaming, setRenaming] = useState<TeamMember | null>(null);
@@ -99,8 +102,9 @@ function TeamPage() {
                           {formatDateTime(m.senhaDefinida.em)}
                         </p>
                       )}
-                      <div className="mt-1">
+                      <div className="mt-1 flex flex-wrap gap-1">
                         <FuncoesChips funcoes={m.funcoes} />
+                        {setores && <SetoresChips setores={setores} ids={m.setores} />}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -138,6 +142,25 @@ function TeamPage() {
                           );
                         }}
                       />
+                      {/* Sectors are for Produção; already chosen ones stay visible if the function goes. */}
+                      {setores &&
+                        setores.length > 0 &&
+                        (m.funcoes.includes("producao") || m.setores.length > 0) && (
+                          <SetoresPicker
+                            personName={m.name}
+                            setores={setores}
+                            ids={m.setores}
+                            disabled={!m.isMember}
+                            onToggle={(s, on) =>
+                              run(
+                                () => teamRepository.setSetor(m.id, s.id, on),
+                                on
+                                  ? `${m.name} agora está em ${s.nome}.`
+                                  : `${m.name} saiu de ${s.nome}.`,
+                              )
+                            }
+                          />
+                        )}
                       <IconAction
                         icon={LockKeyhole}
                         label={`Definir senha de ${m.name}`}

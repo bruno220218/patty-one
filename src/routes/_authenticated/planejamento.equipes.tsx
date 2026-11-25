@@ -18,13 +18,13 @@ import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { Kpi, selectClass } from "@/components/app/operacao-ui";
-import { useCurrentUser, useDataAction, useRecursosOperacao } from "@/hooks/use-data";
+import { useCurrentUser, useDataAction, useRecursosOperacao, useSetores } from "@/hooks/use-data";
 import {
   abreviarNome,
   canGerirOperacao,
   capacidadeNumerica,
   operacaoRepository,
-  SETORES_PROGRAMACAO,
+  nomesDosSetores,
   validarEquipe,
   type Equipe,
   type Recursos,
@@ -220,6 +220,8 @@ function EquipeDialog({
   onClose: () => void;
 }) {
   const run = useDataAction();
+  const { data: setoresDb } = useSetores();
+  const setores = nomesDosSetores(setoresDb);
   const [busca, setBusca] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [f, setF] = useState(() => ({
@@ -275,18 +277,20 @@ function EquipeDialog({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="eq-setor">Setor</Label>
-            <Input
+            <select
               id="eq-setor"
-              list="setores-equipe"
+              className={selectClass}
               value={f.setor}
               onChange={(e) => set({ setor: e.target.value })}
-              placeholder="Ex.: Externa"
-            />
-            <datalist id="setores-equipe">
-              {SETORES_PROGRAMACAO.map((s) => (
-                <option key={s} value={s} />
-              ))}
-            </datalist>
+            >
+              <option value="">Selecione</option>
+              {/* A sector outside the list (old data) stays selectable. */}
+              {[...setores, ...(f.setor && !setores.includes(f.setor) ? [f.setor] : [])].map(
+                (s) => (
+                  <option key={s}>{s}</option>
+                ),
+              )}
+            </select>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="eq-capacidade">Capacidade (horas por dia)</Label>

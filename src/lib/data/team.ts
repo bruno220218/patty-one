@@ -17,6 +17,30 @@ export interface TeamMember {
   email: string;
   /** Last time a gestor set this person's password (gestão only; null when never/unknown). */
   senhaDefinida: { por: string; em: string } | null;
+  /** Ids of the production sectors the person works in (empty before migration 0031). */
+  setores: string[];
+}
+
+// The sector tables (migration 0031) are newer than the generated database types.
+const anyDb = supabase as unknown as SupabaseClient;
+
+/** Sector rows of one person or of everyone; empty when the table doesn't exist yet. */
+async function lerSetoresDasPessoas(
+  userId?: string,
+): Promise<{ user_id: string; setor_id: string; nome: string }[]> {
+  let query = anyDb
+    .from("usuario_setores")
+    .select("user_id, setor_id, setor:producao_setores(nome)");
+  if (userId) query = query.eq("user_id", userId);
+  const { data, error } = await query;
+  if (error) return [];
+  return (
+    (data ?? []) as unknown as {
+      user_id: string;
+      setor_id: string;
+      setor: { nome: string } | null;
+    }[]
+  ).map((r) => ({ user_id: r.user_id, setor_id: r.setor_id, nome: r.setor?.nome ?? "" }));
 }
 
 const FUNCAO_VALUES: Funcao[] = [
@@ -38,9 +62,10 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
-  const [profile, roles] = await Promise.all([
+  const [profile, roles, setores] = await Promise.all([
     supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", user.id),
+    lerSetoresDasPessoas(user.id),
   ]);
   const list = (roles.data ?? []).map((r) => r.role);
   return {
@@ -51,12 +76,13 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
     isGestor: list.includes("gestor"),
     isComercial: (list as string[]).includes("comercial"),
     funcoes: asFuncoes(list as string[]),
+    setores: setores.map((s) => s.nome).filter(Boolean),
   };
 }
 
 export const teamRepository = {
   async list(): Promise<TeamMember[]> {
-    const [profiles, roles, emails, senhas] = await Promise.all([
+    const [profiles, roles, emails, senhas, setores] = await Promise.all([
       supabase.from("profiles").select("id, display_name, created_at").order("display_name"),
       supabase.from("user_roles").select("user_id, role"),
       // Gestão only (database rule); empty for everyone else or before migration 0015.
@@ -78,7 +104,12 @@ export const teamRepository = {
                 created_at: string;
               }[]),
         ),
+      lerSetoresDasPessoas(),
     ]);
+    const setoresOf = new Map<string, string[]>();
+    for (const s of setores) {
+      setoresOf.set(s.user_id, [...(setoresOf.get(s.user_id) ?? []), s.setor_id]);
+    }
     const emailOf = new Map(emails.map((e) => [e.id, e.email]));
     // Newest first, so the first entry per person is the latest.
     const senhaOf = new Map<string, { por: string; em: string }>();
@@ -107,7 +138,20 @@ export const teamRepository = {
       joinedAt: p.created_at,
       email: emailOf.get(p.id) ?? "",
       senhaDefinida: senhaOf.get(p.id) ?? null,
+      setores: setoresOf.get(p.id) ?? [],
     }));
+  },
+  /** Put a person in a production sector, or take them out (gestão only, database rule). */
+  async setSetor(userId: string, setorId: string, on: boolean): Promise<void> {
+    const { error } = on
+      ? await anyDb
+          .from("usuario_setores")
+          .upsert(
+            { user_id: userId, setor_id: setorId },
+            { onConflict: "user_id,setor_id", ignoreDuplicates: true },
+          )
+      : await anyDb.from("usuario_setores").delete().eq("user_id", userId).eq("setor_id", setorId);
+    if (error) throw dbError(error);
   },
   /** Approve (or remove) someone's access to the team's projects. */
   async setAccess(userId: string, allowed: boolean): Promise<void> {
