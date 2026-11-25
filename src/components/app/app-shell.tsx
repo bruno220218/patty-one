@@ -589,7 +589,7 @@ function NavLink({
   const conteudo = (
     <>
       {active && (
-        <span className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-sidebar-primary" />
+        <span className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-sidebar-accent-foreground" />
       )}
       <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
       {!collapsed && <span className="min-w-0 flex-1 leading-snug">{item.label}</span>}
