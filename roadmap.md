@@ -35,8 +35,8 @@ Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-produ
 - [x] Extra. Tempo das etapas adaptativo (Iniciar/Pausar/baixa, complexidade, estimativas) + botão "Dados para a skill PCP" — 0035 (no ar em 26/11)
 - [x] 4. Ordens automáticas (uma por item, todos os itens) e ordem sem pedido com motivo — 0036 (no ar em 26/11)
 - [x] 5. Mudança no pedido depois da liberação vira comentário automático + aviso ao PCP — 0038 (no ar em 26/11)
-- [ ] 6. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0039
-- [ ] 7. Conclusão: montagem → PCP confere → comercial registra a confirmação do cliente — 0040
+- [x] 6. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0039 (no ar em 26/11)
+- [x] 7. Conclusão: montagem → PCP confere → comercial registra a confirmação do cliente — 0040 (no ar em 26/11)
 - [ ] 8. Status Serviços lendo as ordens
 - [ ] 9. IA que ajuda o PCP a dar o prazo (sugere pela carga; o PCP decide)
 - [ ] 10. Briefing e visita ligados ao pedido ou à ordem — 0041
