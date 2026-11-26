@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import {
   CheckCircle2,
   Clock,
+  FileDiff,
   FolderOpen,
   History,
   Mail,
@@ -160,6 +161,11 @@ const EVENTO: Record<LiberacaoEvento["tipo"], { label: string; icon: typeof Cloc
     },
     email_enviado: { label: "Enviada por e-mail", icon: Mail, tone: "text-muted-foreground" },
     comentario: { label: "Comentou", icon: MessageSquare, tone: "text-primary" },
+    alteracao_pedido: {
+      label: "Pedido alterado depois da liberação",
+      icon: FileDiff,
+      tone: "text-status-progress-foreground",
+    },
   };
 
 /** Timeline: criada → reprovada → reenviada → aprovada, with the team's comments in between. */
@@ -205,7 +211,9 @@ export function LiberacaoHistorico({
                     </span>
                   </p>
                   {e.detalhe && (
-                    <p className="whitespace-pre-wrap text-muted-foreground">“{e.detalhe}”</p>
+                    <p className="whitespace-pre-wrap text-muted-foreground">
+                      {e.tipo === "alteracao_pedido" ? e.detalhe : `“${e.detalhe}”`}
+                    </p>
                   )}
                 </div>
               </li>

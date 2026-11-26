@@ -201,7 +201,15 @@ export interface Liberacao extends LiberacaoInput {
 
 export interface LiberacaoEvento {
   id: string;
-  tipo: "criada" | "reprovada" | "reenviada" | "aprovada" | "email_enviado" | "comentario";
+  tipo:
+    | "criada"
+    | "reprovada"
+    | "reenviada"
+    | "aprovada"
+    | "email_enviado"
+    | "comentario"
+    /** Automatic: the pedido changed after the liberação (0038). */
+    | "alteracao_pedido";
   detalhe: string;
   autorNome: string;
   createdAt: string;
@@ -233,7 +241,8 @@ export type NotificationTipo =
   | "ci_checkout_solicitada"
   | "ci_checkout_enviada"
   | "prazo_solicitado"
-  | "prazo_definido";
+  | "prazo_definido"
+  | "liberacao_pedido_alterado";
 
 /** In-app notification: a task was completed, or a liberação moved in the approval flow. */
 export interface AppNotification {

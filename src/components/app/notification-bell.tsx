@@ -46,6 +46,13 @@ function NotificationText({ n }: { n: AppNotification }) {
           já está em produção
         </span>
       );
+    case "liberacao_pedido_alterado":
+      return (
+        <span className="block break-words">
+          {who} <span className="font-semibold">alterou o pedido</span> da {lib}
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
+        </span>
+      );
     case "liberacao_comentario":
       return (
         <span className="block break-words">
