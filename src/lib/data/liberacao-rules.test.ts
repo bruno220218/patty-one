@@ -7,6 +7,7 @@ import {
   formatTamanho,
   isBlankLiberacaoItem,
   liberacaoItemCount,
+  modeloDoPedido,
   LIBERACAO_MODELO_INFO,
   joinMultiplos,
   onlyDigits,
@@ -148,5 +149,14 @@ describe("listas editáveis", () => {
     expect(l.projeto.instalacao).toEqual([]);
     expect(l.vendedores).toEqual(["ANA"]);
     expect(l.projetistas).toEqual(["IRAUAN"]);
+  });
+});
+
+describe("modeloDoPedido", () => {
+  it("opens Mídia only when every item is Mídia OOH", () => {
+    expect(modeloDoPedido(["Mídia OOH", "Mídia OOH"])).toBe("midia");
+    expect(modeloDoPedido(["Mídia OOH", "Produção"])).toBe("projeto");
+    expect(modeloDoPedido(["Serviço"])).toBe("projeto");
+    expect(modeloDoPedido([])).toBe("projeto");
   });
 });

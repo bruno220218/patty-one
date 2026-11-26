@@ -8,6 +8,7 @@ import {
   Loader2,
   Plus,
   Save,
+  Send,
   ShoppingCart,
   Trash2,
 } from "lucide-react";
@@ -21,10 +22,12 @@ import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, OrdemStatusBadge, selectClass } from "@/components/app/operacao-ui";
 import { VendaStatusBadge } from "@/components/app/venda-status";
+import { LiberacaoStatusBadge } from "@/components/app/liberacao-status";
 import { useCurrentUser, useDataAction, useEmpresas, useVenda } from "@/hooks/use-data";
 import {
   brl,
   calcDoItem,
+  canEditLiberacoes,
   canVender,
   CATEGORIAS_ITEM,
   comercialRepository,
@@ -41,6 +44,7 @@ import {
   type CategoriaItem,
   type Empresa,
   type ItemForm,
+  type LiberacaoStatus,
   type TipoVenda,
   type Venda,
 } from "@/lib/data";
@@ -540,6 +544,53 @@ function Editor({
           onChange={(e) => set({ observacao: e.target.value })}
         />
       </section>
+
+      {doc && tipo === "pedido" && (
+        <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Send className="size-4" />
+              Liberação para a produção
+            </h2>
+            {!doc.liberacao &&
+              doc.status !== "Cancelado" &&
+              canEditLiberacoes(me) &&
+              (alterado ? (
+                <Button size="sm" disabled>
+                  <Send />
+                  Liberar para produção
+                </Button>
+              ) : (
+                <Button asChild size="sm">
+                  <Link to="/liberacoes/nova" search={{ pedido: doc.id }}>
+                    <Send />
+                    Liberar para produção
+                  </Link>
+                </Button>
+              ))}
+          </div>
+          {doc.liberacao ? (
+            <div className="flex items-center justify-between gap-3 rounded-xl border p-3 text-sm">
+              <Link
+                to="/liberacoes/$liberacaoId"
+                params={{ liberacaoId: doc.liberacao.id }}
+                className="font-medium text-primary hover:underline"
+              >
+                Liberação nº {doc.liberacao.numero}
+              </Link>
+              <LiberacaoStatusBadge status={doc.liberacao.status as LiberacaoStatus} />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {doc.status === "Cancelado"
+                ? "Pedido cancelado não vai para a produção."
+                : alterado
+                  ? "Salve o pedido antes de liberar para a produção."
+                  : "Ainda não liberado. A liberação já vem com o cliente e os itens deste pedido e entra na fila do PCP."}
+            </p>
+          )}
+        </section>
+      )}
 
       {doc && tipo === "pedido" && (
         <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">

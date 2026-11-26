@@ -23,7 +23,7 @@ begin
 
   -- 1) Comentários
   perform set_config('request.jwt.claims', json_build_object('sub', co, 'role', 'authenticated')::text, true);
-  insert into liberacoes (modelo, cliente) values ('midia', 'Cliente C') returning id into lib;
+  insert into liberacoes (modelo, cliente, motivo_sem_pedido) values ('midia', 'Cliente C', 'Interno') returning id into lib;
 
   perform set_config('request.jwt.claims', json_build_object('sub', pr, 'role', 'authenticated')::text, true);
   perform public.comentar_liberacao(lib, '  Mídia chega amanhã  ');

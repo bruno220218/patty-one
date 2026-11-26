@@ -144,9 +144,16 @@ export interface LiberacaoItem {
   localInstalacao: string;
 }
 
+/** Why a liberação goes to production without a pedido (required on new ones since 0032). */
+export type MotivoSemPedido = "Garantia" | "Retrabalho" | "Interno" | "Urgência";
+
 /** Liberação header + items. Model-specific fields stay blank when not used. */
 export interface LiberacaoInput {
   modelo: LiberacaoModelo;
+  /** Pedido de venda (one liberação per pedido); null when it has none. */
+  vendaId: string | null;
+  /** Required when there is no pedido; "" on old liberações and on those with a pedido. */
+  motivoSemPedido: MotivoSemPedido | "";
   numero: number | null;
   cliente: string;
   responsavel: string;
@@ -184,6 +191,10 @@ export interface Liberacao extends LiberacaoInput {
   decididoEm: string | null;
   /** Project created when it was approved. */
   projectId: string | null;
+  /** Client's cadastro; always the pedido's when there is one (database rule). */
+  cadastroId: string | null;
+  /** Number of the linked pedido, for display. */
+  pedidoNumero: number | null;
   createdAt: string;
   updatedAt: string;
 }

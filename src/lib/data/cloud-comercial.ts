@@ -83,6 +83,8 @@ export interface Venda {
   propostaOrigem: { id: string; numero: number } | null;
   pedidoGerado: { id: string; numero: number } | null;
   ordens: { id: string; numero: number; status: string }[];
+  /** The pedido's liberação for production (one per pedido, since 0032). */
+  liberacao: { id: string; numero: number; status: string } | null;
 }
 
 export interface VendaInput {
@@ -219,14 +221,17 @@ export const comercialRepository = {
     if (!data) throw new Error("Documento não encontrado.");
     const r = data as Row;
     const propostaId = txtOuNull(r["proposta_id"]);
-    const [pedido, proposta, ordens] = await Promise.all([
+    const [pedido, proposta, ordens, liberacao] = await Promise.all([
       db.from("vendas").select("id, numero").eq("proposta_id", id).maybeSingle(),
       propostaId
         ? db.from("vendas").select("id, numero").eq("id", propostaId).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
       db.from("ordens_producao").select("id, numero, status").eq("venda_id", id).order("numero"),
+      r["tipo"] === "pedido"
+        ? db.from("liberacoes").select("id, numero, status").eq("venda_id", id).maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
     ]);
-    for (const x of [pedido, proposta, ordens]) if (x.error) throw dbError(x.error);
+    for (const x of [pedido, proposta, ordens, liberacao]) if (x.error) throw dbError(x.error);
     const c = umDe(r["cadastros"]);
     const e = umDe(r["empresas"]);
     const ref = (x: unknown) => {
@@ -274,6 +279,13 @@ export const comercialRepository = {
         numero: num(o["numero"]),
         status: txt(o["status"]),
       })),
+      liberacao: liberacao.data
+        ? {
+            id: txt((liberacao.data as Row)["id"]),
+            numero: num((liberacao.data as Row)["numero"]),
+            status: txt((liberacao.data as Row)["status"]),
+          }
+        : null,
     };
   },
 

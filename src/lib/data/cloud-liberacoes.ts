@@ -8,6 +8,7 @@ import type {
   LiberacaoItem,
   LiberacaoModelo,
   LiberacaoStatus,
+  MotivoSemPedido,
 } from "./types";
 import { dbError } from "./db-errors";
 import { isBlankLiberacaoItem } from "./rules";
@@ -19,6 +20,7 @@ const db = supabase as unknown as SupabaseClient;
 const SELECT = `id, modelo, numero, cliente, responsavel, contato, endereco, projetista, vendedor,
   classificacao_venda, data_liberacao, data_entrega, bissemana, ponto_energia, horario_instalacao,
   observacoes, status, enviada_em, motivo_reprovacao, decidido_por_nome, decidido_em, project_id,
+  venda_id, cadastro_id, motivo_sem_pedido, vendas(numero),
   created_at, updated_at,
   liberacao_itens(id, position, referencia, servico, insumos, acabamento, instalacao, detalhes,
     largura_cm, altura_cm, quantidade, local_instalacao)`;
@@ -61,6 +63,10 @@ interface Row {
   decidido_por_nome: string;
   decidido_em: string | null;
   project_id: string | null;
+  venda_id: string | null;
+  cadastro_id: string | null;
+  motivo_sem_pedido: MotivoSemPedido | "";
+  vendas: { numero: number } | { numero: number }[] | null;
   created_at: string;
   updated_at: string;
   liberacao_itens: ItemRow[] | null;
@@ -92,6 +98,10 @@ function toLiberacao(row: Row): Liberacao {
     decididoPorNome: row.decidido_por_nome,
     decididoEm: row.decidido_em,
     projectId: row.project_id,
+    vendaId: row.venda_id,
+    cadastroId: row.cadastro_id,
+    motivoSemPedido: row.motivo_sem_pedido ?? "",
+    pedidoNumero: (Array.isArray(row.vendas) ? row.vendas[0] : row.vendas)?.numero ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     itens: [...(row.liberacao_itens ?? [])]
@@ -116,6 +126,9 @@ function headerRow(input: LiberacaoInput) {
   const projeto = input.modelo === "projeto";
   const row: Record<string, unknown> = {
     modelo: input.modelo,
+    // The database fills cadastro_id from the pedido and clears the reason when there is one.
+    venda_id: input.vendaId || null,
+    motivo_sem_pedido: input.vendaId ? "" : input.motivoSemPedido,
     cliente: input.cliente.trim(),
     responsavel: input.responsavel.trim(),
     contato: input.contato.trim(),
@@ -135,7 +148,13 @@ function headerRow(input: LiberacaoInput) {
 }
 
 function friendly(error: { message: string; code?: string }): Error {
-  if (error.code === "23505") return new Error("Já existe uma liberação com este número.");
+  if (error.code === "23505") {
+    return new Error(
+      error.message.includes("liberacoes_venda_unica")
+        ? "Este pedido já tem uma liberação."
+        : "Já existe uma liberação com este número.",
+    );
+  }
   if (error.code === "P0001") return new Error(error.message);
   if (error.code === "42P01" || error.code === "PGRST205") {
     return new Error("As liberações ainda não foram ativadas no banco de dados.");

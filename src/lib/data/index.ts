@@ -44,6 +44,8 @@ export {
   LIBERACAO_MODELO_INFO,
   isBlankLiberacaoItem,
   LIBERACAO_MODELO_LABEL,
+  MOTIVOS_SEM_PEDIDO,
+  modeloDoPedido,
   liberacaoItemCount,
   joinMultiplos,
   onlyDigits,

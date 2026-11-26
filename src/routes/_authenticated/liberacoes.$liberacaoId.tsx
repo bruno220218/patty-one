@@ -155,6 +155,7 @@ function LiberacaoPage() {
         listas={listas}
         key={lib.updatedAt}
         initial={lib}
+        pedidoNumero={lib.pedidoNumero}
         readOnly={readOnly}
         saving={saving}
         submitLabel={

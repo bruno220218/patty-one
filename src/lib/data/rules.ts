@@ -230,6 +230,14 @@ export const LIBERACAO_MODELO_LABEL: Record<"projeto" | "midia", string> = {
   midia: "Mídia",
 };
 
+/** Reasons for a liberação without a pedido (database check since 0032). */
+export const MOTIVOS_SEM_PEDIDO = ["Garantia", "Retrabalho", "Interno", "Urgência"] as const;
+
+/** A pedido with only Mídia OOH items opens the Mídia liberação; anything else opens Projetos. */
+export function modeloDoPedido(categorias: string[]): "projeto" | "midia" {
+  return categorias.length > 0 && categorias.every((c) => c === "Mídia OOH") ? "midia" : "projeto";
+}
+
 /** Form titles and section names, as in the spreadsheets. */
 export const LIBERACAO_MODELO_INFO: Record<
   "projeto" | "midia",

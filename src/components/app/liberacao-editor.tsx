@@ -1,5 +1,7 @@
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Paperclip, Plus, Trash2 } from "lucide-react";
+import { usePedidosAbertos } from "@/hooks/use-data";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { WrapField } from "@/components/app/wrap-field";
@@ -10,12 +12,14 @@ import {
   emptyLiberacaoItem,
   LIBERACAO_MODELO_INFO,
   LISTAS_PADRAO,
+  MOTIVOS_SEM_PEDIDO,
   onlyDigits,
   splitMultiplos,
   parseCm,
   type LiberacaoInput,
   type LiberacaoItem,
   type ListasLiberacao,
+  type MotivoSemPedido,
 } from "@/lib/data";
 import { formatDateOnly } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -106,10 +110,16 @@ export function LiberacaoEditor({
   saving,
   submitLabel = "Salvar liberação",
   listas = LISTAS_PADRAO,
+  pedidoNumero = null,
+  motivoObrigatorio = false,
   onSubmit,
 }: {
   initial: LiberacaoInput;
   readOnly: boolean;
+  /** Number of the pedido in `initial.vendaId`, shown before the open-pedido list loads. */
+  pedidoNumero?: number | null;
+  /** New liberações: without a pedido, the reason is required (old ones may stay blank). */
+  motivoObrigatorio?: boolean;
   saving?: boolean;
   /** Save button text (e.g. "Salvar e reenviar para o PCP"). */
   submitLabel?: string;
@@ -138,6 +148,13 @@ export function LiberacaoEditor({
     horarioInstalacao: initial.horarioInstalacao,
     observacoes: initial.observacoes,
   }));
+  const [vendaId, setVendaId] = useState(initial.vendaId ?? "");
+  const [motivo, setMotivo] = useState<MotivoSemPedido | "">(initial.motivoSemPedido);
+  // The pedido can be picked here (e.g. an Urgência that gets its pedido later).
+  const pedidos = usePedidosAbertos(!readOnly);
+  const pedidoAtual = pedidos.data?.find((p) => p.id === vendaId);
+  const numeroDoPedido =
+    pedidoAtual?.numero ?? (vendaId && vendaId === initial.vendaId ? pedidoNumero : null);
   const [items, setItems] = useState<DraftItem[]>(() => {
     const rows = initial.itens.map(toDraft);
     const minRows = projeto ? 4 : 9;
@@ -180,6 +197,10 @@ export function LiberacaoEditor({
       setError("Informe o cliente.");
       return;
     }
+    if (!vendaId && !motivo && (motivoObrigatorio || initial.vendaId || initial.motivoSemPedido)) {
+      setError("Escolha o pedido ou informe o motivo da liberação sem pedido.");
+      return;
+    }
     const numero = header.numero.trim() ? Number(header.numero) : null;
     if (numero !== null && (!Number.isInteger(numero) || numero <= 0)) {
       setError("O número da liberação precisa ser um número inteiro.");
@@ -212,6 +233,8 @@ export function LiberacaoEditor({
     setDirty(false);
     onSubmit({
       modelo: initial.modelo,
+      vendaId: vendaId || null,
+      motivoSemPedido: vendaId ? "" : motivo,
       numero,
       cliente: header.cliente,
       responsavel: header.responsavel,
@@ -343,6 +366,76 @@ export function LiberacaoEditor({
         {/* Header fields */}
         <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-12">
           <div className="grid content-start gap-3 md:col-span-2 xl:col-span-6">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <HeaderField label="Pedido" htmlFor={id("pedido")}>
+                {readOnly ? (
+                  vendaId ? (
+                    <Link
+                      id={id("pedido")}
+                      to="/comercial/$vendaId"
+                      params={{ vendaId }}
+                      className="flex min-h-9 items-center px-3 py-1.5 text-sm font-medium text-primary hover:underline"
+                    >
+                      {numeroDoPedido ? `Pedido nº ${numeroDoPedido}` : "Abrir o pedido"}
+                    </Link>
+                  ) : (
+                    <ReadValue id={id("pedido")} value="Sem pedido" />
+                  )
+                ) : (
+                  <select
+                    id={id("pedido")}
+                    value={vendaId}
+                    disabled={pedidos.isPending}
+                    onChange={(e) => {
+                      const p = pedidos.data?.find((x) => x.id === e.target.value);
+                      setVendaId(e.target.value);
+                      if (p && !header.cliente.trim()) set("cliente")(p.clienteNome);
+                      setDirty(true);
+                      setError(null);
+                    }}
+                    className={cn(cellInput, "h-full min-h-9 cursor-pointer px-2")}
+                  >
+                    <option value="">Sem pedido</option>
+                    {vendaId && !pedidoAtual && (
+                      <option value={vendaId}>
+                        {numeroDoPedido ? `Pedido nº ${numeroDoPedido}` : "Pedido atual"}
+                      </option>
+                    )}
+                    {(pedidos.data ?? []).map((p) => (
+                      <option key={p.id} value={p.id}>
+                        Nº {p.numero} · {p.clienteNome}
+                        {p.primeiroItem ? ` · ${p.primeiroItem}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </HeaderField>
+              {!vendaId && (
+                <HeaderField label="Motivo sem pedido" htmlFor={id("motivo")}>
+                  {readOnly ? (
+                    <ReadValue id={id("motivo")} value={motivo} />
+                  ) : (
+                    <select
+                      id={id("motivo")}
+                      value={motivo}
+                      onChange={(e) => {
+                        setMotivo(e.target.value as MotivoSemPedido | "");
+                        setDirty(true);
+                        setError(null);
+                      }}
+                      className={cn(cellInput, "h-full min-h-9 cursor-pointer px-2")}
+                    >
+                      <option value="">Selecione</option>
+                      {MOTIVOS_SEM_PEDIDO.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </HeaderField>
+              )}
+            </div>
             <HeaderField label="Cliente *" htmlFor={id("cliente")}>
               {text("cliente")}
             </HeaderField>
