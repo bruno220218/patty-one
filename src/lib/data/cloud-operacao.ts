@@ -13,6 +13,13 @@ import {
   type TipoOrdem,
 } from "./producao-rules";
 import { hojeISO, type TipoAgendamento } from "./planejamento-rules";
+import { nomesDosSetores, setoresRepository } from "./cloud-setores";
+import {
+  inicioDoDia,
+  montarEntradaSkillPcp,
+  type EntradaSkillPcp,
+  type OrdemSkill,
+} from "./skill-pcp";
 import {
   grupoDaLinha,
   ordensSemProgramacao,
@@ -117,6 +124,7 @@ export interface TrechoApontado {
   motivoPausa: string;
   pessoas: number;
   iniciadoPorNome: string;
+  colaboradorIds: string[];
   colaboradores: string[];
 }
 
@@ -466,6 +474,73 @@ async function carregarAmostrasTempo(): Promise<(AmostraTempo & { etapaId: strin
   }));
 }
 
+/** `.in()` in batches, so a long id list doesn't overflow the request URL. */
+async function rowsEmLotes(
+  ids: string[],
+  consulta: (lote: string[]) => PromiseLike<{
+    data: unknown;
+    error: { message: string; code?: string } | null;
+  }>,
+): Promise<Row[]> {
+  const lotes: string[][] = [];
+  for (let i = 0; i < ids.length; i += 100) lotes.push(ids.slice(i, i + 100));
+  return (await Promise.all(lotes.map((l) => rows(consulta(l))))).flat();
+}
+
+async function carregarColaboradoresDosTrechos(apontamentos: Row[]): Promise<Row[]> {
+  return rowsEmLotes(
+    apontamentos.map((a) => txt(a["id"])),
+    (lote) =>
+      db
+        .from("ordens_producao_apontamento_colaboradores")
+        .select("apontamento_id, colaborador_id")
+        .in("apontamento_id", lote),
+  );
+}
+
+/** Steps of one order with their timed stretches and the learned estimate. */
+function montarEtapas(
+  etapas: Row[],
+  apontamentos: Row[],
+  apCols: Row[],
+  recursos: Recursos,
+  amostras: (AmostraTempo & { etapaId: string })[],
+  ordem: { servicoId: string | null; complexidade: Complexidade },
+): EtapaOrdem[] {
+  const colMap = porId(recursos.colaboradores);
+  return etapas.map((e) => ({
+    id: txt(e["id"]),
+    ordem: num(e["ordem"]),
+    nome: txt(e["nome"]),
+    concluido: e["concluido"] === true,
+    concluidoEm: txtOuNull(e["concluido_em"]),
+    concluidoPorNome: txt(e["concluido_por_nome"]),
+    trechos: apontamentos
+      .filter((a) => a["etapa_id"] === e["id"])
+      .map((a) => {
+        const ids = apCols
+          .filter((c) => c["apontamento_id"] === a["id"])
+          .map((c) => txt(c["colaborador_id"]));
+        return {
+          id: txt(a["id"]),
+          inicio: txt(a["inicio"]),
+          fim: txtOuNull(a["fim"]),
+          fimTipo: (txtOuNull(a["fim_tipo"]) as TrechoApontado["fimTipo"]) ?? null,
+          motivoPausa: txt(a["motivo_pausa"]),
+          pessoas: num(a["pessoas"]) || 1,
+          iniciadoPorNome: txt(a["iniciado_por_nome"]),
+          colaboradorIds: ids,
+          colaboradores: ids.map((id) => colMap.get(id)?.nome ?? "").filter(Boolean),
+        };
+      }),
+    estimativa: estimarHorasEtapa(
+      { servicoId: ordem.servicoId, etapa: txt(e["nome"]), complexidade: ordem.complexidade },
+      // A step that's already finished shouldn't estimate itself.
+      amostras.filter((s) => s.etapaId !== e["id"]),
+    ),
+  }));
+}
+
 const ORDEM_COLUNAS =
   "id, numero, tipo, status, prioridade, descricao, data_prevista, created_at, updated_at, cadastro_id, servico_id, veiculo_id, local_instalacao, venda_id, observacao";
 
@@ -805,16 +880,7 @@ export const operacaoRepository = {
     const resumo = lista[0];
     const extra = base[0];
     if (!resumo || !extra) throw new Error("Ordem de produção não encontrada.");
-    const apIds = apontamentos.map((a) => txt(a["id"]));
-    const apCols = apIds.length
-      ? await rows(
-          db
-            .from("ordens_producao_apontamento_colaboradores")
-            .select("apontamento_id, colaborador_id")
-            .in("apontamento_id", apIds),
-        )
-      : [];
-    const colMap = porId(recursos.colaboradores);
+    const apCols = await carregarColaboradoresDosTrechos(apontamentos);
     const servicoId = txtOuNull(extra["servico_id"]);
     const complexidade = (txt(extra["complexidade"]) || "Média") as Complexidade;
     return {
@@ -824,34 +890,10 @@ export const operacaoRepository = {
       vendaId: txtOuNull(extra["venda_id"]),
       observacao: txt(extra["observacao"]),
       updatedAt: txt(extra["updated_at"]),
-      etapasDetalhe: etapas.map((e) => ({
-        id: txt(e["id"]),
-        ordem: num(e["ordem"]),
-        nome: txt(e["nome"]),
-        concluido: e["concluido"] === true,
-        concluidoEm: txtOuNull(e["concluido_em"]),
-        concluidoPorNome: txt(e["concluido_por_nome"]),
-        trechos: apontamentos
-          .filter((a) => a["etapa_id"] === e["id"])
-          .map((a) => ({
-            id: txt(a["id"]),
-            inicio: txt(a["inicio"]),
-            fim: txtOuNull(a["fim"]),
-            fimTipo: (txtOuNull(a["fim_tipo"]) as TrechoApontado["fimTipo"]) ?? null,
-            motivoPausa: txt(a["motivo_pausa"]),
-            pessoas: num(a["pessoas"]) || 1,
-            iniciadoPorNome: txt(a["iniciado_por_nome"]),
-            colaboradores: apCols
-              .filter((c) => c["apontamento_id"] === a["id"])
-              .map((c) => colMap.get(txt(c["colaborador_id"]))?.nome ?? "")
-              .filter(Boolean),
-          })),
-        estimativa: estimarHorasEtapa(
-          { servicoId, etapa: txt(e["nome"]), complexidade },
-          // A step that's already finished shouldn't estimate itself.
-          amostras.filter((s) => s.etapaId !== e["id"]),
-        ),
-      })),
+      etapasDetalhe: montarEtapas(etapas, apontamentos, apCols, recursos, amostras, {
+        servicoId,
+        complexidade,
+      }),
       eventos: eventos.map((e) => ({
         id: txt(e["id"]),
         tipo: txt(e["tipo"]),
@@ -889,6 +931,96 @@ export const operacaoRepository = {
   async marcarEtapa(etapaId: string, concluida: boolean): Promise<void> {
     const { error } = await db.rpc("atualizar_etapa_producao", { etapa_uuid: etapaId, concluida });
     if (error) throw dbError(error);
+  },
+
+  /**
+   * Input JSON for the PCP skill: open orders plus every order with time recorded on
+   * `dataReferencia` (Brasília), the active team and what each person worked on lately.
+   */
+  async entradaSkillPcp(dataReferencia: string, dataProgramacao: string): Promise<EntradaSkillPcp> {
+    const inicio = inicioDoDia(dataReferencia);
+    const inicioISO = new Date(inicio).toISOString();
+    const fimISO = new Date(inicio + 86_400_000).toISOString();
+    const [recursos, setores, ativas, doDia, amostras, historico] = await Promise.all([
+      carregarRecursos(),
+      setoresRepository.list(),
+      rows(db.from("ordens_producao").select("id").in("status", ["Aguardando", "Em andamento"])),
+      rows(
+        db
+          .from("ordens_producao_apontamentos")
+          .select("ordem_id")
+          .lt("inicio", fimISO)
+          .or(`fim.is.null,fim.gte."${inicioISO}"`),
+      ),
+      carregarAmostrasTempo(),
+      rows(db.rpc("horas_colaborador_etapa", { dias: 180 })),
+    ]);
+    const ids = [
+      ...new Set([...ativas.map((r) => txt(r["id"])), ...doDia.map((r) => txt(r["ordem_id"]))]),
+    ].filter(Boolean);
+    const lotes: string[][] = [];
+    for (let i = 0; i < ids.length; i += 100) lotes.push(ids.slice(i, i + 100));
+    const [resumos, extras, etapas, apontamentos] = await Promise.all([
+      Promise.all(
+        lotes.map((l) =>
+          carregarOrdens(db.from("ordens_producao").select(ORDEM_COLUNAS).in("id", l), recursos),
+        ),
+      ).then((r) => r.flat()),
+      rowsEmLotes(ids, (l) =>
+        db.from("ordens_producao").select("id, servico_id, complexidade").in("id", l),
+      ),
+      rowsEmLotes(ids, (l) =>
+        db.from("ordens_producao_etapas").select("*").in("ordem_id", l).order("ordem"),
+      ),
+      rowsEmLotes(ids, (l) =>
+        db.from("ordens_producao_apontamentos").select("*").in("ordem_id", l).order("inicio"),
+      ),
+    ]);
+    const apCols = await carregarColaboradoresDosTrechos(apontamentos);
+    const extraPorId = new Map(extras.map((x) => [txt(x["id"]), x]));
+    const ordens: OrdemSkill[] = resumos.map((o) => {
+      const extra = extraPorId.get(o.id);
+      const servicoId = txtOuNull(extra?.["servico_id"]);
+      const complexidade = (txt(extra?.["complexidade"]) || "Média") as Complexidade;
+      return {
+        numero: o.numero,
+        tipo: o.tipo,
+        status: o.status,
+        prioridade: o.prioridade,
+        complexidade,
+        clienteNome: o.clienteNome,
+        servicoNome: o.servicoNome,
+        descricao: o.descricao,
+        dataPrevista: o.dataPrevista,
+        etapas: montarEtapas(
+          etapas.filter((e) => e["ordem_id"] === o.id),
+          apontamentos.filter((a) => a["ordem_id"] === o.id),
+          apCols,
+          recursos,
+          amostras,
+          { servicoId, complexidade },
+        ),
+      };
+    });
+    return montarEntradaSkillPcp({
+      dataReferencia,
+      dataProgramacao,
+      agora: new Date(),
+      ordens,
+      colaboradores: recursos.colaboradores,
+      equipes: recursos.equipes.map((e) => ({
+        setor: e.setor,
+        capacidade: e.capacidade,
+        ativo: e.ativo,
+        colaboradorIds: e.colaboradores.map((c) => c.id),
+      })),
+      setores: nomesDosSetores(setores),
+      historico: historico.map((h) => ({
+        colaboradorId: txt(h["colaborador_id"]),
+        etapa: txt(h["etapa"]),
+        horas: num(h["horas"]),
+      })),
+    });
   },
 
   /** Starts timing a step; no colaboradores = the order's team. */

@@ -94,6 +94,7 @@ export * from "./cadastros-rules";
 export { parseCsv, toCsv, type CsvParsed } from "./csv";
 export * from "./cloud-operacao";
 export * from "./producao-rules";
+export * from "./skill-pcp";
 export * from "./planejamento-rules";
 export * from "./programacao-rules";
 export * from "./cloud-setores";

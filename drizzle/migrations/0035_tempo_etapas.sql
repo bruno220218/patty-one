@@ -321,3 +321,21 @@ returns table (
 $$;
 revoke all on function public.amostras_tempo_etapas(integer) from public, anon;
 grant execute on function public.amostras_tempo_etapas(integer) to authenticated;
+
+-- ---------- 7) Horas de cada colaborador por etapa (especialidades aprendidas) ----------
+-- Quanto cada pessoa trabalhou em cada etapa nos últimos `dias` dias: a skill de PCP usa as
+-- etapas mais trabalhadas como especialidades. security invoker: segue o RLS.
+create or replace function public.horas_colaborador_etapa(dias integer default 180)
+returns table (colaborador_id uuid, etapa text, horas numeric)
+language sql stable security invoker set search_path = public, pg_temp as $$
+  select c.colaborador_id, a.etapa_nome,
+    round(sum(extract(epoch from (a.fim - a.inicio)) / 3600.0)::numeric, 2)
+  from public.ordens_producao_apontamentos a
+  join public.ordens_producao_apontamento_colaboradores c on c.apontamento_id = a.id
+  where a.fim is not null
+    and a.fim >= now() - make_interval(days => greatest(1, least(coalesce(dias, 180), 3650)))
+    and a.fim - a.inicio <= interval '12 hours'
+  group by c.colaborador_id, a.etapa_nome;
+$$;
+revoke all on function public.horas_colaborador_etapa(integer) from public, anon;
+grant execute on function public.horas_colaborador_etapa(integer) to authenticated;

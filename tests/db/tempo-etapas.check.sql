@@ -3,7 +3,7 @@
 -- complexidadeInvalida=bloqueado complexidade=Complexa comercialInicia=bloqueado inicia=ok situacao=Em andamento
 -- pessoas=2 iniciaDeNovo=bloqueado pausaSemMotivo=bloqueado pausa=ok pausaSemAberto=bloqueado reinicia=1
 -- escritaDireta=bloqueado baixa=ok abertos=0 fimTipo=conclusao iniciaConcluida=bloqueado horas=5.000 trechos=2
--- amostraComplexidade=Complexa membroLe=1 cancelaFecha=0 motivoCancela=Ordem cancelada
+-- amostraComplexidade=Complexa membroLe=1 especialidade=Corte e dobra ACM:2.00 cancelaFecha=0 motivoCancela=Ordem cancelada
 do $$
 declare
   pc uuid := gen_random_uuid(); co uuid := gen_random_uuid(); pr uuid := gen_random_uuid(); mb uuid := gen_random_uuid();
@@ -75,6 +75,7 @@ begin
   out := out || (select ' horas=' || horas || ' trechos=' || trechos || ' amostraComplexidade=' || complexidade
     from amostras_tempo_etapas() where etapa_id = e1);
   out := out || ' membroLe=' || (select count(*) from amostras_tempo_etapas() s where s.ordem_id = o);
+  out := out || ' especialidade=' || (select etapa || ':' || horas from horas_colaborador_etapa() where colaborador_id = c1);
 
   -- Cancelar a ordem fecha o trecho que ficou aberto.
   perform set_config('request.jwt.claims', json_build_object('sub', pr, 'role', 'authenticated')::text, true);

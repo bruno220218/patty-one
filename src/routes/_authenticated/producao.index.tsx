@@ -21,6 +21,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { Kpi, OrdemStatusBadge, TOM, selectClass } from "@/components/app/operacao-ui";
+import { SkillPcpButton } from "@/components/app/skill-pcp-dialog";
 import { useCurrentUser, useOrdens } from "@/hooks/use-data";
 import {
   alertaPrazo,
@@ -84,12 +85,15 @@ function OrdensPage() {
         description="Ordens de instalação e impressão, com etapas, equipe e alertas de prazo."
         action={
           podeGerir && (
-            <Button asChild className="h-10">
-              <Link to="/producao/$ordemId" params={{ ordemId: "nova" }}>
-                <Plus />
-                Nova ordem
-              </Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <SkillPcpButton />
+              <Button asChild className="h-10">
+                <Link to="/producao/$ordemId" params={{ ordemId: "nova" }}>
+                  <Plus />
+                  Nova ordem
+                </Link>
+              </Button>
+            </div>
           )
         }
       />
