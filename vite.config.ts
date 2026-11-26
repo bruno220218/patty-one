@@ -42,6 +42,9 @@ export default defineConfig(({ command, mode }) => {
                 deployConfig: true,
                 wrangler: {
                   name: "patty-one",
+                  // Mantém as variáveis criadas no painel (AI_BASE_URL, AI_MODEL...): sem isso,
+                  // cada deploy apaga as de texto que não estão aqui. Os secrets já ficam.
+                  keep_vars: true,
                   // Valores públicos (a chave publishable pode ficar visível).
                   // A SUPABASE_SERVICE_ROLE_KEY vai como secret no painel da Cloudflare.
                   vars: {
