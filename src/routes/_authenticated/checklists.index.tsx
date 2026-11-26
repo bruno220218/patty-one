@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ChecklistCard } from "@/components/app/checklist-card";
 import { ChecklistFormDialog } from "@/components/app/checklist-form-dialog";
+import { ChecklistPadraoOrdens } from "@/components/app/checklist-padrao-ordens";
 import { ProjectFormDialog } from "@/components/app/project-form-dialog";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { currentUserQuery, useChecklists, useDataAction } from "@/hooks/use-data";
@@ -69,6 +70,8 @@ function ChecklistsPage() {
           </Button>
         }
       />
+
+      {checklists && checklists.length > 0 && <ChecklistPadraoOrdens checklists={checklists} />}
 
       {isPending ? (
         <CardGridSkeleton />

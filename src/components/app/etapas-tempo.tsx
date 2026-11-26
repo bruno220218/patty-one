@@ -53,12 +53,15 @@ export function EtapasComTempo({
   equipeOrdem,
   colaboradores,
   podeExecutar,
+  podeReabrir,
   fechada,
 }: {
   etapas: EtapaOrdem[];
   equipeOrdem: Colaborador[];
   colaboradores: Colaborador[];
   podeExecutar: boolean;
+  /** Only gestão reopens a finished step (0039; the database checks it again). */
+  podeReabrir: boolean;
   fechada: boolean;
 }) {
   const run = useDataAction();
@@ -97,10 +100,16 @@ export function EtapasComTempo({
                 <input
                   type="checkbox"
                   aria-label={e.concluido ? `Reabrir ${e.nome}` : `Dar baixa em ${e.nome}`}
-                  title={e.concluido ? "Reabrir a etapa" : "Dar baixa (etapa concluída)"}
+                  title={
+                    e.concluido
+                      ? podeReabrir
+                        ? "Reabrir a etapa"
+                        : "Só a gestão reabre uma etapa concluída"
+                      : "Dar baixa (etapa concluída)"
+                  }
                   className="size-4 cursor-pointer accent-primary disabled:cursor-default"
                   checked={e.concluido}
-                  disabled={!podeMexer || ocupado}
+                  disabled={!podeMexer || ocupado || (e.concluido && !podeReabrir)}
                   onChange={(ev) =>
                     void acao(
                       () => operacaoRepository.marcarEtapa(e.id, ev.target.checked),

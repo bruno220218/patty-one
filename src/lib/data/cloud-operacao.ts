@@ -169,6 +169,10 @@ export interface OrdemFicha extends OrdemResumo {
   liberacaoId: string | null;
   liberacaoNumero: number | null;
   motivoSemPedido: MotivoSemPedido | "";
+  /** Checklist the steps came from (0039); null = the service's or the type's default steps. */
+  checklistId: string | null;
+  /** The checklist has "Parâmetros fixos": the steps can't be changed. */
+  etapasFixas: boolean;
   observacao: string;
   updatedAt: string;
   etapasDetalhe: EtapaOrdem[];
@@ -180,7 +184,12 @@ export interface OrdemDaLiberacao {
   numero: number;
   status: StatusOrdem;
   descricao: string;
+  tipo: TipoOrdem;
+  checklistId: string | null;
 }
+
+/** Default checklist of the orders of each type (0039); null = the type's default steps. */
+export type ChecklistsPadrao = Record<TipoOrdem, string | null>;
 
 export interface OrdemFiltros {
   tipo: "" | TipoOrdem;
@@ -205,6 +214,8 @@ export interface OrdemInput {
   vendaId: string;
   /** Required without a pedido (new order or pedido removed). */
   motivoSemPedido: MotivoSemPedido | "";
+  /** "" = the service's or the type's steps (sent in `etapas`); else the database copies the checklist. */
+  checklistId: string;
   servicoId: string;
   descricao: string;
   dataPrevista: string;
@@ -886,7 +897,7 @@ export const operacaoRepository = {
         db
           .from("ordens_producao")
           .select(
-            "servico_id, venda_id, observacao, updated_at, complexidade, liberacao_id, motivo_sem_pedido, liberacoes(numero)",
+            "servico_id, venda_id, observacao, updated_at, complexidade, liberacao_id, motivo_sem_pedido, checklist_id, etapas_fixas, liberacoes(numero)",
           )
           .eq("id", id),
       ),
@@ -915,6 +926,8 @@ export const operacaoRepository = {
       liberacaoId: txtOuNull(extra["liberacao_id"]),
       liberacaoNumero: numeroEmbutido(extra["liberacoes"]),
       motivoSemPedido: (txt(extra["motivo_sem_pedido"]) || "") as MotivoSemPedido | "",
+      checklistId: txtOuNull(extra["checklist_id"]),
+      etapasFixas: extra["etapas_fixas"] === true,
       observacao: txt(extra["observacao"]),
       updatedAt: txt(extra["updated_at"]),
       etapasDetalhe: montarEtapas(etapas, apontamentos, apCols, recursos, amostras, {
@@ -941,6 +954,7 @@ export const operacaoRepository = {
         cadastro_id: dados.cadastroId,
         venda_id: dados.vendaId,
         motivo_sem_pedido: dados.vendaId ? "" : dados.motivoSemPedido,
+        checklist_id: dados.checklistId,
         servico_id: dados.servicoId,
         descricao: dados.descricao,
         data_prevista: dados.dataPrevista,
@@ -961,7 +975,7 @@ export const operacaoRepository = {
     const lista = await rows(
       db
         .from("ordens_producao")
-        .select("id, numero, status, descricao")
+        .select("id, numero, status, descricao, tipo, checklist_id")
         .eq("liberacao_id", liberacaoId)
         .order("numero"),
     );
@@ -970,7 +984,36 @@ export const operacaoRepository = {
       numero: num(o["numero"]),
       status: o["status"] as StatusOrdem,
       descricao: txt(o["descricao"]),
+      tipo: o["tipo"] as TipoOrdem,
+      checklistId: txtOuNull(o["checklist_id"]),
     }));
+  },
+
+  /** Replaces all steps with the checklist's (null = the service's or the type's); only before the order starts. */
+  async trocarChecklist(ordemId: string, checklistId: string | null): Promise<void> {
+    const { error } = await db.rpc("trocar_checklist_ordem", {
+      ordem_uuid: ordemId,
+      checklist_uuid: checklistId,
+    });
+    if (error) throw dbError(error);
+  },
+
+  async checklistsPadrao(): Promise<ChecklistsPadrao> {
+    const lista = await rows(db.from("ordens_checklist_padrao").select("tipo, checklist_id"));
+    const padrao: ChecklistsPadrao = { Instalação: null, Impressão: null };
+    for (const p of lista) {
+      const tipo = p["tipo"] as TipoOrdem;
+      if (tipo in padrao) padrao[tipo] = txtOuNull(p["checklist_id"]);
+    }
+    return padrao;
+  },
+
+  async definirChecklistPadrao(tipo: TipoOrdem, checklistId: string | null): Promise<void> {
+    const { error } = await db.rpc("definir_checklist_padrao", {
+      p_tipo: tipo,
+      p_checklist: checklistId,
+    });
+    if (error) throw dbError(error);
   },
 
   async marcarEtapa(etapaId: string, concluida: boolean): Promise<void> {

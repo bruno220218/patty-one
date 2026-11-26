@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ClipboardList, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { OrdemStatusBadge } from "@/components/app/operacao-ui";
-import { useOrdensDaLiberacao } from "@/hooks/use-data";
+import { Label } from "@/components/ui/label";
+import { OrdemStatusBadge, selectClass } from "@/components/app/operacao-ui";
+import { useChecklists, useDataAction, useOrdensDaLiberacao } from "@/hooks/use-data";
+import { operacaoRepository } from "@/lib/data";
 
 /** Orders born from a liberação linked to a pedido (one per item, migration 0036). */
 export function OrdensDaLiberacaoPanel({
@@ -73,8 +75,30 @@ export function AprovarComOrdensDialog({
   onConfirm: () => Promise<unknown>;
 }) {
   const { data: ordens } = useOrdensDaLiberacao(open ? liberacaoId : "");
+  const { data: checklists } = useChecklists();
+  const run = useDataAction();
   const [saving, setSaving] = useState(false);
+  // Checklist chosen per order ("" = the type's default steps); starts with what each order has.
+  const [escolhas, setEscolhas] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (open && ordens)
+      setEscolhas(Object.fromEntries(ordens.map((o) => [o.id, o.checklistId ?? ""])));
+  }, [open, ordens]);
   const total = ordens?.length ?? 0;
+  const opcoes = (checklists ?? []).filter((c) => c.tasks.length > 0);
+
+  /** Swaps the steps of the orders whose checklist changed, then approves. */
+  async function aprovar() {
+    for (const o of ordens ?? []) {
+      const escolhido = escolhas[o.id] ?? "";
+      if (escolhido === (o.checklistId ?? "")) continue;
+      const ok = await run(() =>
+        operacaoRepository.trocarChecklist(o.id, escolhido || null).then(() => true),
+      );
+      if (!ok) return false;
+    }
+    return onConfirm();
+  }
   return (
     <Dialog open={open} onOpenChange={(o) => !saving && onOpenChange(o)}>
       <DialogContent>
@@ -87,6 +111,36 @@ export function AprovarComOrdensDialog({
             Nenhum projeto é criado: o acompanhamento é pelas ordens.
           </DialogDescription>
         </DialogHeader>
+        {Boolean(ordens?.length) && (
+          <div className="max-h-72 space-y-3 overflow-y-auto">
+            <p className="text-sm text-muted-foreground">
+              Confira o checklist das etapas de cada ordem (vem o padrão do tipo):
+            </p>
+            {ordens?.map((o) => (
+              <div key={o.id} className="space-y-1.5">
+                <Label htmlFor={`checklist-${o.id}`} className="truncate">
+                  Ordem nº {o.numero} · {o.descricao}{" "}
+                  <span className="font-normal text-muted-foreground">({o.tipo})</span>
+                </Label>
+                <select
+                  id={`checklist-${o.id}`}
+                  className={selectClass}
+                  value={escolhas[o.id] ?? ""}
+                  disabled={saving}
+                  onChange={(e) => setEscolhas((a) => ({ ...a, [o.id]: e.target.value }))}
+                >
+                  <option value="">Etapas padrão do tipo</option>
+                  {opcoes.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                      {c.fixedParams ? " (parâmetros fixos)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        )}
         <DialogFooter>
           <Button variant="outline" disabled={saving} onClick={() => onOpenChange(false)}>
             Cancelar
@@ -95,7 +149,7 @@ export function AprovarComOrdensDialog({
             disabled={saving}
             onClick={async () => {
               setSaving(true);
-              const ok = await onConfirm();
+              const ok = await aprovar();
               setSaving(false);
               if (ok) onOpenChange(false);
             }}

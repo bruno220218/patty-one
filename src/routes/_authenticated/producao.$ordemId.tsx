@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   AlertTriangle,
@@ -9,6 +10,7 @@ import {
   ExternalLink,
   History,
   Loader2,
+  Lock,
   Save,
   Trash2,
   Truck,
@@ -25,6 +27,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, OrdemStatusBadge, TOM, selectClass } from "@/components/app/operacao-ui";
 import { EtapasComTempo } from "@/components/app/etapas-tempo";
 import {
+  useChecklists,
   useCurrentUser,
   useDataAction,
   useOrdem,
@@ -102,6 +105,8 @@ type Form = {
   vendaId: string;
   motivoSemPedido: MotivoSemPedido | "";
   servicoId: string;
+  /** "" = the service's or the type's steps. */
+  checklistId: string;
   descricao: string;
   dataPrevista: string;
   localInstalacao: string;
@@ -131,6 +136,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           vendaId: doc.vendaId ?? "",
           motivoSemPedido: doc.motivoSemPedido,
           servicoId: doc.servicoId ?? "",
+          checklistId: doc.checklistId ?? "",
           descricao: doc.descricao,
           dataPrevista: doc.dataPrevista ?? "",
           localInstalacao: doc.localInstalacao,
@@ -148,6 +154,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           vendaId: pedidoInicial ?? "",
           motivoSemPedido: "",
           servicoId: "",
+          checklistId: "",
           descricao: "",
           dataPrevista: "",
           localInstalacao: "",
@@ -158,6 +165,25 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
         },
   );
   const set = (p: Partial<Form>) => setF((a) => ({ ...a, ...p }));
+  const checklists = useChecklists();
+  const padrao = useQuery({
+    queryKey: ["operacao", "checklists-padrao"],
+    queryFn: () => operacaoRepository.checklistsPadrao(),
+    enabled: podeGerir,
+  });
+  const tarefasDo = (id: string) =>
+    checklists.data?.find((c) => c.id === id)?.tasks.map((t) => t.title) ?? [];
+  const checklistsComTarefas = (checklists.data ?? []).filter((c) => c.tasks.length > 0);
+
+  // New order: start with the type's default checklist, once both lists have loaded.
+  const [padraoAplicado, setPadraoAplicado] = useState(false);
+  useEffect(() => {
+    if (doc || padraoAplicado || !padrao.data || !checklists.data) return;
+    setPadraoAplicado(true);
+    const id = padrao.data[f.tipo];
+    if (id && tarefasDo(id).length) set({ checklistId: id, etapas: tarefasDo(id) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [padrao.data, checklists.data]);
   const pedidos = usePedidosAbertos();
   // A cancelled pedido isn't offered, but stays visible while it's the linked one.
   const pedidosVisiveis = (pedidos.data ?? []).concat(
@@ -199,6 +225,8 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
   const colaboradores = recursos.colaboradores.filter((c) => c.ativo || f.equipe.includes(c.id));
   const veiculos = recursos.veiculos.filter((v) => v.ativo || v.id === f.veiculoId);
   const etapas = doc?.etapasDetalhe ?? [];
+  /** A step done or any time recorded: the steps can't be swapped any more. */
+  const comecou = etapas.some((e) => e.concluido || e.trechos.length > 0);
   const progresso = progressoOrdem(etapas);
   const fechada = f.status === "Concluída" || f.status === "Cancelada";
   /** Born from a liberação still waiting for approval: nobody executes it yet. */
@@ -213,15 +241,23 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
     set({
       servicoId: id,
       descricao: !f.descricao.trim() && s ? s.nome : f.descricao,
-      etapas: etapasDaOrdem(f.tipo, s?.etapas),
+      // With a checklist the steps stay (the database does the same).
+      ...(f.checklistId ? {} : { etapas: etapasDaOrdem(f.tipo, s?.etapas) }),
     });
   }
   function escolherTipo(tipo: TipoOrdem) {
+    // A new order on the old type's default checklist follows the new type's default.
+    const seguePadrao = !doc && f.checklistId === (padrao.data?.[f.tipo] ?? "");
+    const checklistId = seguePadrao ? (padrao.data?.[tipo] ?? "") : f.checklistId;
     set({
       tipo,
       status: doc ? f.status : "Aguardando",
-      etapas: etapasDaOrdem(tipo, servico?.etapas),
+      checklistId,
+      etapas: checklistId ? tarefasDo(checklistId) : etapasDaOrdem(tipo, servico?.etapas),
     });
+  }
+  function escolherChecklist(id: string) {
+    set({ checklistId: id, etapas: id ? tarefasDo(id) : etapasDaOrdem(f.tipo, servico?.etapas) });
   }
 
   async function salvar() {
@@ -251,6 +287,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             vendaId: f.vendaId,
             motivoSemPedido: f.vendaId ? "" : f.motivoSemPedido,
             servicoId: f.servicoId,
+            checklistId: f.checklistId,
             descricao: f.descricao,
             dataPrevista: f.dataPrevista,
             localInstalacao: f.tipo === "Instalação" ? f.localInstalacao : "",
@@ -572,6 +609,42 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             </div>
             {doc && <span className="text-lg font-semibold">{progresso}%</span>}
           </div>
+          {podeGerir && (
+            <div className="space-y-1.5">
+              <Label htmlFor="checklist">Checklist das etapas</Label>
+              <select
+                id="checklist"
+                className={selectClass}
+                value={f.checklistId}
+                disabled={bloqueado || comecou || fechada || checklists.isPending}
+                onChange={(e) => escolherChecklist(e.target.value)}
+              >
+                <option value="">Etapas do serviço ou padrão do tipo</option>
+                {checklistsComTarefas.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                    {c.fixedParams ? " (parâmetros fixos)" : ""}
+                  </option>
+                ))}
+                {f.checklistId && !checklistsComTarefas.some((c) => c.id === f.checklistId) && (
+                  <option value={f.checklistId}>Checklist atual</option>
+                )}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                {comecou
+                  ? "A ordem já começou: as etapas não mudam mais."
+                  : doc && f.checklistId !== (doc.checklistId ?? "")
+                    ? "As etapas serão trocadas ao salvar a ordem."
+                    : "As etapas vêm do checklist. Só dá para trocar antes de a ordem começar."}
+              </p>
+            </div>
+          )}
+          {doc?.etapasFixas && (
+            <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <Lock className="size-3.5" />
+              Parâmetros fixos: as etapas desta ordem não podem ser alteradas.
+            </p>
+          )}
           {doc && (
             <div className="h-2 overflow-hidden rounded-full bg-muted">
               <div
@@ -586,6 +659,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
               equipeOrdem={doc.equipe}
               colaboradores={recursos.colaboradores}
               podeExecutar={podeExecutar && !esperandoLiberacao}
+              podeReabrir={Boolean(me?.isGestor)}
               fechada={fechada}
             />
           ) : (
