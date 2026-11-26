@@ -27,6 +27,17 @@
 - [x] Mídia OOH: pontos com fotos no Drive, mapa (chave própria do Google Maps), calendário oficial das bi-semanas e ocupação → itens "Mapeamento das áreas" e "Datas de colagens" — migração 0022
 - [x] Trazer os dados reais do PattyOne (cadastros, pontos, calendário, colaboradores, veículos, serviços)
 
+## Fluxo Comercial → Produção → Execução (prioridade 100%)
+Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-producao-perguntas.md`).
+- [ ] 1. Liberação ligada ao pedido e ao cadastro (uma por pedido) — 0032
+- [ ] 2. Itens do pedido com identidade fixa — 0033
+- [ ] 3–4. Ordens automáticas (uma por item) e ordem sem pedido com motivo — 0034
+- [ ] 5. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0035
+- [ ] 6. Conclusão: montagem → PCP confere → cliente confirma — 0036
+- [ ] 7. Status Serviços lendo as ordens
+- [ ] 8. Briefing e visita ligados ao pedido ou à ordem — 0037
+- [ ] 9. Mídia OOH: ordem de colagem — 0038
+
 ## Tarefas futuras (agendadas)
 - [x] Financeiro: a receber, contratos de aluguel e de energia (vindos do PattyOne; só Gestão, Direção e Financeiro) — migração 0026
 - [x] Financeiro: contas a pagar (fornecedores, aluguel com parcelas geradas, energia, impostos e outros) e comissões geradas quando o cliente paga (vendedor + agência) — migração 0029

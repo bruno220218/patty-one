@@ -1,6 +1,6 @@
 # Fluxo Comercial → Produção → Execução: perguntas
 
-**Para:** Vitor · **Situação:** respondido em 25/11/2026, pronto para montar o plano · **Prioridade:** 100% neste fluxo
+**Para:** Vitor · **Situação:** respondido em 25/11/2026; plano em `docs/fluxo-producao-plano.md` (26/11/2026) · **Prioridade:** 100% neste fluxo
 
 Hoje o mesmo trabalho pode correr no app por **dois caminhos que não se conversam**. Antes de
 juntar os dois, precisamos saber como a Patty trabalha na prática. Este arquivo explica a
