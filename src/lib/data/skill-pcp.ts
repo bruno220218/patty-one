@@ -19,6 +19,10 @@ export const FUSO_PCP = "-03:00";
 export const HORAS_DIA_PADRAO = 8;
 /** How many of a person's most-worked steps count as their specialities. */
 export const MAX_ESPECIALIDADES = 6;
+/** A quick test or a few minutes on a step doesn't make it a speciality. */
+export const MIN_HORAS_ESPECIALIDADE = 1;
+/** Rows under one minute per person in the day's records are noise (a tap on Iniciar/Pausar). */
+const MIN_HORAS_APONTAMENTO = 1 / 60;
 
 export interface TrechoSkill {
   inicio: string;
@@ -113,14 +117,23 @@ function progressoEm(etapa: EtapaSkill, ate: number, agora: number): number | nu
 
 /** The sector a step belongs to, by name ("Serralheria" → Serralheria); outdoor work → Externa. */
 export function setorDaEtapa(nome: string, setores: string[]): string | null {
-  const etapa = normalizarEtapa(nome);
+  const etapa = singular(normalizarEtapa(nome));
   const achado = setores.find((s) => {
-    const setor = normalizarEtapa(s);
+    const setor = singular(normalizarEtapa(s));
     return setor && (etapa.includes(setor) || setor.includes(etapa));
   });
   if (achado) return achado;
   if (dependeDoClima(nome)) return setores.find((s) => normalizarEtapa(s) === "externa") ?? null;
   return null;
+}
+
+/** "projetos especiais" → "projeto especial", so plural and singular names match. */
+function singular(texto: string): string {
+  return texto
+    .split(" ")
+    .map((p) => (p.length > 3 && p.endsWith("is") ? `${p.slice(0, -2)}l` : p))
+    .map((p) => (p.length > 3 && p.endsWith("s") ? p.slice(0, -1) : p))
+    .join(" ");
 }
 
 /** Outdoor steps (installation, posting) depend on the weather. */
@@ -209,10 +222,9 @@ export function montarEntradaSkillPcp(d: DadosSkillPcp) {
       }
     }
   }
-  const apontamentosHoje = [...linhas.values()].map((l) => ({
-    ...l,
-    horas_gastas: r2(l.horas_gastas),
-  }));
+  const apontamentosHoje = [...linhas.values()]
+    .filter((l) => l.horas_gastas >= MIN_HORAS_APONTAMENTO)
+    .map((l) => ({ ...l, horas_gastas: r2(l.horas_gastas) }));
 
   // ----- Carteira: open orders, nearest deadline first -----
   const carteira = d.ordens
@@ -284,6 +296,7 @@ export function montarEntradaSkillPcp(d: DadosSkillPcp) {
         setor: setores[0] ?? null,
         setores,
         especialidades: (especialidades.get(c.id) ?? [])
+          .filter((x) => x.horas >= MIN_HORAS_ESPECIALIDADE)
           .sort((a, b) => b.horas - a.horas)
           .slice(0, MAX_ESPECIALIDADES)
           .map((x) => x.etapa),
@@ -311,7 +324,8 @@ export function montarEntradaSkillPcp(d: DadosSkillPcp) {
       "horas_gastas e horas_disponiveis são horas por pessoa somadas (horas-homem).",
       `horas_disponiveis = capacidade diária da equipe de planejamento da pessoa; sem equipe, ${HORAS_DIA_PADRAO} h.`,
       "ausente ainda não é registrado no sistema: confirme as faltas antes de programar.",
-      "especialidades = etapas que a pessoa mais trabalhou nos últimos 180 dias.",
+      `especialidades = etapas em que a pessoa trabalhou pelo menos ${MIN_HORAS_ESPECIALIDADE} h nos últimos 180 dias, da mais trabalhada para a menos.`,
+      "apontamentos_hoje deixa de fora trechos de menos de 1 minuto por pessoa.",
       "material_ok = false quando a etapa está pausada por falta de material; clima_dependente = etapa de instalação/externa/colagem.",
       "setor da etapa deduzido pelo nome; null quando não bate com nenhum setor cadastrado.",
     ],

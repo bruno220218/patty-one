@@ -258,6 +258,40 @@ describe("skill PCP: entrada", () => {
   });
 });
 
+describe("skill PCP: ruído de testes rápidos", () => {
+  it("menos de 1 h não vira especialidade; menos de 1 min não vira apontamento", () => {
+    const rapido = ordem({
+      etapas: [
+        {
+          ordem: 1,
+          nome: "Criação",
+          concluido: false,
+          concluidoEm: null,
+          estimativa: null,
+          trechos: [
+            {
+              inicio: t("10:00"),
+              fim: new Date(Date.parse(t("10:00")) + 20_000).toISOString(),
+              fimTipo: "pausa",
+              motivoPausa: "Aguardando cliente",
+              pessoas: 2,
+              iniciadoPorNome: "PCP",
+              colaboradorIds: ["c1", "c2"],
+            },
+          ],
+        },
+      ],
+    });
+    const r = montarEntradaSkillPcp(
+      dados([rapido], { historico: [{ colaboradorId: "c2", etapa: "Criação", horas: 0.01 }] }),
+    );
+    expect(r.apontamentos_hoje).toEqual([]);
+    expect(r.equipe_disponivel.find((p) => p.id === "c2")?.especialidades).toEqual([]);
+    // The pause still shows on the order.
+    expect(r.carteira_ordens[0]?.etapas[0]).toMatchObject({ motivo_pausa: "Aguardando cliente" });
+  });
+});
+
 describe("skill PCP: deduções", () => {
   it("setor pelo nome da etapa", () => {
     expect(setorDaEtapa("Serralheria", SETORES)).toBe("Serralheria");
@@ -265,6 +299,8 @@ describe("skill PCP: deduções", () => {
     expect(setorDaEtapa("Instalação externa", SETORES)).toBe("Externa");
     expect(setorDaEtapa("Instalação", SETORES)).toBe("Externa");
     expect(setorDaEtapa("Conferência", SETORES)).toBeNull();
+    expect(setorDaEtapa("Projeto especial", ["Projetos especiais"])).toBe("Projetos especiais");
+    expect(setorDaEtapa("Pinturas", ["Pintura"])).toBe("Pintura");
   });
   it("clima e falta de material", () => {
     expect(dependeDoClima("Colagem")).toBe(true);
