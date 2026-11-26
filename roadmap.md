@@ -30,13 +30,16 @@
 ## Fluxo Comercial → Produção → Execução (prioridade 100%)
 Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-producao-perguntas.md`).
 - [ ] 1. Liberação ligada ao pedido e ao cadastro (uma por pedido) — 0032
-- [ ] 2. Itens do pedido com identidade fixa — 0033
-- [ ] 3–4. Ordens automáticas (uma por item) e ordem sem pedido com motivo — 0034
-- [ ] 5. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0035
-- [ ] 6. Conclusão: montagem → PCP confere → cliente confirma — 0036
-- [ ] 7. Status Serviços lendo as ordens
-- [ ] 8. Briefing e visita ligados ao pedido ou à ordem — 0037
-- [ ] 9. Mídia OOH: ordem de colagem — 0038
+- [ ] 2. Solicitar prazo: comercial pede, PCP dá a data — 0033
+- [ ] 3. Itens do pedido com identidade fixa — 0034
+- [ ] 4. Ordens automáticas (uma por item, todos os itens) e ordem sem pedido com motivo — 0035
+- [ ] 5. Mudança no pedido depois da liberação vira comentário automático + aviso ao PCP — 0036
+- [ ] 6. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0037
+- [ ] 7. Conclusão: montagem → PCP confere → comercial registra a confirmação do cliente — 0038
+- [ ] 8. Status Serviços lendo as ordens
+- [ ] 9. IA que ajuda o PCP a dar o prazo (sugere pela carga; o PCP decide)
+- [ ] 10. Briefing e visita ligados ao pedido ou à ordem — 0039
+- [ ] 11. Mídia OOH: ordem de colagem — 0040
 
 ## Tarefas futuras (agendadas)
 - [x] Financeiro: a receber, contratos de aluguel e de energia (vindos do PattyOne; só Gestão, Direção e Financeiro) — migração 0026
