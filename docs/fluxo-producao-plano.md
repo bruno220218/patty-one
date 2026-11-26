@@ -50,6 +50,16 @@ projetos já abertos terminam no caminho antigo.
 A IA (etapa 9) vem depois das ordens automáticas, porque precisa de ordens e Programação reais
 para medir a carga. Até lá, o "Solicitar prazo" funciona sem ela.
 
+**Etapa extra, fora da ordem (0035, 26/11/2026): tempo das etapas, adaptativo.** Na ordem, quem
+executa toca Iniciar (escolhendo quem trabalha), Pausar (com motivo) e dá baixa na etapa. O
+sistema soma as horas × pessoas e aprende o tempo de cada etapa pelas etapas já concluídas,
+separando por serviço e pela complexidade que o PCP marca na ordem (Simples / Média /
+Complexa). Entrou antes da etapa 4 para o histórico começar a acumular logo; ele alimenta a
+skill de PCP e a IA da etapa 9. Detalhes em `AGENTS.md` (Tempo das etapas). **Por isso, as
+migrações das etapas 4 a 11 andam uma casa: a etapa 4 passa a ser a 0036.** A etapa 6 (etapas a
+partir do checklist) precisa manter `iniciar_etapa_producao`/`pausar_etapa_producao` e fechar o
+trecho aberto ao dar baixa, como faz o `atualizar_etapa_producao` da 0035.
+
 Os números de migração são uma previsão: confira o próximo número livre em todas as branches
 antes de cada etapa.
 

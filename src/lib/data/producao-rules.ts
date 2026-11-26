@@ -51,6 +51,152 @@ export function podeConcluirOrdem(etapas: { concluido: boolean }[]): boolean {
   return etapas.length > 0 && etapas.every((e) => e.concluido);
 }
 
+// ---------- Tempo das etapas (adaptativo) ----------
+
+/** Marked by PCP on the order; samples are only compared within the same level. */
+export const COMPLEXIDADES = ["Simples", "Média", "Complexa"] as const;
+export type Complexidade = (typeof COMPLEXIDADES)[number];
+
+/** A stretch longer than this was most likely left running by mistake: not learned from. */
+export const LIMITE_TRECHO_HORAS = 12;
+/** Fewer samples than this in a group: try a broader group first. */
+export const MIN_AMOSTRAS = 3;
+/** Only the latest samples count, so the estimate follows how the team works now. */
+export const JANELA_AMOSTRAS = 20;
+
+export interface AmostraTempo {
+  servicoId: string | null;
+  etapa: string;
+  complexidade: Complexidade;
+  concluidoEm: string | null;
+  /** Person-hours: sum of (end - start) x people. */
+  horas: number;
+  maiorTrechoHoras: number;
+}
+
+export type BaseEstimativa = "servico_complexidade" | "etapa_complexidade" | "servico" | "etapa";
+
+export interface EstimativaEtapa {
+  horas: number;
+  amostras: number;
+  base: BaseEstimativa;
+}
+
+export const TEXTO_BASE_ESTIMATIVA: Record<BaseEstimativa, string> = {
+  servico_complexidade: "mesmo serviço e complexidade",
+  etapa_complexidade: "mesma etapa e complexidade, outros serviços",
+  servico: "mesmo serviço, outras complexidades",
+  etapa: "mesma etapa, qualquer serviço",
+};
+
+/** "Corte e Dobra  ACM" and "corte e dobra acm" are the same step. */
+export function normalizarEtapa(nome: string): string {
+  return nome
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLocaleLowerCase("pt-BR")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function mediana(valores: number[]): number {
+  const v = [...valores].sort((a, b) => a - b);
+  if (!v.length) return 0;
+  const meio = Math.floor(v.length / 2);
+  return v.length % 2 ? v[meio]! : (v[meio - 1]! + v[meio]!) / 2;
+}
+
+/** Samples that can be learned from (closed, positive, no stretch left running by mistake). */
+export function amostrasValidas(amostras: AmostraTempo[]): AmostraTempo[] {
+  return amostras.filter((a) => a.horas > 0 && a.maiorTrechoHoras <= LIMITE_TRECHO_HORAS);
+}
+
+/**
+ * Hours a step should take, learned from finished steps: the median of the latest samples
+ * of the most specific group that has enough of them (same service + step + complexity,
+ * then same step + complexity, then same service + step, then the step anywhere). With too
+ * few samples everywhere, the most specific group that has any is used. null = no history.
+ */
+export function estimarHorasEtapa(
+  alvo: { servicoId: string | null; etapa: string; complexidade: Complexidade },
+  amostras: AmostraTempo[],
+): EstimativaEtapa | null {
+  const etapa = normalizarEtapa(alvo.etapa);
+  const mesmas = amostrasValidas(amostras)
+    .filter((a) => normalizarEtapa(a.etapa) === etapa)
+    .sort((a, b) => (b.concluidoEm ?? "").localeCompare(a.concluidoEm ?? ""));
+  const grupos: [BaseEstimativa, AmostraTempo[]][] = [
+    [
+      "servico_complexidade",
+      alvo.servicoId
+        ? mesmas.filter(
+            (a) => a.servicoId === alvo.servicoId && a.complexidade === alvo.complexidade,
+          )
+        : [],
+    ],
+    ["etapa_complexidade", mesmas.filter((a) => a.complexidade === alvo.complexidade)],
+    ["servico", alvo.servicoId ? mesmas.filter((a) => a.servicoId === alvo.servicoId) : []],
+    ["etapa", mesmas],
+  ];
+  const escolhido =
+    grupos.find(([, g]) => g.length >= MIN_AMOSTRAS) ?? grupos.find(([, g]) => g.length > 0);
+  if (!escolhido) return null;
+  const [base, grupo] = escolhido;
+  const recentes = grupo.slice(0, JANELA_AMOSTRAS);
+  return {
+    horas: Math.round(mediana(recentes.map((a) => a.horas)) * 100) / 100,
+    amostras: recentes.length,
+    base,
+  };
+}
+
+export interface TrechoEtapa {
+  inicio: string;
+  fim: string | null;
+  pessoas: number;
+}
+
+/** Person-hours spent so far; an open stretch counts up to `agora`. */
+export function horasGastas(trechos: TrechoEtapa[], agora: Date): number {
+  const total = trechos.reduce((soma, t) => {
+    const fim = t.fim ? Date.parse(t.fim) : agora.getTime();
+    const ms = Math.max(0, fim - Date.parse(t.inicio));
+    return soma + (ms / 3_600_000) * t.pessoas;
+  }, 0);
+  return Math.round(total * 100) / 100;
+}
+
+export type SituacaoEtapa = "Pendente" | "Em andamento" | "Pausada" | "Concluída";
+
+export function situacaoEtapa(etapa: {
+  concluido: boolean;
+  trechos: { fim: string | null }[];
+}): SituacaoEtapa {
+  if (etapa.concluido) return "Concluída";
+  if (etapa.trechos.some((t) => !t.fim)) return "Em andamento";
+  return etapa.trechos.length ? "Pausada" : "Pendente";
+}
+
+/**
+ * Step progress for the PCP: 100 when finished; while open, the share of the estimate
+ * already spent, held at 95% until the step is closed (only the baixa says it's done).
+ */
+export function progressoEtapa(
+  concluido: boolean,
+  gastas: number,
+  estimativa: number | null,
+): number | null {
+  if (concluido) return 100;
+  if (!estimativa || estimativa <= 0) return gastas > 0 ? null : 0;
+  return Math.min(95, Math.round((gastas / estimativa) * 100));
+}
+
+/** "45 min", "3,5 h". */
+export function textoHoras(horas: number): string {
+  if (horas < 1) return `${Math.max(0, Math.round(horas * 60))} min`;
+  return `${(Math.round(horas * 10) / 10).toLocaleString("pt-BR")} h`;
+}
+
 export const DIAS_ALERTA_PRAZO = 3;
 export type AlertaPrazo = { tipo: "atrasada" | "proxima"; dias: number };
 

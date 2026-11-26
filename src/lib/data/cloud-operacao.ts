@@ -3,8 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { dbError } from "./db-errors";
 import {
   alertaPrazo,
+  estimarHorasEtapa,
   rotuloVeiculo,
   type AlertaPrazo,
+  type AmostraTempo,
+  type Complexidade,
+  type EstimativaEtapa,
   type StatusOrdem,
   type TipoOrdem,
 } from "./producao-rules";
@@ -99,6 +103,21 @@ export interface EtapaOrdem {
   concluido: boolean;
   concluidoEm: string | null;
   concluidoPorNome: string;
+  /** Worked stretches (Iniciar → Pausar/baixa), oldest first. */
+  trechos: TrechoApontado[];
+  /** Learned from finished steps; null = no history yet. */
+  estimativa: EstimativaEtapa | null;
+}
+
+export interface TrechoApontado {
+  id: string;
+  inicio: string;
+  fim: string | null;
+  fimTipo: "pausa" | "conclusao" | null;
+  motivoPausa: string;
+  pessoas: number;
+  iniciadoPorNome: string;
+  colaboradores: string[];
 }
 
 export interface EventoOrdem {
@@ -129,6 +148,7 @@ export interface OrdemResumo {
 }
 
 export interface OrdemFicha extends OrdemResumo {
+  complexidade: Complexidade;
   servicoId: string | null;
   vendaId: string | null;
   observacao: string;
@@ -154,6 +174,7 @@ export interface OrdemInput {
   tipo: TipoOrdem;
   status: StatusOrdem;
   prioridade: string;
+  complexidade: Complexidade;
   cadastroId: string;
   /** Pedido de venda (Comercial); "" = sem vínculo. */
   vendaId: string;
@@ -429,6 +450,20 @@ async function carregarOrdens(
         .map((e) => ({ concluido: e["concluido"] === true })),
     };
   });
+}
+
+/** Finished steps with timed work, newest first (see `amostras_tempo_etapas`, 0035). */
+async function carregarAmostrasTempo(): Promise<(AmostraTempo & { etapaId: string })[]> {
+  const lista = await rows(db.rpc("amostras_tempo_etapas", { limite: 2000 }));
+  return lista.map((a) => ({
+    etapaId: txt(a["etapa_id"]),
+    servicoId: txtOuNull(a["servico_id"]),
+    etapa: txt(a["etapa"]),
+    complexidade: (txt(a["complexidade"]) || "Média") as Complexidade,
+    concluidoEm: txtOuNull(a["concluido_em"]),
+    horas: num(a["horas"]),
+    maiorTrechoHoras: num(a["maior_trecho_horas"]),
+  }));
 }
 
 const ORDEM_COLUNAS =
@@ -748,12 +783,12 @@ export const operacaoRepository = {
 
   async ordem(id: string): Promise<OrdemFicha> {
     const recursos = await carregarRecursos();
-    const [lista, base, etapas, eventos] = await Promise.all([
+    const [lista, base, etapas, eventos, apontamentos, amostras] = await Promise.all([
       carregarOrdens(db.from("ordens_producao").select(ORDEM_COLUNAS).eq("id", id), recursos),
       rows(
         db
           .from("ordens_producao")
-          .select("servico_id, venda_id, observacao, updated_at")
+          .select("servico_id, venda_id, observacao, updated_at, complexidade")
           .eq("id", id),
       ),
       rows(db.from("ordens_producao_etapas").select("*").eq("ordem_id", id).order("ordem")),
@@ -764,13 +799,28 @@ export const operacaoRepository = {
           .eq("ordem_id", id)
           .order("created_at", { ascending: false }),
       ),
+      rows(db.from("ordens_producao_apontamentos").select("*").eq("ordem_id", id).order("inicio")),
+      carregarAmostrasTempo(),
     ]);
     const resumo = lista[0];
     const extra = base[0];
     if (!resumo || !extra) throw new Error("Ordem de produção não encontrada.");
+    const apIds = apontamentos.map((a) => txt(a["id"]));
+    const apCols = apIds.length
+      ? await rows(
+          db
+            .from("ordens_producao_apontamento_colaboradores")
+            .select("apontamento_id, colaborador_id")
+            .in("apontamento_id", apIds),
+        )
+      : [];
+    const colMap = porId(recursos.colaboradores);
+    const servicoId = txtOuNull(extra["servico_id"]);
+    const complexidade = (txt(extra["complexidade"]) || "Média") as Complexidade;
     return {
       ...resumo,
-      servicoId: txtOuNull(extra["servico_id"]),
+      complexidade,
+      servicoId,
       vendaId: txtOuNull(extra["venda_id"]),
       observacao: txt(extra["observacao"]),
       updatedAt: txt(extra["updated_at"]),
@@ -781,6 +831,26 @@ export const operacaoRepository = {
         concluido: e["concluido"] === true,
         concluidoEm: txtOuNull(e["concluido_em"]),
         concluidoPorNome: txt(e["concluido_por_nome"]),
+        trechos: apontamentos
+          .filter((a) => a["etapa_id"] === e["id"])
+          .map((a) => ({
+            id: txt(a["id"]),
+            inicio: txt(a["inicio"]),
+            fim: txtOuNull(a["fim"]),
+            fimTipo: (txtOuNull(a["fim_tipo"]) as TrechoApontado["fimTipo"]) ?? null,
+            motivoPausa: txt(a["motivo_pausa"]),
+            pessoas: num(a["pessoas"]) || 1,
+            iniciadoPorNome: txt(a["iniciado_por_nome"]),
+            colaboradores: apCols
+              .filter((c) => c["apontamento_id"] === a["id"])
+              .map((c) => colMap.get(txt(c["colaborador_id"]))?.nome ?? "")
+              .filter(Boolean),
+          })),
+        estimativa: estimarHorasEtapa(
+          { servicoId, etapa: txt(e["nome"]), complexidade },
+          // A step that's already finished shouldn't estimate itself.
+          amostras.filter((s) => s.etapaId !== e["id"]),
+        ),
       })),
       eventos: eventos.map((e) => ({
         id: txt(e["id"]),
@@ -798,6 +868,7 @@ export const operacaoRepository = {
         tipo: dados.tipo,
         status: dados.status,
         prioridade: dados.prioridade,
+        complexidade: dados.complexidade,
         cadastro_id: dados.cadastroId,
         venda_id: dados.vendaId,
         servico_id: dados.servicoId,
@@ -817,6 +888,20 @@ export const operacaoRepository = {
 
   async marcarEtapa(etapaId: string, concluida: boolean): Promise<void> {
     const { error } = await db.rpc("atualizar_etapa_producao", { etapa_uuid: etapaId, concluida });
+    if (error) throw dbError(error);
+  },
+
+  /** Starts timing a step; no colaboradores = the order's team. */
+  async iniciarEtapa(etapaId: string, colaboradores: string[] = []): Promise<void> {
+    const { error } = await db.rpc("iniciar_etapa_producao", {
+      etapa_uuid: etapaId,
+      colaboradores: colaboradores.length ? colaboradores : null,
+    });
+    if (error) throw dbError(error);
+  },
+
+  async pausarEtapa(etapaId: string, motivo: string): Promise<void> {
+    const { error } = await db.rpc("pausar_etapa_producao", { etapa_uuid: etapaId, motivo });
     if (error) throw dbError(error);
   },
 

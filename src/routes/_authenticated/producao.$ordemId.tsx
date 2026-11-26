@@ -3,7 +3,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   AlertTriangle,
   ArrowLeft,
-  Check,
   CheckCircle2,
   ClipboardList,
   Clock3,
@@ -24,6 +23,7 @@ import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, OrdemStatusBadge, TOM, selectClass } from "@/components/app/operacao-ui";
+import { EtapasComTempo } from "@/components/app/etapas-tempo";
 import {
   useCurrentUser,
   useDataAction,
@@ -36,6 +36,7 @@ import {
   alertaPrazo,
   canExecutarOperacao,
   canGerirOperacao,
+  COMPLEXIDADES,
   dataBR,
   etapasDaOrdem,
   operacaoRepository,
@@ -46,6 +47,7 @@ import {
   textoAlertaPrazo,
   TIPOS_ORDEM,
   validarOrdem,
+  type Complexidade,
   type OrdemFicha,
   type Recursos,
   type StatusOrdem,
@@ -92,6 +94,7 @@ type Form = {
   tipo: TipoOrdem;
   status: StatusOrdem;
   prioridade: string;
+  complexidade: Complexidade;
   cliente: { id: string; nome: string } | null;
   vendaId: string;
   servicoId: string;
@@ -112,7 +115,6 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
   const podeGerir = canGerirOperacao(me);
   const podeExecutar = canExecutarOperacao(me);
   const [salvando, setSalvando] = useState(false);
-  const [marcando, setMarcando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [f, setF] = useState<Form>(() =>
     doc
@@ -120,6 +122,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           tipo: doc.tipo,
           status: doc.status,
           prioridade: doc.prioridade,
+          complexidade: doc.complexidade,
           cliente: doc.cadastroId ? { id: doc.cadastroId, nome: doc.clienteNome } : null,
           vendaId: doc.vendaId ?? "",
           servicoId: doc.servicoId ?? "",
@@ -135,6 +138,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           tipo: "Instalação",
           status: "Aguardando",
           prioridade: "Normal",
+          complexidade: "Média",
           cliente: null,
           vendaId: pedidoInicial ?? "",
           servicoId: "",
@@ -230,6 +234,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             tipo: f.tipo,
             status: f.status,
             prioridade: f.prioridade,
+            complexidade: f.complexidade,
             cadastroId: f.cliente?.id ?? "",
             vendaId: f.vendaId,
             servicoId: f.servicoId,
@@ -247,12 +252,6 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
     );
     setSalvando(false);
     if (id && !doc) navigate({ to: "/producao/$ordemId", params: { ordemId: id }, replace: true });
-  }
-
-  async function marcar(etapaId: string, concluida: boolean) {
-    setMarcando(true);
-    await run(() => operacaoRepository.marcarEtapa(etapaId, concluida));
-    setMarcando(false);
   }
 
   async function excluir() {
@@ -420,7 +419,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             onChange={(cliente) => set({ cliente })}
           />
         </div>
-        <div className="space-y-1.5 md:col-span-2">
+        <div className="space-y-1.5">
           <Label htmlFor="servico">Serviço</Label>
           <select
             id="servico"
@@ -434,6 +433,21 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
               <option key={s.id} value={s.id}>
                 {s.nome}
               </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="complexidade">Complexidade</Label>
+          <select
+            id="complexidade"
+            className={selectClass}
+            value={f.complexidade}
+            disabled={bloqueado}
+            title="O tempo das etapas é aprendido separadamente para cada nível"
+            onChange={(e) => set({ complexidade: e.target.value as Complexidade })}
+          >
+            {COMPLEXIDADES.map((c) => (
+              <option key={c}>{c}</option>
             ))}
           </select>
         </div>
@@ -507,55 +521,31 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
               />
             </div>
           )}
-          <div className="space-y-2">
-            {(doc
-              ? etapas
-              : f.etapas.map((nome, i) => ({
-                  id: String(i),
-                  nome,
-                  concluido: false,
-                  concluidoPorNome: "",
-                  concluidoEm: null,
-                }))
-            ).map((e, i) => {
-              const clicavel = Boolean(doc) && podeExecutar && !fechada;
-              return (
-                <label
-                  key={e.id}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl border p-3",
-                    clicavel && "cursor-pointer hover:bg-muted/50",
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    className="size-4 accent-primary"
-                    checked={e.concluido}
-                    disabled={!clicavel || marcando}
-                    onChange={(ev) => void marcar(e.id, ev.target.checked)}
-                  />
+          {doc ? (
+            <EtapasComTempo
+              etapas={etapas}
+              equipeOrdem={doc.equipe}
+              colaboradores={recursos.colaboradores}
+              podeExecutar={podeExecutar}
+              fechada={fechada}
+            />
+          ) : (
+            <div className="space-y-2">
+              {f.etapas.map((nome, i) => (
+                <div key={`${i}-${nome}`} className="flex items-center gap-3 rounded-xl border p-3">
                   <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
-                    {e.concluido ? <Check className="size-4" /> : i + 1}
+                    {i + 1}
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className={e.concluido ? "text-muted-foreground line-through" : ""}>
-                      {e.nome}
-                    </span>
-                    {e.concluido && e.concluidoPorNome && (
-                      <span className="block text-xs text-muted-foreground">
-                        {abreviarNome(e.concluidoPorNome)}
-                        {e.concluidoEm ? ` · ${formatDateTime(e.concluidoEm)}` : ""}
-                      </span>
-                    )}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+                  <span className="min-w-0 flex-1">{nome}</span>
+                </div>
+              ))}
+            </div>
+          )}
           {doc && (
             <p className="text-xs text-muted-foreground">
-              Para concluir a ordem, marque todas as etapas e depois altere a situação para
-              “Concluída”.
+              Toque em Iniciar ao começar uma etapa, em Pausar quando parar e marque a caixa para
+              dar baixa. O tempo medido ensina o sistema a estimar as próximas ordens. Para concluir
+              a ordem, dê baixa em todas as etapas e altere a situação para “Concluída”.
             </p>
           )}
         </section>
