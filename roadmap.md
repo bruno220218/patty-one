@@ -33,7 +33,7 @@ Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-produ
 - [x] 2. Solicitar prazo: comercial pede, PCP dá a data — 0033 (no ar em 26/11)
 - [x] 3. Itens do pedido com identidade fixa — 0034 (no ar em 26/11)
 - [x] Extra. Tempo das etapas adaptativo (Iniciar/Pausar/baixa, complexidade, estimativas) + botão "Dados para a skill PCP" — 0035 (no ar em 26/11)
-- [ ] 4. Ordens automáticas (uma por item, todos os itens) e ordem sem pedido com motivo — 0036
+- [x] 4. Ordens automáticas (uma por item, todos os itens) e ordem sem pedido com motivo — 0036 (no ar em 26/11)
 - [ ] 5. Mudança no pedido depois da liberação vira comentário automático + aviso ao PCP — 0037
 - [ ] 6. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0038
 - [ ] 7. Conclusão: montagem → PCP confere → comercial registra a confirmação do cliente — 0039
