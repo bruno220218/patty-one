@@ -297,7 +297,7 @@ export function montarEntradaSkillComercial(d: DadosSkillComercial) {
       "valor_mensal e contato não são guardados na vinheta/CI: vêm null.",
       "outdoors: fim da última bi-semana ocupada pelo mesmo cliente no ponto, sem bi-semana seguinte reservada; só entram na carteira de todos (o outdoor não tem representante).",
       "orcamentos_abertos = propostas na situação Enviada; data_envio_cliente é a data da última alteração da proposta (o envio não é registrado); ultimo_followup não é registrado.",
-      "servicos_para_liberar = pedidos sem liberação. sinal_pago: true se uma conta a receber do pedido foi recebida, false se há conta e nenhuma recebida, null se não há conta lançada. arte_ok: briefing ligado ao pedido (ou à proposta) concluído. medida_conferida: visita técnica ligada realizada. contrato_assinado e especificacao_tecnica ainda não são registrados (null). null conta como pendente.",
+      "servicos_para_liberar = pedidos sem liberação. sinal_pago: true se uma conta a receber do pedido (sem as canceladas) já foi recebida, false se há conta e nenhuma recebida, null se não há conta lançada. arte_ok: briefing ligado ao pedido (ou à proposta) concluído. medida_conferida: visita técnica ligada realizada. contrato_assinado e especificacao_tecnica ainda não são registrados (null). null conta como pendente.",
       `visitas: agendadas para os próximos ${DIAS_AGENDA_VISITAS} dias e as solicitadas que o PCP ainda não agendou. pós-venda: ordens concluídas há ${POS_VENDA_DE} a ${POS_VENDA_ATE} dias; o contato de pós-venda não é registrado (null).`,
     ],
     cis_paineis_outdoor: renovacoes,

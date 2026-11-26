@@ -176,9 +176,8 @@ export const skillComercialRepository = {
           db.from("cadastros").select("id, nome, contato, celular, telefone").in("id", l),
         ),
         emLotes(pedidoIds, (l) => db.from("liberacoes").select("venda_id").in("venda_id", l)),
-        emLotes(pedidoIds, (l) =>
-          db.from("contas_receber").select("venda_id, status").in("venda_id", l),
-        ),
+        // Only whether the down payment came in, without amounts (sinal_pago_pedidos, 0045).
+        rows(db.rpc("sinal_pago_pedidos", { p_vendas: pedidoIds })),
         emLotes(alvoVinculo, (l) =>
           db.from("briefings").select("venda_id, status").in("venda_id", l),
         ),
@@ -234,11 +233,10 @@ export const skillComercialRepository = {
         return {
           ...toVenda(v),
           temLiberacao: liberacoes.some((l) => l["venda_id"] === id),
-          sinalPago: algum(
-            contas.filter((c) => c["status"] !== "Cancelado"),
-            [id],
-            (c) => c["status"] === "Recebido",
-          ),
+          sinalPago: (() => {
+            const c = contas.find((x) => x["venda_id"] === id);
+            return c ? num(c["recebidas"]) > 0 : null;
+          })(),
           arteOk: algum(briefings, ids, (b) => b["status"] === "concluido"),
           medidaConferida: algum(
             visitasLig.filter((x) => x["status"] !== "cancelada"),
