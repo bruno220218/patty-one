@@ -9,6 +9,7 @@ import {
   prepararHistoricoSige,
   totaisVenda,
   totalItem,
+  ultimoPrazo,
   validarVenda,
   valorParaCampo,
 } from "./comercial-rules";
@@ -138,5 +139,19 @@ describe("comercial: histórico SIGE", () => {
       content: contratos.content.replace("R$ 1.000,00", "R$ 2.000,00"),
     };
     expect(() => prepararHistoricoSige([reservas, conflito])).toThrow(/conflitantes/);
+  });
+});
+
+describe("ultimoPrazo", () => {
+  it("takes the last date the PCP set, ignoring open and cancelled requests", () => {
+    expect(ultimoPrazo([])).toBeNull();
+    expect(
+      ultimoPrazo([
+        { status: "respondido", prazo: "2026-12-10" },
+        { status: "cancelado", prazo: null },
+        { status: "respondido", prazo: "2026-12-20" },
+        { status: "aguardando", prazo: null },
+      ]),
+    ).toBe("2026-12-20");
   });
 });

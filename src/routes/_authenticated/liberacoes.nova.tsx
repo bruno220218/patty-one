@@ -6,7 +6,13 @@ import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { DetailSkeleton } from "@/components/app/card-grid-skeleton";
 import { LiberacaoEditor } from "@/components/app/liberacao-editor";
-import { useCurrentUser, useDataAction, useListasLiberacao, useVenda } from "@/hooks/use-data";
+import {
+  useCurrentUser,
+  useDataAction,
+  useListasLiberacao,
+  usePrazosDoPedido,
+  useVenda,
+} from "@/hooks/use-data";
 import {
   canEditLiberacoes,
   emptyLiberacaoItem,
@@ -14,6 +20,7 @@ import {
   liberacaoRepository,
   localToday,
   modeloDoPedido,
+  ultimoPrazo,
   type LiberacaoInput,
   type LiberacaoModelo,
   type Venda,
@@ -41,7 +48,7 @@ export const Route = createFileRoute("/_authenticated/liberacoes/nova")({
 });
 
 /** Header and items taken from the pedido; the comercial completes the rest. */
-function doPedido(base: LiberacaoInput, venda: Venda): LiberacaoInput {
+function doPedido(base: LiberacaoInput, venda: Venda, prazo: string | null): LiberacaoInput {
   const c = venda.cliente;
   return {
     ...base,
@@ -52,6 +59,8 @@ function doPedido(base: LiberacaoInput, venda: Venda): LiberacaoInput {
     contato: c?.telefone ?? "",
     endereco: c?.endereco ?? "",
     vendedor: venda.vendedor,
+    // The date the PCP gave in "Solicitar prazo".
+    dataEntrega: prazo,
     observacoes: venda.observacao,
     itens: venda.itens.map((i) => ({
       ...emptyLiberacaoItem(),
@@ -69,6 +78,7 @@ function NovaLiberacaoPage() {
   const { listas } = useListasLiberacao();
   const navigate = useNavigate();
   const venda = useVenda(pedidoId ?? "");
+  const prazos = usePrazosDoPedido(pedidoId ?? "");
   const [numero, setNumero] = useState<number | null | undefined>(undefined);
   const [saving, setSaving] = useState(false);
 
@@ -99,7 +109,8 @@ function NovaLiberacaoPage() {
     </Button>
   );
 
-  if (isPending || numero === undefined || (pedidoId && venda.isPending)) return <DetailSkeleton />;
+  if (isPending || numero === undefined || (pedidoId && (venda.isPending || prazos.isPending)))
+    return <DetailSkeleton />;
   if (!canEditLiberacoes(me)) {
     return (
       <>
@@ -168,7 +179,7 @@ function NovaLiberacaoPage() {
     observacoes: "",
     itens: [],
   };
-  const initial = pedido ? doPedido(vazia, pedido) : vazia;
+  const initial = pedido ? doPedido(vazia, pedido, ultimoPrazo(prazos.data ?? [])) : vazia;
 
   return (
     <>
@@ -181,7 +192,11 @@ function NovaLiberacaoPage() {
         }
         description={
           pedido
-            ? "Os dados do cliente e os itens vieram do pedido. Complete o que falta e salve: ela entra no fim da fila do PCP."
+            ? `Os dados do cliente e os itens vieram do pedido${
+                initial.dataEntrega
+                  ? ", e a data de entrega é o prazo dado pelo PCP"
+                  : '. O PCP ainda não deu o prazo: use "Solicitar prazo" no pedido'
+              }. Complete o que falta e salve: ela entra no fim da fila do PCP.`
             : "Preencha como na planilha. Sem pedido, informe o motivo. Ao salvar, ela entra no fim da fila do PCP para aprovação."
         }
       />

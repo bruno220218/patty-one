@@ -23,6 +23,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, OrdemStatusBadge, selectClass } from "@/components/app/operacao-ui";
 import { VendaStatusBadge } from "@/components/app/venda-status";
 import { LiberacaoStatusBadge } from "@/components/app/liberacao-status";
+import { PrazoPedidoSection } from "@/components/app/prazo-pedido";
 import { useCurrentUser, useDataAction, useEmpresas, useVenda } from "@/hooks/use-data";
 import {
   brl,
@@ -544,6 +545,10 @@ function Editor({
           onChange={(e) => set({ observacao: e.target.value })}
         />
       </section>
+
+      {doc && tipo === "pedido" && (
+        <PrazoPedidoSection vendaId={doc.id} cancelado={doc.status === "Cancelado"} />
+      )}
 
       {doc && tipo === "pedido" && (
         <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">

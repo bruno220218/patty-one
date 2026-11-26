@@ -17,6 +17,7 @@ import {
   setoresRepository,
   type OrdemFiltros,
   comercialRepository,
+  prazoRepository,
   financeiroRepository,
   financeiroPagarRepository,
   midiaRepository,
@@ -252,6 +253,21 @@ export const useVenda = (id: string) =>
     queryKey: ["comercial", "venda", id],
     queryFn: () => comercialRepository.get(id),
     enabled: Boolean(id),
+  });
+
+/** "Solicitar prazo" history of a pedido (0033). */
+export const usePrazosDoPedido = (vendaId: string) =>
+  useQuery({
+    queryKey: ["comercial", "prazos", vendaId],
+    queryFn: () => prazoRepository.doPedido(vendaId),
+    enabled: Boolean(vendaId),
+  });
+
+/** Requests waiting for the PCP. */
+export const usePrazosAbertos = () =>
+  useQuery({
+    queryKey: ["comercial", "prazos-abertos"],
+    queryFn: () => prazoRepository.abertos(),
   });
 
 export const usePedidosAbertos = (enabled = true) =>

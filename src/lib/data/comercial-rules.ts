@@ -239,3 +239,8 @@ export function prepararHistoricoSige(
   }
   return linhas;
 }
+
+/** Latest date the PCP set in "Solicitar prazo" (the liberação's data de entrega), or null. */
+export function ultimoPrazo(prazos: { status: string; prazo: string | null }[]): string | null {
+  return prazos.filter((p) => p.status === "respondido" && p.prazo).at(-1)?.prazo ?? null;
+}

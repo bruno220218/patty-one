@@ -7,6 +7,7 @@ import {
   BarChart3,
   LayoutDashboard,
   Calculator,
+  CalendarClock,
   CalendarDays,
   CalendarRange,
   Camera,
@@ -68,6 +69,7 @@ type NavTo =
   | "/checklists"
   | "/projetos"
   | "/liberacoes"
+  | "/prazos"
   | "/arquivados"
   | "/equipe"
   | "/relatorios"
@@ -341,6 +343,7 @@ const SETORES: Setor[] = [
           },
           { id: "pcp-projetos", label: "Projetos", icon: FolderOpen, to: "/projetos" },
           { id: "pcp-liberacoes", label: "Liberações", icon: FileCheck2, to: "/liberacoes" },
+          { id: "pcp-prazos", label: "Prazos a definir", icon: CalendarClock, to: "/prazos" },
           { id: "pcp-visitas", label: "Visitas técnicas", icon: MapPin, to: "/visitas" },
         ],
       },

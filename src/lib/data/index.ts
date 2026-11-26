@@ -98,6 +98,7 @@ export * from "./planejamento-rules";
 export * from "./programacao-rules";
 export * from "./cloud-setores";
 export * from "./cloud-comercial";
+export * from "./cloud-prazos";
 export * from "./comercial-rules";
 export * from "./cloud-midia";
 export * from "./midia-rules";

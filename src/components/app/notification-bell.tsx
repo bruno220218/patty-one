@@ -142,6 +142,31 @@ function NotificationText({ n }: { n: AppNotification }) {
         </span>
       );
     }
+    case "prazo_solicitado":
+    case "prazo_definido": {
+      const pedido = (
+        <span className="font-medium">
+          pedido nº {n.refNumero}
+          {n.projectName && ` · ${n.projectName}`}
+        </span>
+      );
+      return (
+        <span className="block break-words">
+          {n.tipo === "prazo_solicitado" ? (
+            <>
+              {who} pediu o <span className="font-semibold">prazo de entrega</span> do {pedido}
+            </>
+          ) : (
+            <>
+              {who}{" "}
+              <span className="font-semibold text-status-done-foreground">definiu o prazo</span> do{" "}
+              {pedido}
+            </>
+          )}
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
+        </span>
+      );
+    }
     case "ci_nova":
     case "ci_vinheta_entrou":
     case "ci_recusada": {
