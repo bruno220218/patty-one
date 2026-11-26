@@ -23,6 +23,7 @@ import { Route as AuthenticatedMedidasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPaineisRouteImport } from './routes/_authenticated/paineis'
 import { Route as AuthenticatedPrazosRouteImport } from './routes/_authenticated/prazos'
 import { Route as AuthenticatedStatusServicosRouteImport } from './routes/_authenticated/status-servicos'
+import { Route as ApiAssistentePcpRouteImport } from './routes/api/assistente-pcp'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorImportarRouteImport } from './routes/_authenticated/_gestor/importar'
@@ -134,6 +135,11 @@ const AuthenticatedStatusServicosRoute =
     path: '/status-servicos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiAssistentePcpRoute = ApiAssistentePcpRouteImport.update({
+  id: '/api/assistente-pcp',
+  path: '/api/assistente-pcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
   id: '/api/next-steps',
   path: '/api/next-steps',
@@ -378,6 +384,7 @@ export interface FileRoutesByFullPath {
   '/paineis': typeof AuthenticatedPaineisRoute
   '/prazos': typeof AuthenticatedPrazosRoute
   '/status-servicos': typeof AuthenticatedStatusServicosRoute
+  '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
@@ -431,6 +438,7 @@ export interface FileRoutesByTo {
   '/paineis': typeof AuthenticatedPaineisRoute
   '/prazos': typeof AuthenticatedPrazosRoute
   '/status-servicos': typeof AuthenticatedStatusServicosRoute
+  '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
@@ -487,6 +495,7 @@ export interface FileRoutesById {
   '/_authenticated/paineis': typeof AuthenticatedPaineisRoute
   '/_authenticated/prazos': typeof AuthenticatedPrazosRoute
   '/_authenticated/status-servicos': typeof AuthenticatedStatusServicosRoute
+  '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/importar': typeof AuthenticatedGestorImportarRoute
@@ -542,6 +551,7 @@ export interface FileRouteTypes {
     | '/paineis'
     | '/prazos'
     | '/status-servicos'
+    | '/api/assistente-pcp'
     | '/api/next-steps'
     | '/equipe'
     | '/importar'
@@ -595,6 +605,7 @@ export interface FileRouteTypes {
     | '/paineis'
     | '/prazos'
     | '/status-servicos'
+    | '/api/assistente-pcp'
     | '/api/next-steps'
     | '/equipe'
     | '/importar'
@@ -650,6 +661,7 @@ export interface FileRouteTypes {
     | '/_authenticated/paineis'
     | '/_authenticated/prazos'
     | '/_authenticated/status-servicos'
+    | '/api/assistente-pcp'
     | '/api/next-steps'
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/importar'
@@ -696,6 +708,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiAssistentePcpRoute: typeof ApiAssistentePcpRoute
   ApiNextStepsRoute: typeof ApiNextStepsRoute
 }
 
@@ -798,6 +811,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/status-servicos'
       preLoaderRoute: typeof AuthenticatedStatusServicosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/assistente-pcp': {
+      id: '/api/assistente-pcp'
+      path: '/api/assistente-pcp'
+      fullPath: '/api/assistente-pcp'
+      preLoaderRoute: typeof ApiAssistentePcpRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/next-steps': {
       id: '/api/next-steps'
@@ -1203,6 +1223,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiAssistentePcpRoute: ApiAssistentePcpRoute,
   ApiNextStepsRoute: ApiNextStepsRoute,
 }
 export const routeTree = rootRouteImport

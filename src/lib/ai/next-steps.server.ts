@@ -1,13 +1,6 @@
-import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, streamText } from "ai";
 import { nextStepsRequestSchema, type NextStepsRequest } from "./next-steps-schema";
-
-// IA opcional: qualquer provedor compatível com a API da OpenAI.
-// AI_API_KEY (obrigatória para ligar), AI_BASE_URL (padrão: OpenAI) e AI_MODEL.
-// Ex. grátis: Google Gemini -> AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-//   AI_MODEL=gemini-2.5-flash
-const DEFAULT_BASE_URL = "https://api.openai.com/v1";
-const DEFAULT_MODEL = "gpt-4o-mini";
+import { checarAcesso, modeloIA } from "./provider.server";
 
 const INSTRUCTIONS = `Você é um assistente de gestão de projetos da Patty One, uma empresa de produção (impressão, acabamento, pintura, embalagem etc.).
 A pessoa responsável por um projeto descreveu um bloqueio. Com base no bloqueio, nas tarefas (feitas e pendentes), no progresso e no prazo, sugira próximos passos práticos para destravar o projeto.
@@ -68,50 +61,6 @@ function friendlyError(error: unknown): string {
   return "Não foi possível gerar sugestões agora. Tente novamente em instantes.";
 }
 
-type Acesso = "ok" | "sem_login" | "nao_membro" | "limite";
-
-/**
- * Before spending AI credits: the caller must be an approved team member (sign-up is open,
- * so an account alone isn't enough) and within the daily limit. The database counts each
- * request (registrar_uso_ia); without that migration it falls back to the membership check.
- */
-async function checarAcesso(request: Request): Promise<Acesso> {
-  const token = request.headers
-    .get("authorization")
-    ?.replace(/^Bearer\s+/i, "")
-    .trim();
-  const url = process.env["SUPABASE_URL"]?.replace(/\/+$/, "");
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
-  if (!token || !url || !key) return "sem_login";
-  const headers = {
-    apikey: key,
-    Authorization: `Bearer ${token}`,
-    "content-type": "application/json",
-  };
-
-  const user = await fetch(`${url}/auth/v1/user`, { headers });
-  if (!user.ok) return "sem_login";
-  const { id } = (await user.json()) as { id?: string };
-  if (!id) return "sem_login";
-
-  const uso = await fetch(`${url}/rest/v1/rpc/registrar_uso_ia`, {
-    method: "POST",
-    headers,
-    body: "{}",
-  });
-  if (uso.ok) {
-    const r = (await uso.json()) as string;
-    return r === "ok" || r === "limite" || r === "nao_membro" ? r : "nao_membro";
-  }
-  // Migration 0015 not run yet: at least require team membership.
-  const membro = await fetch(`${url}/rest/v1/rpc/is_team_member`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ _user_id: id }),
-  });
-  return membro.ok && (await membro.json()) === true ? "ok" : "nao_membro";
-}
-
 export async function handleNextSteps(request: Request): Promise<Response> {
   const acesso = await checarAcesso(request);
   if (acesso === "sem_login") {
@@ -129,8 +78,8 @@ export async function handleNextSteps(request: Request): Promise<Response> {
       { status: 429 },
     );
   }
-  const apiKey = process.env["AI_API_KEY"];
-  if (!apiKey) {
+  const model = modeloIA();
+  if (!model) {
     return Response.json({ error: "A IA não está configurada neste app." }, { status: 500 });
   }
 
@@ -148,13 +97,8 @@ export async function handleNextSteps(request: Request): Promise<Response> {
     );
   }
 
-  const provider = createOpenAI({
-    baseURL: process.env["AI_BASE_URL"] || DEFAULT_BASE_URL,
-    apiKey,
-  });
-
   const result = streamText({
-    model: provider.chat(process.env["AI_MODEL"] || DEFAULT_MODEL),
+    model,
     instructions: INSTRUCTIONS,
     messages: [{ role: "user", content: describeProject(parsed.data) }],
     abortSignal: request.signal,

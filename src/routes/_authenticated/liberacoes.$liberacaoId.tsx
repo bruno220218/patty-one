@@ -12,6 +12,8 @@ import { AprovarDialog, ReprovarDialog } from "@/components/app/liberacao-decisa
 import { LiberacaoHistorico, LiberacaoStatusPanel } from "@/components/app/liberacao-status";
 import { AnexosPanel } from "@/components/app/anexos-panel";
 import { AprovarComOrdensDialog, OrdensDaLiberacaoPanel } from "@/components/app/liberacao-ordens";
+import { AssistentePcp } from "@/components/app/assistente-pcp";
+import { canGerirOperacao } from "@/lib/data";
 import {
   useCurrentUser,
   useDataAction,
@@ -175,6 +177,11 @@ function LiberacaoPage() {
       />
 
       {lib.vendaId && <OrdensDaLiberacaoPanel liberacaoId={lib.id} className="mt-6" />}
+
+      {/* Assistente do PCP: opens by itself while the liberação waits for approval. */}
+      {lib.status === "aguardando" && canGerirOperacao(me) && (
+        <AssistentePcp momento="liberacao" id={lib.id} versao={lib.updatedAt} />
+      )}
 
       <AnexosPanel
         entidade="liberacao"

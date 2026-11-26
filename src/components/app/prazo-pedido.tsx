@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AssistentePcp } from "@/components/app/assistente-pcp";
 import { CalendarClock, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,6 +116,14 @@ export function PrazoPedidoSection({
                   {p.respondidoEm && <> em {formatDateTime(p.respondidoEm)}</>}
                   {p.resposta && <>: “{p.resposta}”</>}
                 </p>
+              )}
+              {p.status === "aguardando" && podeResponder && (
+                <AssistentePcp
+                  momento="prazo"
+                  id={p.id}
+                  versao={p.solicitadoEm}
+                  onUsarData={setPrazo}
+                />
               )}
               {p.status === "aguardando" && podeResponder && (
                 <div className="grid gap-2 rounded-lg bg-secondary/50 p-3 sm:grid-cols-[10rem_1fr_auto] sm:items-end">
