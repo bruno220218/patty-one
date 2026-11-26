@@ -47,6 +47,8 @@ const TOM_ORDEM: Record<string, string> = {
   "Aguardando liberação": TOM.primario,
   Aguardando: TOM.neutro,
   "Em andamento": TOM.aviso,
+  "Aguardando conferência": TOM.primario,
+  "Aguardando cliente": TOM.primario,
   Concluída: TOM.sucesso,
   Cancelada: TOM.perigo,
 };

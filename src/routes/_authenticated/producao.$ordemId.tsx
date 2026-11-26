@@ -26,6 +26,7 @@ import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, OrdemStatusBadge, TOM, selectClass } from "@/components/app/operacao-ui";
 import { EtapasComTempo } from "@/components/app/etapas-tempo";
+import { ConclusaoOrdemPanel } from "@/components/app/ordem-conclusao";
 import {
   useChecklists,
   useCurrentUser,
@@ -39,6 +40,7 @@ import {
   alertaPrazo,
   canExecutarOperacao,
   canGerirOperacao,
+  canVender,
   COMPLEXIDADES,
   dataBR,
   etapasDaOrdem,
@@ -48,6 +50,7 @@ import {
   PRIORIDADES_ORDEM,
   progressoOrdem,
   STATUS_AGUARDANDO_LIBERACAO,
+  STATUS_DO_FLUXO,
   STATUS_ORDEM,
   textoAlertaPrazo,
   TIPOS_ORDEM,
@@ -398,6 +401,14 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
         </div>
       )}
 
+      {doc && (
+        <ConclusaoOrdemPanel
+          ordem={doc}
+          podeConferir={podeGerir}
+          podeConfirmarCliente={canVender(me)}
+        />
+      )}
+
       <section className="grid gap-4 rounded-2xl border bg-card p-5 shadow-sm md:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="tipo">Tipo de ordem</Label>
@@ -446,7 +457,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             disabled={!doc || bloqueado}
             onChange={(e) => set({ status: e.target.value as StatusOrdem })}
           >
-            {STATUS_ORDEM.filter((s) => s !== STATUS_AGUARDANDO_LIBERACAO || doc?.status === s).map(
+            {STATUS_ORDEM.filter((s) => !STATUS_DO_FLUXO.includes(s) || doc?.status === s).map(
               (s) => (
                 <option
                   key={s}

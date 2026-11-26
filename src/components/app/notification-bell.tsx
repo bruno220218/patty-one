@@ -46,6 +46,27 @@ function NotificationText({ n }: { n: AppNotification }) {
           já está em produção
         </span>
       );
+    case "ordem_conferencia":
+    case "ordem_aguardando_cliente":
+      return (
+        <span className="block break-words">
+          {n.tipo === "ordem_conferencia" ? (
+            <>
+              {who} concluiu as etapas da{" "}
+              <span className="font-medium">ordem nº {n.refNumero}</span>:{" "}
+              <span className="font-semibold">confira</span>
+            </>
+          ) : (
+            <>
+              {who} conferiu a <span className="font-medium">ordem nº {n.refNumero}</span>:{" "}
+              <span className="font-semibold">registre a confirmação do cliente</span>
+            </>
+          )}
+          {n.projectName && (
+            <span className="mt-0.5 block text-muted-foreground">{n.projectName}</span>
+          )}
+        </span>
+      );
     case "liberacao_pedido_alterado":
       return (
         <span className="block break-words">

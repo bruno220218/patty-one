@@ -173,10 +173,22 @@ export interface OrdemFicha extends OrdemResumo {
   checklistId: string | null;
   /** The checklist has "Parâmetros fixos": the steps can't be changed. */
   etapasFixas: boolean;
+  /** Conclusion (0040): PCP checked it, then comercial recorded the client's confirmation. */
+  conclusao: ConclusaoOrdem;
   observacao: string;
   updatedAt: string;
   etapasDetalhe: EtapaOrdem[];
   eventos: EventoOrdem[];
+}
+
+export interface ConclusaoOrdem {
+  conferidoEm: string | null;
+  conferidoPorNome: string;
+  /** Date the client confirmed (yyyy-mm-dd). */
+  clienteConfirmouEm: string | null;
+  clienteConfirmouNome: string;
+  clienteObservacao: string;
+  clienteRegistradoPorNome: string;
 }
 
 export interface OrdemDaLiberacao {
@@ -572,7 +584,8 @@ function montarEtapas(
 }
 
 /** Finished orders and the ones still waiting for their liberação don't go into planning. */
-const ORDENS_FORA_DO_PLANEJAMENTO = '("Concluída","Cancelada","Aguardando liberação")';
+const ORDENS_FORA_DO_PLANEJAMENTO =
+  '("Concluída","Cancelada","Aguardando liberação","Aguardando conferência","Aguardando cliente")';
 
 const ORDEM_COLUNAS =
   "id, numero, tipo, status, prioridade, descricao, data_prevista, created_at, updated_at, cadastro_id, servico_id, veiculo_id, local_instalacao, venda_id, observacao";
@@ -897,7 +910,7 @@ export const operacaoRepository = {
         db
           .from("ordens_producao")
           .select(
-            "servico_id, venda_id, observacao, updated_at, complexidade, liberacao_id, motivo_sem_pedido, checklist_id, etapas_fixas, liberacoes(numero)",
+            "servico_id, venda_id, observacao, updated_at, complexidade, liberacao_id, motivo_sem_pedido, checklist_id, etapas_fixas, liberacoes(numero), conferido_em, conferido_por_nome, cliente_confirmou_em, cliente_confirmou_nome, cliente_observacao, cliente_registrado_por_nome",
           )
           .eq("id", id),
       ),
@@ -928,6 +941,14 @@ export const operacaoRepository = {
       motivoSemPedido: (txt(extra["motivo_sem_pedido"]) || "") as MotivoSemPedido | "",
       checklistId: txtOuNull(extra["checklist_id"]),
       etapasFixas: extra["etapas_fixas"] === true,
+      conclusao: {
+        conferidoEm: txtOuNull(extra["conferido_em"]),
+        conferidoPorNome: txt(extra["conferido_por_nome"]),
+        clienteConfirmouEm: txtOuNull(extra["cliente_confirmou_em"]),
+        clienteConfirmouNome: txt(extra["cliente_confirmou_nome"]),
+        clienteObservacao: txt(extra["cliente_observacao"]),
+        clienteRegistradoPorNome: txt(extra["cliente_registrado_por_nome"]),
+      },
       observacao: txt(extra["observacao"]),
       updatedAt: txt(extra["updated_at"]),
       etapasDetalhe: montarEtapas(etapas, apontamentos, apCols, recursos, amostras, {
@@ -1012,6 +1033,31 @@ export const operacaoRepository = {
     const { error } = await db.rpc("definir_checklist_padrao", {
       p_tipo: tipo,
       p_checklist: checklistId,
+    });
+    if (error) throw dbError(error);
+  },
+
+  /** PCP checks a finished order (0040): conferida, or back to the team with what to redo. */
+  async conferirOrdem(ordemId: string, conferida: boolean, motivo = ""): Promise<StatusOrdem> {
+    const { data, error } = await db.rpc("conferir_ordem_producao", {
+      ordem_uuid: ordemId,
+      conferida,
+      motivo,
+    });
+    if (error) throw dbError(error);
+    return data as StatusOrdem;
+  },
+
+  /** Comercial records that the client confirmed the delivery (0040). */
+  async confirmarCliente(
+    ordemId: string,
+    dados: { data: string; quem: string; observacao: string },
+  ): Promise<void> {
+    const { error } = await db.rpc("confirmar_cliente_ordem", {
+      ordem_uuid: ordemId,
+      _data: dados.data,
+      _quem: dados.quem,
+      _observacao: dados.observacao,
     });
     if (error) throw dbError(error);
   },

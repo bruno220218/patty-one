@@ -242,7 +242,9 @@ export type NotificationTipo =
   | "ci_checkout_enviada"
   | "prazo_solicitado"
   | "prazo_definido"
-  | "liberacao_pedido_alterado";
+  | "liberacao_pedido_alterado"
+  | "ordem_conferencia"
+  | "ordem_aguardando_cliente";
 
 /** In-app notification: a task was completed, or a liberação moved in the approval flow. */
 export interface AppNotification {

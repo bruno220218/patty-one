@@ -25,11 +25,23 @@ export const STATUS_ORDEM = [
   "Aguardando liberação",
   "Aguardando",
   "Em andamento",
+  "Aguardando conferência",
+  "Aguardando cliente",
   "Concluída",
   "Cancelada",
 ] as const;
 /** Set only by the database (orders born from a liberação not yet approved, 0036). */
 export const STATUS_AGUARDANDO_LIBERACAO = "Aguardando liberação";
+/** Last step done → PCP checks (0040). */
+export const STATUS_AGUARDANDO_CONFERENCIA = "Aguardando conferência";
+/** Checked by PCP → comercial records the client's confirmation (0040). */
+export const STATUS_AGUARDANDO_CLIENTE = "Aguardando cliente";
+/** Set by the flow, never picked by hand (only kept while the order is in it). */
+export const STATUS_DO_FLUXO: readonly string[] = [
+  STATUS_AGUARDANDO_LIBERACAO,
+  STATUS_AGUARDANDO_CONFERENCIA,
+  STATUS_AGUARDANDO_CLIENTE,
+];
 export const PRIORIDADES_ORDEM = ["Baixa", "Normal", "Alta", "Urgente"] as const;
 
 export type TipoOrdem = (typeof TIPOS_ORDEM)[number];
@@ -220,7 +232,10 @@ export function alertaPrazo(
   status: string,
   hoje: string,
 ): AlertaPrazo | null {
-  if (!dataPrevista || status === "Concluída" || status === "Cancelada") return null;
+  // Waiting for the client: production already delivered.
+  if (!dataPrevista || ["Concluída", "Cancelada", "Aguardando cliente"].includes(status)) {
+    return null;
+  }
   const dias = diasParaPrazo(dataPrevista, hoje);
   if (dias < 0) return { tipo: "atrasada", dias: Math.abs(dias) };
   if (dias <= DIAS_ALERTA_PRAZO) return { tipo: "proxima", dias };

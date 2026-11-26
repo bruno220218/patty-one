@@ -118,6 +118,10 @@ describe("ordens de produção", () => {
     expect(alertaPrazo("2026-11-19", "Aguardando", "2026-11-15")).toBeNull();
     expect(alertaPrazo("2026-11-14", "Concluída", "2026-11-15")).toBeNull();
     expect(alertaPrazo("2026-11-14", "Cancelada", "2026-11-15")).toBeNull();
+    expect(alertaPrazo("2026-11-14", "Aguardando cliente", "2026-11-15")).toBeNull();
+    expect(alertaPrazo("2026-11-14", "Aguardando conferência", "2026-11-15")?.tipo).toBe(
+      "atrasada",
+    );
     expect(alertaPrazo(null, "Aguardando", "2026-11-15")).toBeNull();
   });
   it("exige local só para instalação", () => {
