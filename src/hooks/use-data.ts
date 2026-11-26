@@ -18,6 +18,7 @@ import {
   type OrdemFiltros,
   comercialRepository,
   prazoRepository,
+  statusServicosRepository,
   financeiroRepository,
   financeiroPagarRepository,
   dashboardRepository,
@@ -280,6 +281,13 @@ export const usePrazosDoPedido = (vendaId: string) =>
   });
 
 /** Requests waiting for the PCP. */
+/** Status Serviços (etapa 8): orders as Comercial follows them. */
+export const useStatusServicos = () =>
+  useQuery({
+    queryKey: ["operacao", "status-servicos"],
+    queryFn: () => statusServicosRepository.ordens(),
+  });
+
 export const usePrazosAbertos = () =>
   useQuery({
     queryKey: ["comercial", "prazos-abertos"],
