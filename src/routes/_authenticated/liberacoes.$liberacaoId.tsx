@@ -11,6 +11,7 @@ import { LiberacaoEditor } from "@/components/app/liberacao-editor";
 import { AprovarDialog, ReprovarDialog } from "@/components/app/liberacao-decisao";
 import { LiberacaoHistorico, LiberacaoStatusPanel } from "@/components/app/liberacao-status";
 import { AnexosPanel } from "@/components/app/anexos-panel";
+import { AprovarComOrdensDialog, OrdensDaLiberacaoPanel } from "@/components/app/liberacao-ordens";
 import {
   useCurrentUser,
   useDataAction,
@@ -173,6 +174,8 @@ function LiberacaoPage() {
         }}
       />
 
+      {lib.vendaId && <OrdensDaLiberacaoPanel liberacaoId={lib.id} className="mt-6" />}
+
       <AnexosPanel
         entidade="liberacao"
         entidadeId={lib.id}
@@ -193,8 +196,22 @@ function LiberacaoPage() {
         }
       />
 
+      <AprovarComOrdensDialog
+        open={aprovarOpen && Boolean(lib.vendaId)}
+        onOpenChange={setAprovarOpen}
+        liberacaoId={lib.id}
+        numero={lib.numero}
+        onConfirm={async () => {
+          const ok = await run(
+            () => liberacaoRepository.aprovar(lib.id, null).then(() => true),
+            "Liberação aprovada. As ordens entraram na produção.",
+          );
+          if (ok) void enviarEmail({ silenciosoSemLista: true });
+          return ok;
+        }}
+      />
       <AprovarDialog
-        open={aprovarOpen}
+        open={aprovarOpen && !lib.vendaId}
         onOpenChange={setAprovarOpen}
         liberacao={lib}
         onConfirm={async (input) => {

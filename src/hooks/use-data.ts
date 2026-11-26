@@ -220,6 +220,13 @@ export const useOrdem = (id: string) =>
     enabled: Boolean(id),
   });
 
+export const useOrdensDaLiberacao = (liberacaoId: string) =>
+  useQuery({
+    queryKey: ["operacao", "liberacao", liberacaoId],
+    queryFn: () => operacaoRepository.ordensDaLiberacao(liberacaoId),
+    enabled: Boolean(liberacaoId),
+  });
+
 export const usePlanejamento = (inicio: string, fim: string) =>
   useQuery({
     queryKey: ["operacao", "planejamento", inicio, fim],

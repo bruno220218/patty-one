@@ -38,7 +38,7 @@ projetos já abertos terminam no caminho antigo.
 | 1   | Liberação ligada ao pedido e ao cadastro       | 0032     | No pedido, botão "Liberar para produção": a liberação nasce preenchida (cliente, vendedor, itens). Uma por pedido.                  |
 | 2   | Solicitar prazo                                | 0033     | No pedido, "Solicitar prazo": o PCP recebe o aviso, informa a data e o comercial é avisado. A liberação usa esse prazo.             |
 | 3   | Itens do pedido com identidade fixa            | 0034     | Nada visível. Prepara "uma ordem por item" (ver nota técnica 1).                                                                    |
-| 4   | Ordens automáticas e ordem sem pedido          | 0035     | Ao criar a liberação, nasce uma ordem por item ("Aguardando liberação"). Sem pedido, o PCP abre a ordem à mão com o motivo.         |
+| 4   | Ordens automáticas e ordem sem pedido          | 0036     | Ao criar a liberação, nasce uma ordem por item ("Aguardando liberação"). Sem pedido, o PCP abre a ordem à mão com o motivo.         |
 | 5   | Mudança depois da liberação                    | 0036     | Mudou o pedido já liberado: comentário automático na liberação e aviso ao PCP. Um item novo ganha uma ordem nova.                   |
 | 6   | Etapas da ordem a partir do checklist          | 0037     | As etapas vêm do checklist, com as regras do Projeto: quem marcou e quando, só gestão desmarca, parâmetros fixos.                   |
 | 7   | Conclusão com conferência e cliente            | 0038     | Montagem marca feito → "Aguardando conferência" → PCP confere → comercial avisa o cliente e registra a confirmação → Concluída.      |

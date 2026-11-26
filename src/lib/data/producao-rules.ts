@@ -21,7 +21,15 @@ export function canExecutarOperacao(user: CurrentUser | null | undefined): boole
 // ---------- Ordens de produção ----------
 
 export const TIPOS_ORDEM = ["Instalação", "Impressão"] as const;
-export const STATUS_ORDEM = ["Aguardando", "Em andamento", "Concluída", "Cancelada"] as const;
+export const STATUS_ORDEM = [
+  "Aguardando liberação",
+  "Aguardando",
+  "Em andamento",
+  "Concluída",
+  "Cancelada",
+] as const;
+/** Set only by the database (orders born from a liberação not yet approved, 0036). */
+export const STATUS_AGUARDANDO_LIBERACAO = "Aguardando liberação";
 export const PRIORIDADES_ORDEM = ["Baixa", "Normal", "Alta", "Urgente"] as const;
 
 export type TipoOrdem = (typeof TIPOS_ORDEM)[number];
@@ -233,8 +241,14 @@ export function validarOrdem(dados: {
   descricao: string;
   localInstalacao: string;
   etapas: string[];
+  /** Without a pedido the motivo is required (new order, or the pedido was just removed). */
+  semPedidoExigeMotivo?: boolean;
+  motivoSemPedido?: string;
 }): string | null {
   if (!dados.descricao.trim()) return "Informe a descrição da ordem.";
+  if (dados.semPedidoExigeMotivo && !dados.motivoSemPedido) {
+    return "Ordem sem pedido: escolha o motivo (Garantia, Retrabalho, Interno ou Urgência).";
+  }
   if (dados.tipo === "Instalação" && !dados.localInstalacao.trim()) {
     return "Informe o local da instalação.";
   }

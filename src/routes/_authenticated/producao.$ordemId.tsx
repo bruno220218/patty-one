@@ -39,15 +39,18 @@ import {
   COMPLEXIDADES,
   dataBR,
   etapasDaOrdem,
+  MOTIVOS_SEM_PEDIDO,
   operacaoRepository,
   podeConcluirOrdem,
   PRIORIDADES_ORDEM,
   progressoOrdem,
+  STATUS_AGUARDANDO_LIBERACAO,
   STATUS_ORDEM,
   textoAlertaPrazo,
   TIPOS_ORDEM,
   validarOrdem,
   type Complexidade,
+  type MotivoSemPedido,
   type OrdemFicha,
   type Recursos,
   type StatusOrdem,
@@ -97,6 +100,7 @@ type Form = {
   complexidade: Complexidade;
   cliente: { id: string; nome: string } | null;
   vendaId: string;
+  motivoSemPedido: MotivoSemPedido | "";
   servicoId: string;
   descricao: string;
   dataPrevista: string;
@@ -125,6 +129,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           complexidade: doc.complexidade,
           cliente: doc.cadastroId ? { id: doc.cadastroId, nome: doc.clienteNome } : null,
           vendaId: doc.vendaId ?? "",
+          motivoSemPedido: doc.motivoSemPedido,
           servicoId: doc.servicoId ?? "",
           descricao: doc.descricao,
           dataPrevista: doc.dataPrevista ?? "",
@@ -141,6 +146,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           complexidade: "Média",
           cliente: null,
           vendaId: pedidoInicial ?? "",
+          motivoSemPedido: "",
           servicoId: "",
           descricao: "",
           dataPrevista: "",
@@ -195,6 +201,9 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
   const etapas = doc?.etapasDetalhe ?? [];
   const progresso = progressoOrdem(etapas);
   const fechada = f.status === "Concluída" || f.status === "Cancelada";
+  /** Born from a liberação still waiting for approval: nobody executes it yet. */
+  const esperandoLiberacao = doc?.status === STATUS_AGUARDANDO_LIBERACAO;
+  const daLiberacao = Boolean(doc?.liberacaoId);
   const alerta = doc
     ? alertaPrazo(doc.dataPrevista, f.status, new Date().toISOString().slice(0, 10))
     : null;
@@ -221,6 +230,9 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
       descricao: f.descricao,
       localInstalacao: f.localInstalacao,
       etapas: f.etapas,
+      // Old orders without pedido and without motivo stay editable (as in the database).
+      semPedidoExigeMotivo: !f.vendaId && (!doc || Boolean(doc.vendaId)),
+      motivoSemPedido: f.motivoSemPedido,
     });
     if (erro) {
       toast.error(erro);
@@ -237,6 +249,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             complexidade: f.complexidade,
             cadastroId: f.cliente?.id ?? "",
             vendaId: f.vendaId,
+            motivoSemPedido: f.vendaId ? "" : f.motivoSemPedido,
             servicoId: f.servicoId,
             descricao: f.descricao,
             dataPrevista: f.dataPrevista,
@@ -308,6 +321,27 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
         </p>
       )}
 
+      {doc && daLiberacao && (
+        <div
+          className={cn(
+            "flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4",
+            esperandoLiberacao ? TOM.primario : TOM.neutro,
+          )}
+        >
+          <p className="text-sm">
+            {esperandoLiberacao
+              ? `Esta ordem nasceu da liberação nº ${doc.liberacaoNumero ?? "?"} e espera a aprovação do PCP. Até lá, ninguém inicia nem dá baixa nas etapas.`
+              : `Ordem criada pela liberação nº ${doc.liberacaoNumero ?? "?"}.`}
+          </p>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/liberacoes/$liberacaoId" params={{ liberacaoId: doc.liberacaoId ?? "" }}>
+              <ExternalLink />
+              Abrir a liberação
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {alerta && (
         <div
           role="alert"
@@ -375,14 +409,16 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             disabled={!doc || bloqueado}
             onChange={(e) => set({ status: e.target.value as StatusOrdem })}
           >
-            {STATUS_ORDEM.map((s) => (
-              <option
-                key={s}
-                disabled={s === "Concluída" && Boolean(doc) && !podeConcluirOrdem(etapas)}
-              >
-                {s}
-              </option>
-            ))}
+            {STATUS_ORDEM.filter((s) => s !== STATUS_AGUARDANDO_LIBERACAO || doc?.status === s).map(
+              (s) => (
+                <option
+                  key={s}
+                  disabled={s === "Concluída" && Boolean(doc) && !podeConcluirOrdem(etapas)}
+                >
+                  {s}
+                </option>
+              ),
+            )}
           </select>
         </div>
         <div className="space-y-1.5 md:col-span-2">
@@ -392,7 +428,8 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
               id="pedido"
               className={selectClass}
               value={f.vendaId}
-              disabled={bloqueado || pedidos.isPending}
+              disabled={bloqueado || pedidos.isPending || daLiberacao}
+              title={daLiberacao ? "O pedido vem da liberação" : undefined}
               onChange={(e) => escolherPedido(e.target.value)}
             >
               <option value="">Sem vínculo com pedido</option>
@@ -411,6 +448,28 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             )}
           </div>
         </div>
+        {!f.vendaId && (
+          <div className="space-y-1.5 md:col-span-2">
+            <Label htmlFor="motivo">Motivo da ordem sem pedido</Label>
+            <select
+              id="motivo"
+              className={selectClass}
+              value={f.motivoSemPedido}
+              disabled={bloqueado}
+              onChange={(e) => set({ motivoSemPedido: e.target.value as MotivoSemPedido | "" })}
+            >
+              <option value="">Escolha o motivo</option>
+              {MOTIVOS_SEM_PEDIDO.map((m) => (
+                <option key={m}>{m}</option>
+              ))}
+            </select>
+            {f.motivoSemPedido === "Urgência" && (
+              <p className="text-xs text-muted-foreground">
+                Na urgência, ligue o pedido aqui assim que ele existir.
+              </p>
+            )}
+          </div>
+        )}
         <div className="space-y-1.5 md:col-span-2">
           <Label>Cliente</Label>
           <ClientePicker
@@ -526,7 +585,7 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
               etapas={etapas}
               equipeOrdem={doc.equipe}
               colaboradores={recursos.colaboradores}
-              podeExecutar={podeExecutar}
+              podeExecutar={podeExecutar && !esperandoLiberacao}
               fechada={fechada}
             />
           ) : (

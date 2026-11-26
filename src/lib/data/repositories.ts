@@ -56,7 +56,8 @@ export interface LiberacaoRepository {
   /** Saving a rejected liberação sends it back to the end of the PCP queue (database rule). */
   update(id: string, input: LiberacaoInput): Promise<Liberacao>;
   /** PCP/direção/gestão: approve and link the project created for production. */
-  aprovar(id: string, projectId: string): Promise<void>;
+  /** projectId null: liberação linked to a pedido, whose orders replace the Projeto (0036). */
+  aprovar(id: string, projectId: string | null): Promise<void>;
   /** PCP/direção/gestão: reject with a reason; it goes back to comercial for editing. */
   reprovar(id: string, motivo: string): Promise<void>;
   /** History: criada, reprovada, reenviada, aprovada, comentários. */

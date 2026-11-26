@@ -24,7 +24,7 @@ begin
     perform salvar_ordem_producao('{"tipo":"Impressão","descricao":"x","complexidade":"Altíssima","etapas":["a"]}'::jsonb);
     out := out || 'complexidadeInvalida=PASSOU';
   exception when others then out := out || 'complexidadeInvalida=bloqueado'; end;
-  o := salvar_ordem_producao(json_build_object('tipo', 'Impressão', 'descricao', 'Fachada ACM TE',
+  o := salvar_ordem_producao(json_build_object('tipo', 'Impressão', 'descricao', 'Fachada ACM TE', 'motivo_sem_pedido', 'Interno',
     'complexidade', 'Complexa', 'etapas', json_build_array('Corte e dobra ACM', 'Instalação'),
     'equipe', json_build_array(c1, c2))::jsonb);
   out := out || ' complexidade=' || (select complexidade from ordens_producao where id = o);

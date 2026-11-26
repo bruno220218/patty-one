@@ -84,7 +84,7 @@ export interface Venda {
   itens: VendaItem[];
   propostaOrigem: { id: string; numero: number } | null;
   pedidoGerado: { id: string; numero: number } | null;
-  ordens: { id: string; numero: number; status: string }[];
+  ordens: { id: string; numero: number; status: string; descricao: string }[];
   /** The pedido's liberação for production (one per pedido, since 0032). */
   liberacao: { id: string; numero: number; status: string } | null;
 }
@@ -229,7 +229,11 @@ export const comercialRepository = {
       propostaId
         ? db.from("vendas").select("id, numero").eq("id", propostaId).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
-      db.from("ordens_producao").select("id, numero, status").eq("venda_id", id).order("numero"),
+      db
+        .from("ordens_producao")
+        .select("id, numero, status, descricao")
+        .eq("venda_id", id)
+        .order("numero"),
       r["tipo"] === "pedido"
         ? db.from("liberacoes").select("id, numero, status").eq("venda_id", id).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
@@ -281,6 +285,7 @@ export const comercialRepository = {
         id: txt(o["id"]),
         numero: num(o["numero"]),
         status: txt(o["status"]),
+        descricao: txt(o["descricao"]),
       })),
       liberacao: liberacao.data
         ? {

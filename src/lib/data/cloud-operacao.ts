@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { dbError } from "./db-errors";
+import type { MotivoSemPedido } from "./types";
 import {
   alertaPrazo,
   estimarHorasEtapa,
@@ -39,6 +40,11 @@ type Row = Record<string, unknown>;
 const txt = (v: unknown) => (typeof v === "string" ? v : "");
 const txtOuNull = (v: unknown) => (typeof v === "string" && v !== "" ? v : null);
 const num = (v: unknown) => (v === null || v === undefined || v === "" ? 0 : Number(v));
+/** "numero" of an embedded one-to-one row (object or one-item array), or null. */
+const numeroEmbutido = (v: unknown): number | null => {
+  const r = (Array.isArray(v) ? v[0] : v) as Row | null | undefined;
+  return r && r["numero"] != null ? Number(r["numero"]) : null;
+};
 
 async function rows(
   query: PromiseLike<{ data: unknown; error: { message: string; code?: string } | null }>,
@@ -159,10 +165,21 @@ export interface OrdemFicha extends OrdemResumo {
   complexidade: Complexidade;
   servicoId: string | null;
   vendaId: string | null;
+  /** Born from this liberação (0036): the pedido can't be changed here. */
+  liberacaoId: string | null;
+  liberacaoNumero: number | null;
+  motivoSemPedido: MotivoSemPedido | "";
   observacao: string;
   updatedAt: string;
   etapasDetalhe: EtapaOrdem[];
   eventos: EventoOrdem[];
+}
+
+export interface OrdemDaLiberacao {
+  id: string;
+  numero: number;
+  status: StatusOrdem;
+  descricao: string;
 }
 
 export interface OrdemFiltros {
@@ -186,6 +203,8 @@ export interface OrdemInput {
   cadastroId: string;
   /** Pedido de venda (Comercial); "" = sem vínculo. */
   vendaId: string;
+  /** Required without a pedido (new order or pedido removed). */
+  motivoSemPedido: MotivoSemPedido | "";
   servicoId: string;
   descricao: string;
   dataPrevista: string;
@@ -541,6 +560,9 @@ function montarEtapas(
   }));
 }
 
+/** Finished orders and the ones still waiting for their liberação don't go into planning. */
+const ORDENS_FORA_DO_PLANEJAMENTO = '("Concluída","Cancelada","Aguardando liberação")';
+
 const ORDEM_COLUNAS =
   "id, numero, tipo, status, prioridade, descricao, data_prevista, created_at, updated_at, cadastro_id, servico_id, veiculo_id, local_instalacao, venda_id, observacao";
 
@@ -863,7 +885,9 @@ export const operacaoRepository = {
       rows(
         db
           .from("ordens_producao")
-          .select("servico_id, venda_id, observacao, updated_at, complexidade")
+          .select(
+            "servico_id, venda_id, observacao, updated_at, complexidade, liberacao_id, motivo_sem_pedido, liberacoes(numero)",
+          )
           .eq("id", id),
       ),
       rows(db.from("ordens_producao_etapas").select("*").eq("ordem_id", id).order("ordem")),
@@ -888,6 +912,9 @@ export const operacaoRepository = {
       complexidade,
       servicoId,
       vendaId: txtOuNull(extra["venda_id"]),
+      liberacaoId: txtOuNull(extra["liberacao_id"]),
+      liberacaoNumero: numeroEmbutido(extra["liberacoes"]),
+      motivoSemPedido: (txt(extra["motivo_sem_pedido"]) || "") as MotivoSemPedido | "",
       observacao: txt(extra["observacao"]),
       updatedAt: txt(extra["updated_at"]),
       etapasDetalhe: montarEtapas(etapas, apontamentos, apCols, recursos, amostras, {
@@ -913,6 +940,7 @@ export const operacaoRepository = {
         complexidade: dados.complexidade,
         cadastro_id: dados.cadastroId,
         venda_id: dados.vendaId,
+        motivo_sem_pedido: dados.vendaId ? "" : dados.motivoSemPedido,
         servico_id: dados.servicoId,
         descricao: dados.descricao,
         data_prevista: dados.dataPrevista,
@@ -926,6 +954,23 @@ export const operacaoRepository = {
     });
     if (error) throw dbError(error);
     return data as string;
+  },
+
+  /** Orders born from a liberação (one per pedido item), in item order. */
+  async ordensDaLiberacao(liberacaoId: string): Promise<OrdemDaLiberacao[]> {
+    const lista = await rows(
+      db
+        .from("ordens_producao")
+        .select("id, numero, status, descricao")
+        .eq("liberacao_id", liberacaoId)
+        .order("numero"),
+    );
+    return lista.map((o) => ({
+      id: txt(o["id"]),
+      numero: num(o["numero"]),
+      status: o["status"] as StatusOrdem,
+      descricao: txt(o["descricao"]),
+    }));
   },
 
   async marcarEtapa(etapaId: string, concluida: boolean): Promise<void> {
@@ -1061,7 +1106,7 @@ export const operacaoRepository = {
         db
           .from("ordens_producao")
           .select(ORDEM_COLUNAS)
-          .not("status", "in", '("Concluída","Cancelada")')
+          .not("status", "in", ORDENS_FORA_DO_PLANEJAMENTO)
           .order("numero", { ascending: false })
           .limit(500),
         recursos,
@@ -1156,7 +1201,7 @@ export const operacaoRepository = {
           db
             .from("ordens_producao")
             .select("id, numero, descricao")
-            .not("status", "in", '("Concluída","Cancelada")')
+            .not("status", "in", ORDENS_FORA_DO_PLANEJAMENTO)
             .order("numero", { ascending: false })
             .limit(300),
         ),
@@ -1175,7 +1220,7 @@ export const operacaoRepository = {
           db
             .from("ordens_producao")
             .select(ORDEM_COLUNAS)
-            .not("status", "in", '("Concluída","Cancelada")')
+            .not("status", "in", ORDENS_FORA_DO_PLANEJAMENTO)
             .order("numero", { ascending: false })
             .limit(300),
           recursos,

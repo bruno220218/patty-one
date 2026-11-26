@@ -125,6 +125,17 @@ describe("ordens de produção", () => {
     expect(validarOrdem({ ...base, tipo: "Instalação" })).toBe("Informe o local da instalação.");
     expect(validarOrdem({ ...base, tipo: "Impressão" })).toBeNull();
     expect(validarOrdem({ ...base, tipo: "Impressão", etapas: [] })).toMatch(/etapa/);
+    expect(validarOrdem({ ...base, tipo: "Impressão", semPedidoExigeMotivo: true })).toMatch(
+      /motivo/,
+    );
+    expect(
+      validarOrdem({
+        ...base,
+        tipo: "Impressão",
+        semPedidoExigeMotivo: true,
+        motivoSemPedido: "Garantia",
+      }),
+    ).toBeNull();
   });
 });
 

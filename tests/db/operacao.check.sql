@@ -34,7 +34,7 @@ begin
     out := out || ' comercialOrdem=PASSOU';
   exception when others then out := out || ' comercialOrdem=bloqueado'; end;
   perform set_config('request.jwt.claims', json_build_object('sub', pc, 'role', 'authenticated')::text, true);
-  o := salvar_ordem_producao(json_build_object('tipo', 'Instalação', 'descricao', 'Fachada teste',
+  o := salvar_ordem_producao(json_build_object('tipo', 'Instalação', 'descricao', 'Fachada teste', 'motivo_sem_pedido', 'Interno',
     'local_instalacao', 'Rua A', 'etapas', json_build_array('Preparação', 'Instalação', 'Conferência'),
     'equipe', json_build_array(c1))::jsonb);
   out := out || ' ordem=ok etapasCriadas=' || (select count(*) from ordens_producao_etapas where ordem_id = o);

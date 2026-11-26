@@ -44,6 +44,7 @@ export const TOM = {
 } as const;
 
 const TOM_ORDEM: Record<string, string> = {
+  "Aguardando liberação": TOM.primario,
   Aguardando: TOM.neutro,
   "Em andamento": TOM.aviso,
   Concluída: TOM.sucesso,

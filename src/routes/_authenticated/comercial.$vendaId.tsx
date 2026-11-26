@@ -592,7 +592,7 @@ function Editor({
                 ? "Pedido cancelado não vai para a produção."
                 : alterado
                   ? "Salve o pedido antes de liberar para a produção."
-                  : "Ainda não liberado. A liberação já vem com o cliente e os itens deste pedido e entra na fila do PCP."}
+                  : "Ainda não liberado. A liberação já vem com o cliente e os itens deste pedido, entra na fila do PCP e cria uma ordem de produção por item."}
             </p>
           )}
         </section>
@@ -625,9 +625,10 @@ function Editor({
                   <Link
                     to="/producao/$ordemId"
                     params={{ ordemId: o.id }}
-                    className="font-medium text-primary hover:underline"
+                    className="min-w-0 truncate font-medium text-primary hover:underline"
                   >
                     Ordem nº {o.numero}
+                    {o.descricao ? ` · ${o.descricao}` : ""}
                   </Link>
                   <OrdemStatusBadge status={o.status} />
                 </li>
