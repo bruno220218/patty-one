@@ -54,7 +54,7 @@ function ResetPasswordPage() {
       return;
     }
     toast.success("Senha alterada.");
-    navigate({ to: "/projetos", replace: true });
+    navigate({ to: "/inicio", replace: true });
   };
 
   return (

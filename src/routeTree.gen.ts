@@ -16,13 +16,14 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenticated/_gestor/route'
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedLixeiraRouteImport } from './routes/_authenticated/lixeira'
 import { Route as AuthenticatedMedidasRouteImport } from './routes/_authenticated/medidas'
 import { Route as AuthenticatedPaineisRouteImport } from './routes/_authenticated/paineis'
 import { Route as AuthenticatedPrazosRouteImport } from './routes/_authenticated/prazos'
 import { Route as AuthenticatedStatusServicosRouteImport } from './routes/_authenticated/status-servicos'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
-import { Route as AuthenticatedGestorDashboardRouteImport } from './routes/_authenticated/_gestor/dashboard'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorImportarRouteImport } from './routes/_authenticated/_gestor/importar'
 import { Route as AuthenticatedGestorImportarHistoricoRouteImport } from './routes/_authenticated/_gestor/importar-historico'
@@ -97,6 +98,16 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedInicioRoute = AuthenticatedInicioRouteImport.update({
+  id: '/inicio',
+  path: '/inicio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLixeiraRoute = AuthenticatedLixeiraRouteImport.update({
   id: '/lixeira',
   path: '/lixeira',
@@ -128,12 +139,6 @@ const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
   path: '/api/next-steps',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedGestorDashboardRoute =
-  AuthenticatedGestorDashboardRouteImport.update({
-    id: '/dashboard',
-    path: '/dashboard',
-    getParentRoute: () => AuthenticatedGestorRouteRoute,
-  } as any)
 const AuthenticatedGestorEquipeRoute =
   AuthenticatedGestorEquipeRouteImport.update({
     id: '/equipe',
@@ -366,13 +371,14 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/inicio': typeof AuthenticatedInicioRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/medidas': typeof AuthenticatedMedidasRoute
   '/paineis': typeof AuthenticatedPaineisRoute
   '/prazos': typeof AuthenticatedPrazosRoute
   '/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/dashboard': typeof AuthenticatedGestorDashboardRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
   '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -418,13 +424,14 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/inicio': typeof AuthenticatedInicioRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/medidas': typeof AuthenticatedMedidasRoute
   '/paineis': typeof AuthenticatedPaineisRoute
   '/prazos': typeof AuthenticatedPrazosRoute
   '/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/dashboard': typeof AuthenticatedGestorDashboardRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
   '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -473,13 +480,14 @@ export interface FileRoutesById {
   '/_authenticated/_gestor': typeof AuthenticatedGestorRouteRouteWithChildren
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/lixeira': typeof AuthenticatedLixeiraRoute
   '/_authenticated/medidas': typeof AuthenticatedMedidasRoute
   '/_authenticated/paineis': typeof AuthenticatedPaineisRoute
   '/_authenticated/prazos': typeof AuthenticatedPrazosRoute
   '/_authenticated/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/next-steps': typeof ApiNextStepsRoute
-  '/_authenticated/_gestor/dashboard': typeof AuthenticatedGestorDashboardRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/importar': typeof AuthenticatedGestorImportarRoute
   '/_authenticated/_gestor/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -527,13 +535,14 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/arquivados'
     | '/configuracoes'
+    | '/dashboard'
+    | '/inicio'
     | '/lixeira'
     | '/medidas'
     | '/paineis'
     | '/prazos'
     | '/status-servicos'
     | '/api/next-steps'
-    | '/dashboard'
     | '/equipe'
     | '/importar'
     | '/importar-historico'
@@ -579,13 +588,14 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/arquivados'
     | '/configuracoes'
+    | '/dashboard'
+    | '/inicio'
     | '/lixeira'
     | '/medidas'
     | '/paineis'
     | '/prazos'
     | '/status-servicos'
     | '/api/next-steps'
-    | '/dashboard'
     | '/equipe'
     | '/importar'
     | '/importar-historico'
@@ -633,13 +643,14 @@ export interface FileRouteTypes {
     | '/_authenticated/_gestor'
     | '/_authenticated/arquivados'
     | '/_authenticated/configuracoes'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/inicio'
     | '/_authenticated/lixeira'
     | '/_authenticated/medidas'
     | '/_authenticated/paineis'
     | '/_authenticated/prazos'
     | '/_authenticated/status-servicos'
     | '/api/next-steps'
-    | '/_authenticated/_gestor/dashboard'
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/importar'
     | '/_authenticated/_gestor/importar-historico'
@@ -739,6 +750,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inicio': {
+      id: '/_authenticated/inicio'
+      path: '/inicio'
+      fullPath: '/inicio'
+      preLoaderRoute: typeof AuthenticatedInicioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lixeira': {
       id: '/_authenticated/lixeira'
       path: '/lixeira'
@@ -780,13 +805,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/next-steps'
       preLoaderRoute: typeof ApiNextStepsRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/_gestor/dashboard': {
-      id: '/_authenticated/_gestor/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedGestorDashboardRouteImport
-      parentRoute: typeof AuthenticatedGestorRouteRoute
     }
     '/_authenticated/_gestor/equipe': {
       id: '/_authenticated/_gestor/equipe'
@@ -1058,7 +1076,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedGestorRouteRouteChildren {
-  AuthenticatedGestorDashboardRoute: typeof AuthenticatedGestorDashboardRoute
   AuthenticatedGestorEquipeRoute: typeof AuthenticatedGestorEquipeRoute
   AuthenticatedGestorImportarRoute: typeof AuthenticatedGestorImportarRoute
   AuthenticatedGestorImportarHistoricoRoute: typeof AuthenticatedGestorImportarHistoricoRoute
@@ -1068,7 +1085,6 @@ interface AuthenticatedGestorRouteRouteChildren {
 
 const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildren =
   {
-    AuthenticatedGestorDashboardRoute: AuthenticatedGestorDashboardRoute,
     AuthenticatedGestorEquipeRoute: AuthenticatedGestorEquipeRoute,
     AuthenticatedGestorImportarRoute: AuthenticatedGestorImportarRoute,
     AuthenticatedGestorImportarHistoricoRoute:
@@ -1086,6 +1102,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGestorRouteRoute: typeof AuthenticatedGestorRouteRouteWithChildren
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
   AuthenticatedMedidasRoute: typeof AuthenticatedMedidasRoute
   AuthenticatedPaineisRoute: typeof AuthenticatedPaineisRoute
@@ -1130,6 +1148,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGestorRouteRoute: AuthenticatedGestorRouteRouteWithChildren,
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
   AuthenticatedMedidasRoute: AuthenticatedMedidasRoute,
   AuthenticatedPaineisRoute: AuthenticatedPaineisRoute,

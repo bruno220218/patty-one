@@ -105,3 +105,5 @@ export * from "./cloud-midia";
 export * from "./midia-rules";
 export * from "./cloud-financeiro";
 export * from "./financeiro-rules";
+export * from "./dashboard";
+export * from "./cloud-dashboard";

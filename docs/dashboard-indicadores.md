@@ -1,10 +1,22 @@
 # Dashboard: definição dos indicadores
 
-**Para:** Vitor · **Situação:** decidido em 26/11/2026; implementação depois do fluxo de produção · **Tela:** menu Gestão › Dashboard (`/dashboard`)
+**Para:** Vitor · **Situação:** implementado em 26/11/2026 (migração 0037) · **Tela:** menu Visão geral › Dashboard (`/dashboard`)
 
-O Dashboard já está montado no app em versão pré-configurada: 5 seções com 4 cartões cada,
-todos marcados "A definir". Falta decidir **quais números entram, como cada um é calculado e
-quem vê**. Este arquivo é onde essas decisões ficam registradas.
+Este arquivo registra **quais números entram no Dashboard, como cada um é calculado e quem vê**.
+Os 20 indicadores abaixo estão no ar desde 26/11/2026. Para mudar algum, edite a decisão aqui e
+peça ao Claude para aplicar.
+
+**Detalhes que a implementação precisou fixar** (diga se algum deve ser diferente):
+
+- **Ordens atrasadas** contam também as que estão "Aguardando liberação" com a data prevista já
+  passada. **Ordens em andamento** não contam essas, porque ainda não entraram na produção.
+- **Bloqueios abertos** contam só os de projetos não arquivados.
+- **Mídia OOH:** a ocupação é marcada por ponto, então todas as faces do ponto contam juntas
+  (um ponto de 2 faces ocupado = 2 faces ocupadas).
+- **Conversão:** a variação contra o mês anterior aparece em pontos percentuais (ex.: "↑ 5 p.p.").
+  Sem decisões em um dos dois meses, ela não aparece.
+- **Variação em %** (pedidos e recebido): se o mesmo trecho do mês anterior deu zero, ela não aparece.
+- Os números se atualizam sozinhos a cada 5 minutos com a página aberta.
 
 ---
 
@@ -34,8 +46,7 @@ alguém da equipe.
    Decisão: criar a coluna `vendas.decidida_em`, preenchida sozinha quando a proposta passa a
    Aprovada ou Recusada. Nas propostas antigas, as aprovadas usam a data de criação do pedido gerado
    e as recusadas usam `updated_at`.
-5. **Ordem:** o Dashboard vem depois do fluxo de produção (que reserva as migrações 0032 a 0040).
-   Na hora, confira o próximo número livre.
+5. **Ordem:** o Dashboard ficou com a migração 0037 (o fluxo de produção segue a partir da 0038).
 
 ---
 

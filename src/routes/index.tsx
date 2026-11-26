@@ -18,6 +18,6 @@ export const Route = createFileRoute("/")({
     ],
   }),
   beforeLoad: () => {
-    throw redirect({ to: "/projetos" });
+    throw redirect({ to: "/inicio" });
   },
 });

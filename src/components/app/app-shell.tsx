@@ -120,6 +120,14 @@ type Setor = {
 
 const SETORES: Setor[] = [
   {
+    // Functions with at least one Dashboard section (SECOES_DASHBOARD); gestão sees it too.
+    titulo: "Visão geral",
+    funcoes: ["direcao", "comercial", "pcp", "financeiro"],
+    subs: [
+      { itens: [{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" }] },
+    ],
+  },
+  {
     titulo: "Comercial",
     funcoes: ["comercial"],
     subs: [
@@ -428,13 +436,6 @@ const SETORES: Setor[] = [
       {
         itens: [
           {
-            id: "dashboard",
-            label: "Dashboard",
-            icon: LayoutDashboard,
-            to: "/dashboard",
-            gestorOnly: true,
-          },
-          {
             id: "importar",
             label: "Importar cadastros",
             icon: Upload,
@@ -730,7 +731,7 @@ function SidebarBody({
   return (
     <div className="flex h-full flex-col">
       <Link
-        to="/projetos"
+        to="/inicio"
         className={cn("flex items-center gap-3 px-4 py-5", collapsed && "justify-center px-0")}
       >
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white">
@@ -929,7 +930,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Menu className="h-5 w-5" />
             </button>
             <nav aria-label="Você está em" className="hidden items-center gap-1.5 text-sm sm:flex">
-              <Link to="/projetos" className="text-muted-foreground hover:text-primary">
+              <Link to="/inicio" className="text-muted-foreground hover:text-primary">
                 Início
               </Link>
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />

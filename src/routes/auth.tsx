@@ -52,7 +52,7 @@ function AuthPage() {
     } catch {
       /* ignore */
     }
-    navigate({ to: target ?? "/projetos", replace: true });
+    navigate({ to: target ?? "/inicio", replace: true });
   };
 
   useEffect(() => {

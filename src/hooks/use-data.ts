@@ -20,6 +20,7 @@ import {
   prazoRepository,
   financeiroRepository,
   financeiroPagarRepository,
+  dashboardRepository,
   midiaRepository,
   type VendaFiltros,
   type HistoricoFiltros,
@@ -146,6 +147,14 @@ export const teamQuery = () =>
   queryOptions({ queryKey: ["team"], queryFn: () => teamRepository.list() });
 
 export const useCurrentUser = () => useQuery(currentUserQuery());
+/** Dashboard numbers; refreshed every 5 minutes while the page is open. */
+export const useDashboard = () =>
+  useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => dashboardRepository.resumo(),
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
+  });
 /** Production sectors in list order (null before migration 0031). */
 export const useSetores = () =>
   useQuery({ queryKey: ["setores"], queryFn: () => setoresRepository.list(), staleTime: 60_000 });
