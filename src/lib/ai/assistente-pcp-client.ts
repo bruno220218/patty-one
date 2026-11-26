@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { AssistenteResposta, MomentoAssistente } from "./assistente-pcp-schema";
+import type { AssistenteRequest, AssistenteResposta } from "./assistente-pcp-schema";
 
 const CHAVE_LIGADO = "pattyone:assistente-pcp";
 const PREFIXO_CACHE = "pattyone:assistente-pcp:";
@@ -24,8 +24,16 @@ function hoje(): string {
  * Same record and same version on the same day = no new AI call (saves the daily quota).
  * `versao` changes when the record changes (e.g. the liberação's updatedAt).
  */
-function chaveCache(momento: MomentoAssistente, id: string, versao: string): string {
-  return `${PREFIXO_CACHE}${momento}:${id}:${versao}:${hoje()}`;
+function chaveCache(pedido: AssistenteRequest, versao: string): string {
+  const alvo = pedido.momento === "programacao" ? pedido.data : pedido.id;
+  return `${PREFIXO_CACHE}${pedido.momento}:${alvo}:${versao}:${hoje()}`;
+}
+
+/** Short stable signature of a text (e.g. the day's services), to use as `versao`. */
+export function assinatura(texto: string): string {
+  let h = 5381;
+  for (let i = 0; i < texto.length; i++) h = ((h << 5) + h + texto.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
 }
 
 function limparCacheAntigo(): void {
@@ -39,12 +47,11 @@ function limparCacheAntigo(): void {
 export class AssistenteError extends Error {}
 
 export async function pedirAssistente(
-  momento: MomentoAssistente,
-  id: string,
+  pedido: AssistenteRequest,
   versao: string,
   { signal, novo = false }: { signal?: AbortSignal; novo?: boolean } = {},
 ): Promise<AssistenteResposta> {
-  const chave = chaveCache(momento, id, versao);
+  const chave = chaveCache(pedido, versao);
   if (!novo) {
     const guardado = window.localStorage.getItem(chave);
     if (guardado) {
@@ -61,7 +68,7 @@ export async function pedirAssistente(
   const r = await fetch("/api/assistente-pcp", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
-    body: JSON.stringify({ momento, id }),
+    body: JSON.stringify(pedido),
     signal: signal ?? null,
   });
   const corpo = (await r.json().catch(() => null)) as

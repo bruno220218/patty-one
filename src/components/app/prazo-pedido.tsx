@@ -119,8 +119,7 @@ export function PrazoPedidoSection({
               )}
               {p.status === "aguardando" && podeResponder && (
                 <AssistentePcp
-                  momento="prazo"
-                  id={p.id}
+                  pedido={{ momento: "prazo", id: p.id }}
                   versao={p.solicitadoEm}
                   onUsarData={setPrazo}
                 />

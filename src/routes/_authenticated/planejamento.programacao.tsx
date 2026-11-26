@@ -14,6 +14,8 @@ import {
   totalPendencias,
 } from "@/components/app/programacao-paineis";
 import { useCurrentUser, useProgramacao } from "@/hooks/use-data";
+import { AssistentePcp } from "@/components/app/assistente-pcp";
+import { assinatura } from "@/lib/ai/assistente-pcp-client";
 import {
   adicionarDias,
   canExecutarOperacao,
@@ -118,6 +120,13 @@ function ProgramacaoPage() {
           </div>
         </div>
         <h2 className="text-lg font-semibold">{tituloDoPeriodo(search.data, "diario")}</h2>
+        {/* Assistente do PCP: conflicts, what to prioritize and the pending items of the day. */}
+        {dados && canGerirOperacao(me) && (
+          <AssistentePcp
+            pedido={{ momento: "programacao", data: search.data }}
+            versao={assinatura(dados.itens.map((i) => `${i.id}:${i.status}`).join(","))}
+          />
+        )}
         {dados && dados.semBaixa.length > 0 && search.aba !== "pendencias" && (
           <button
             type="button"

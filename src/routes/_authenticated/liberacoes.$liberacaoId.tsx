@@ -180,7 +180,7 @@ function LiberacaoPage() {
 
       {/* Assistente do PCP: opens by itself while the liberação waits for approval. */}
       {lib.status === "aguardando" && canGerirOperacao(me) && (
-        <AssistentePcp momento="liberacao" id={lib.id} versao={lib.updatedAt} />
+        <AssistentePcp pedido={{ momento: "liberacao", id: lib.id }} versao={lib.updatedAt} />
       )}
 
       <AnexosPanel

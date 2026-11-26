@@ -28,6 +28,7 @@ import { ClientePicker, OrdemStatusBadge, TOM, selectClass } from "@/components/
 import { EtapasComTempo } from "@/components/app/etapas-tempo";
 import { VinculosBriefingVisita } from "@/components/app/vinculos-briefing-visita";
 import { ConclusaoOrdemPanel } from "@/components/app/ordem-conclusao";
+import { AssistentePcp } from "@/components/app/assistente-pcp";
 import { ColagemCampos, enderecoDoPonto } from "@/components/app/ordem-colagem-campos";
 import {
   useChecklists,
@@ -409,6 +410,20 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             </p>
           </div>
         </div>
+      )}
+
+      {/* Assistente do PCP: complexity, priority, stalled steps and, in conferência, what to check. */}
+      {doc && podeGerir && doc.status !== "Concluída" && doc.status !== "Cancelada" && (
+        <AssistentePcp
+          pedido={{ momento: "ordem", id: doc.id }}
+          versao={doc.updatedAt}
+          onAplicarOrdem={(v) =>
+            set({
+              ...(v.complexidade ? { complexidade: v.complexidade as Complexidade } : {}),
+              ...(v.prioridade ? { prioridade: v.prioridade } : {}),
+            })
+          }
+        />
       )}
 
       {doc && (

@@ -5,13 +5,14 @@ import { z } from "zod";
  * and which record; the server reads the context from the database as the caller
  * (`contexto_assistente_pcp`), so nothing the browser sends reaches the AI.
  */
-export const MOMENTOS_ASSISTENTE = ["prazo", "liberacao"] as const;
+export const MOMENTOS_ASSISTENTE = ["prazo", "liberacao", "ordem", "programacao"] as const;
 export type MomentoAssistente = (typeof MOMENTOS_ASSISTENTE)[number];
 
-export const assistenteRequestSchema = z.object({
-  momento: z.enum(MOMENTOS_ASSISTENTE),
-  id: z.string().uuid(),
-});
+/** A record (pedido de prazo, liberação, ordem) by id, or the Programação of a day. */
+export const assistenteRequestSchema = z.union([
+  z.object({ momento: z.enum(["prazo", "liberacao", "ordem"]), id: z.string().uuid() }),
+  z.object({ momento: z.literal("programacao"), data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }),
+]);
 export type AssistenteRequest = z.infer<typeof assistenteRequestSchema>;
 
 /** Weekly load computed by the database (`carga_producao`). */
@@ -49,14 +50,32 @@ export type SugestaoLiberacao = {
   alertas: string[];
 };
 
+export const COMPLEXIDADES_SUGERIDAS = ["Simples", "Média", "Complexa"] as const;
+export const PRIORIDADES_SUGERIDAS = ["Baixa", "Normal", "Alta", "Urgente"] as const;
+
+export type SugestaoOrdem = {
+  resumo: string;
+  complexidade: { valor: (typeof COMPLEXIDADES_SUGERIDAS)[number]; motivo: string } | null;
+  prioridade: { valor: (typeof PRIORIDADES_SUGERIDAS)[number]; motivo: string } | null;
+  etapasParadas: string[];
+  conferir: string[];
+  alertas: string[];
+};
+
+export type SugestaoProgramacao = {
+  resumo: string;
+  prioridades: { ordem: number; motivo: string }[];
+  conflitos: string[];
+  sugestoes: string[];
+  alertas: string[];
+};
+
+type Base = { carga: CargaProducao; aviso: string | null };
 export type AssistenteResposta =
-  | { momento: "prazo"; carga: CargaProducao; sugestao: SugestaoPrazo | null; aviso: string | null }
-  | {
-      momento: "liberacao";
-      carga: CargaProducao;
-      sugestao: SugestaoLiberacao | null;
-      aviso: string | null;
-    };
+  | (Base & { momento: "prazo"; sugestao: SugestaoPrazo | null })
+  | (Base & { momento: "liberacao"; sugestao: SugestaoLiberacao | null })
+  | (Base & { momento: "ordem"; sugestao: SugestaoOrdem | null })
+  | (Base & { momento: "programacao"; sugestao: SugestaoProgramacao | null });
 
 /** The first JSON object in a model reply (it may come wrapped in ``` fences or prose). */
 export function jsonDaResposta(texto: string): unknown {
@@ -137,3 +156,51 @@ export const ROTULO_AVALIACAO: Record<AvaliacaoPrazo, string> = {
   nao_cabe: "O prazo não cabe na carga",
   sem_prazo: "Sem prazo definido",
 };
+
+const escolha = <T extends string>(v: unknown, opcoes: readonly T[]): T | null => {
+  const t = texto(v, 20).toLocaleLowerCase("pt-BR");
+  return opcoes.find((o) => o.toLocaleLowerCase("pt-BR") === t) ?? null;
+};
+
+/** Reads the order review; complexity and priority only from the app's own lists. */
+export function lerSugestaoOrdem(resposta: string): SugestaoOrdem | null {
+  const j = jsonDaResposta(resposta) as Record<string, unknown> | null;
+  if (!j || typeof j !== "object") return null;
+  const c = j["complexidade"] as Record<string, unknown> | undefined;
+  const p = j["prioridade"] as Record<string, unknown> | undefined;
+  const cv = escolha(c?.["valor"], COMPLEXIDADES_SUGERIDAS);
+  const pv = escolha(p?.["valor"], PRIORIDADES_SUGERIDAS);
+  const s: SugestaoOrdem = {
+    resumo: texto(j["resumo"]),
+    complexidade: cv ? { valor: cv, motivo: texto(c?.["motivo"]) } : null,
+    prioridade: pv ? { valor: pv, motivo: texto(p?.["motivo"]) } : null,
+    etapasParadas: lista(j["etapas_paradas"]),
+    conferir: lista(j["conferir"], 8),
+    alertas: lista(j["alertas"]),
+  };
+  return s.resumo || s.complexidade || s.prioridade || s.etapasParadas.length || s.conferir.length
+    ? s
+    : null;
+}
+
+/** Reads the day review; priorities only for order numbers that were in the context. */
+export function lerSugestaoProgramacao(
+  resposta: string,
+  ordensConhecidas: number[],
+): SugestaoProgramacao | null {
+  const j = jsonDaResposta(resposta) as Record<string, unknown> | null;
+  if (!j || typeof j !== "object") return null;
+  const conhecidas = new Set(ordensConhecidas);
+  const s: SugestaoProgramacao = {
+    resumo: texto(j["resumo"]),
+    prioridades: (Array.isArray(j["prioridades"]) ? j["prioridades"] : [])
+      .map((x) => x as Record<string, unknown>)
+      .map((x) => ({ ordem: Number(x["ordem"]), motivo: texto(x["motivo"]) }))
+      .filter((x) => conhecidas.has(x.ordem))
+      .slice(0, 8),
+    conflitos: lista(j["conflitos"]),
+    sugestoes: lista(j["sugestoes"]),
+    alertas: lista(j["alertas"]),
+  };
+  return s.resumo || s.prioridades.length || s.conflitos.length || s.sugestoes.length ? s : null;
+}

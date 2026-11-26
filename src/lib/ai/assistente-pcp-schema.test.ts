@@ -3,7 +3,9 @@ import {
   assistenteRequestSchema,
   jsonDaResposta,
   lerSugestaoLiberacao,
+  lerSugestaoOrdem,
   lerSugestaoPrazo,
+  lerSugestaoProgramacao,
 } from "./assistente-pcp-schema";
 
 describe("assistente do PCP", () => {
@@ -12,6 +14,43 @@ describe("assistente do PCP", () => {
     expect(assistenteRequestSchema.safeParse({ momento: "prazo", id }).success).toBe(true);
     expect(assistenteRequestSchema.safeParse({ momento: "outro", id }).success).toBe(false);
     expect(assistenteRequestSchema.safeParse({ momento: "prazo", id: "1" }).success).toBe(false);
+    expect(assistenteRequestSchema.safeParse({ momento: "ordem", id }).success).toBe(true);
+    expect(
+      assistenteRequestSchema.safeParse({ momento: "programacao", data: "2026-11-26" }).success,
+    ).toBe(true);
+    expect(assistenteRequestSchema.safeParse({ momento: "programacao", id }).success).toBe(false);
+  });
+
+  it("lê a revisão da ordem só com complexidade e prioridade da lista", () => {
+    const s = lerSugestaoOrdem(
+      JSON.stringify({
+        resumo: "Corte parado há 2 dias",
+        complexidade: { valor: "complexa", motivo: "Fachada grande" },
+        prioridade: { valor: "Altíssima", motivo: "?" },
+        etapas_paradas: ["Corte: pausada por falta de lona"],
+        conferir: [],
+      }),
+    );
+    expect(s?.complexidade).toEqual({ valor: "Complexa", motivo: "Fachada grande" });
+    expect(s?.prioridade).toBeNull();
+    expect(s?.etapasParadas).toEqual(["Corte: pausada por falta de lona"]);
+    expect(lerSugestaoOrdem("{}")).toBeNull();
+  });
+
+  it("lê a revisão do dia só com ordens que estavam no contexto", () => {
+    const s = lerSugestaoProgramacao(
+      JSON.stringify({
+        resumo: "Dia cheio na Externa",
+        prioridades: [
+          { ordem: 40, motivo: "Vence amanhã" },
+          { ordem: 999, motivo: "Inventada" },
+        ],
+        conflitos: ["Ana em dois serviços"],
+      }),
+      [40, 41],
+    );
+    expect(s?.prioridades).toEqual([{ ordem: 40, motivo: "Vence amanhã" }]);
+    expect(s?.conflitos).toEqual(["Ana em dois serviços"]);
   });
 
   it("acha o JSON mesmo com cercas e texto em volta", () => {

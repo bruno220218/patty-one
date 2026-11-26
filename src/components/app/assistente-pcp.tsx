@@ -13,6 +13,7 @@ import {
 } from "@/lib/ai/assistente-pcp-client";
 import {
   ROTULO_AVALIACAO,
+  type AssistenteRequest,
   type AssistenteResposta,
   type CargaProducao,
   type MomentoAssistente,
@@ -21,26 +22,32 @@ import {
 const TITULO: Record<MomentoAssistente, string> = {
   prazo: "Sugestão de prazo",
   liberacao: "Revisão da liberação",
+  ordem: "Revisão da ordem",
+  programacao: "Programação do dia",
 };
 
 /**
  * Assistente do PCP: a side panel that opens by itself at the PCP's moments (answering a
- * deadline request, approving a liberação), with the workload and the AI's suggestions. It
- * never saves anything; "Usar esta data" only fills the field. Each person can turn off the
- * automatic opening; the button to open it stays.
+ * deadline request, approving a liberação, an order, the day's Programação), with the
+ * workload and the AI's suggestions. It never saves anything: "Usar esta data" and "Aplicar"
+ * only fill the form. Each person can turn off the automatic opening; the button stays.
  */
 export function AssistentePcp({
-  momento,
-  id,
+  pedido: alvo,
   versao,
   onUsarData,
+  onAplicarOrdem,
 }: {
-  momento: MomentoAssistente;
-  id: string;
+  pedido: AssistenteRequest;
   /** Changes when the record changes, so a new suggestion is asked. */
   versao: string;
   onUsarData?: (data: string) => void;
+  /** Order page: fills complexity/priority in the form (the PCP still saves). */
+  onAplicarOrdem?: (valores: { complexidade?: string; prioridade?: string }) => void;
 }) {
+  const momento = alvo.momento;
+  // Stable across renders even when the caller passes a new object literal.
+  const chaveAlvo = JSON.stringify(alvo);
   const [aberto, setAberto] = useState(false);
   const [ligado, setLigado] = useState(true);
   const [carregando, setCarregando] = useState(false);
@@ -56,7 +63,12 @@ export function AssistentePcp({
       setCarregando(true);
       setErro(null);
       try {
-        setResposta(await pedirAssistente(momento, id, versao, { signal: ctrl.signal, novo }));
+        setResposta(
+          await pedirAssistente(JSON.parse(chaveAlvo) as AssistenteRequest, versao, {
+            signal: ctrl.signal,
+            novo,
+          }),
+        );
       } catch (e) {
         if (ctrl.signal.aborted) return;
         setErro(e instanceof AssistenteError ? e.message : "O assistente não respondeu agora.");
@@ -64,7 +76,7 @@ export function AssistentePcp({
         if (pedido.current === ctrl) setCarregando(false);
       }
     },
-    [momento, id, versao],
+    [chaveAlvo, versao],
   );
 
   // Opens by itself once per record/version, unless turned off.
@@ -198,6 +210,95 @@ export function AssistentePcp({
                     </ul>
                   </div>
                 )}
+                <Alertas itens={resposta.sugestao.alertas} />
+              </div>
+            )}
+            {resposta.momento === "ordem" && resposta.sugestao && (
+              <div className="space-y-3">
+                {resposta.sugestao.resumo && <p>{resposta.sugestao.resumo}</p>}
+                {(resposta.sugestao.complexidade || resposta.sugestao.prioridade) && (
+                  <div className="space-y-1.5 rounded-xl border p-2.5">
+                    {resposta.sugestao.complexidade && (
+                      <p>
+                        Complexidade: <strong>{resposta.sugestao.complexidade.valor}</strong>
+                        {resposta.sugestao.complexidade.motivo && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            — {resposta.sugestao.complexidade.motivo}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    {resposta.sugestao.prioridade && (
+                      <p>
+                        Prioridade: <strong>{resposta.sugestao.prioridade.valor}</strong>
+                        {resposta.sugestao.prioridade.motivo && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            — {resposta.sugestao.prioridade.motivo}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    {onAplicarOrdem && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() =>
+                          onAplicarOrdem({
+                            ...(resposta.sugestao?.complexidade
+                              ? { complexidade: resposta.sugestao.complexidade.valor }
+                              : {}),
+                            ...(resposta.sugestao?.prioridade
+                              ? { prioridade: resposta.sugestao.prioridade.valor }
+                              : {}),
+                          })
+                        }
+                      >
+                        <CalendarCheck />
+                        Aplicar na ordem
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {resposta.sugestao.etapasParadas.length > 0 && (
+                  <div>
+                    <p className="font-medium">Etapas paradas</p>
+                    <Lista itens={resposta.sugestao.etapasParadas} />
+                  </div>
+                )}
+                {resposta.sugestao.conferir.length > 0 && (
+                  <div>
+                    <p className="font-medium">O que conferir</p>
+                    <Lista itens={resposta.sugestao.conferir} />
+                  </div>
+                )}
+                <Alertas itens={resposta.sugestao.alertas} />
+              </div>
+            )}
+            {resposta.momento === "programacao" && resposta.sugestao && (
+              <div className="space-y-3">
+                {resposta.sugestao.resumo && <p>{resposta.sugestao.resumo}</p>}
+                {resposta.sugestao.prioridades.length > 0 && (
+                  <div>
+                    <p className="font-medium">Priorizar</p>
+                    <ul className="mt-1 space-y-1">
+                      {resposta.sugestao.prioridades.map((p) => (
+                        <li key={p.ordem}>
+                          Ordem nº {p.ordem}
+                          {p.motivo && <span className="text-muted-foreground"> — {p.motivo}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {resposta.sugestao.conflitos.length > 0 && (
+                  <div>
+                    <p className="font-medium">Conflitos</p>
+                    <Alertas itens={resposta.sugestao.conflitos} />
+                  </div>
+                )}
+                <Lista itens={resposta.sugestao.sugestoes} />
                 <Alertas itens={resposta.sugestao.alertas} />
               </div>
             )}
