@@ -34,13 +34,13 @@ Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-produ
 - [x] 3. Itens do pedido com identidade fixa — 0034 (no ar em 26/11)
 - [x] Extra. Tempo das etapas adaptativo (Iniciar/Pausar/baixa, complexidade, estimativas) + botão "Dados para a skill PCP" — 0035 (no ar em 26/11)
 - [x] 4. Ordens automáticas (uma por item, todos os itens) e ordem sem pedido com motivo — 0036 (no ar em 26/11)
-- [ ] 5. Mudança no pedido depois da liberação vira comentário automático + aviso ao PCP — 0037
-- [ ] 6. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0038
-- [ ] 7. Conclusão: montagem → PCP confere → comercial registra a confirmação do cliente — 0039
+- [ ] 5. Mudança no pedido depois da liberação vira comentário automático + aviso ao PCP — 0038
+- [ ] 6. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0039
+- [ ] 7. Conclusão: montagem → PCP confere → comercial registra a confirmação do cliente — 0040
 - [ ] 8. Status Serviços lendo as ordens
 - [ ] 9. IA que ajuda o PCP a dar o prazo (sugere pela carga; o PCP decide)
-- [ ] 10. Briefing e visita ligados ao pedido ou à ordem — 0040
-- [ ] 11. Mídia OOH: ordem de colagem — 0041
+- [ ] 10. Briefing e visita ligados ao pedido ou à ordem — 0041
+- [ ] 11. Mídia OOH: ordem de colagem — 0042
 
 ## Tarefas futuras (agendadas)
 - [x] Financeiro: a receber, contratos de aluguel e de energia (vindos do PattyOne; só Gestão, Direção e Financeiro) — migração 0026

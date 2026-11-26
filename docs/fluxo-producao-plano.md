@@ -39,13 +39,13 @@ projetos já abertos terminam no caminho antigo.
 | 2   | Solicitar prazo                                | 0033     | No pedido, "Solicitar prazo": o PCP recebe o aviso, informa a data e o comercial é avisado. A liberação usa esse prazo.             |
 | 3   | Itens do pedido com identidade fixa            | 0034     | Nada visível. Prepara "uma ordem por item" (ver nota técnica 1).                                                                    |
 | 4   | Ordens automáticas e ordem sem pedido          | 0036     | Ao criar a liberação, nasce uma ordem por item ("Aguardando liberação"). Sem pedido, o PCP abre a ordem à mão com o motivo.         |
-| 5   | Mudança depois da liberação                    | 0036     | Mudou o pedido já liberado: comentário automático na liberação e aviso ao PCP. Um item novo ganha uma ordem nova.                   |
-| 6   | Etapas da ordem a partir do checklist          | 0037     | As etapas vêm do checklist, com as regras do Projeto: quem marcou e quando, só gestão desmarca, parâmetros fixos.                   |
-| 7   | Conclusão com conferência e cliente            | 0038     | Montagem marca feito → "Aguardando conferência" → PCP confere → comercial avisa o cliente e registra a confirmação → Concluída.      |
+| 5   | Mudança depois da liberação                    | 0038     | Mudou o pedido já liberado: comentário automático na liberação e aviso ao PCP. Um item novo ganha uma ordem nova.                   |
+| 6   | Etapas da ordem a partir do checklist          | 0039     | As etapas vêm do checklist, com as regras do Projeto: quem marcou e quando, só gestão desmarca, parâmetros fixos.                   |
+| 7   | Conclusão com conferência e cliente            | 0040     | Montagem marca feito → "Aguardando conferência" → PCP confere → comercial avisa o cliente e registra a confirmação → Concluída.      |
 | 8   | Status Serviços lendo as ordens                | —        | O comercial vê etapa, prazo, data na Programação, equipe e fotos. Projetos antigos aparecem até terminarem.                         |
 | 9   | IA que ajuda o PCP a dar o prazo               | —        | Ao responder "Solicitar prazo", o PCP vê a carga do período e uma sugestão da IA com o motivo. Ele aceita ou escolhe outra data.     |
-| 10  | Briefing e visita ligados ao pedido ou à ordem | 0039     | Briefing e visita técnica ganham "pedido" ou "ordem" (opcionais). Os feitos antes do pedido aparecem também na ordem.               |
-| 11  | Mídia OOH: ordem de colagem                    | 0040     | O item de mídia gera uma ordem do tipo "Colagem" com ponto e bi-semana, que entra na Programação.                                   |
+| 10  | Briefing e visita ligados ao pedido ou à ordem | 0041     | Briefing e visita técnica ganham "pedido" ou "ordem" (opcionais). Os feitos antes do pedido aparecem também na ordem.               |
+| 11  | Mídia OOH: ordem de colagem                    | 0042     | O item de mídia gera uma ordem do tipo "Colagem" com ponto e bi-semana, que entra na Programação.                                   |
 
 A IA (etapa 9) vem depois das ordens automáticas, porque precisa de ordens e Programação reais
 para medir a carga. Até lá, o "Solicitar prazo" funciona sem ela.
@@ -59,6 +59,9 @@ skill de PCP e a IA da etapa 9. Detalhes em `AGENTS.md` (Tempo das etapas). **Po
 migrações das etapas 4 a 11 andam uma casa: a etapa 4 passa a ser a 0036.** A etapa 6 (etapas a
 partir do checklist) precisa manter `iniciar_etapa_producao`/`pausar_etapa_producao` e fechar o
 trecho aberto ao dar baixa, como faz o `atualizar_etapa_producao` da 0035.
+
+A 0037 ficou para o Dashboard (`docs/dashboard-indicadores.md`), então as etapas 5 a 11 começam na
+0038.
 
 Os números de migração são uma previsão: confira o próximo número livre em todas as branches
 antes de cada etapa.
