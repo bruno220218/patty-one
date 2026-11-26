@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/app/page-header";
+import { SkillComercialButton } from "@/components/app/skill-comercial-dialog";
 import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { selectClass } from "@/components/app/operacao-ui";
@@ -88,6 +89,7 @@ function ComercialPage() {
             </Button>
             {podeVender && (
               <>
+                <SkillComercialButton />
                 <Button asChild variant="outline" className="h-10">
                   <Link to="/comercial/$vendaId" params={{ vendaId: "novo-pedido" }}>
                     <ShoppingCart />
