@@ -52,7 +52,7 @@ begin
     || ' checklist=' || (select checklist_id = cl_fixo from ordens_producao where id = o)
     || ' fixas=' || (select etapas_fixas from ordens_producao where id = o)
     || ' impressaoPadrao=' || (select count(*) from ordens_producao_etapas e2 join ordens_producao o3 on o3.id = e2.ordem_id
-                               where o3.liberacao_id = lib and o3.tipo = 'Impressão');
+                               where o3.liberacao_id = lib and o3.tipo = 'Colagem');  -- Mídia OOH vira Colagem desde a 0042
 
   -- Trocar o checklist antes de começar: só gestão/PCP.
   begin perform trocar_checklist_ordem(o, cl_livre); out := out || ' comercialTroca=ALLOWED';

@@ -57,6 +57,7 @@ export function linhaDaOrdem(o: OrdemResumo, data: string): LinhaProgramacao {
     servico: o.servicoNome,
     detalhamento: o.descricao,
     local: o.localInstalacao,
+    pontoId: o.pontoId ?? "",
     veiculoId: o.veiculoId ?? "",
   };
 }

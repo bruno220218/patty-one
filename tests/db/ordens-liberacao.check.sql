@@ -1,6 +1,6 @@
 -- Self-checking test of migration 0036 (ordens automáticas da liberação e ordem sem pedido). Run it
 -- as one statement: it always ends with an exception "RESULT: ..." so every change is rolled back. Expected:
--- ordens=2 situacao=Aguardando liberação tipos=Impressão,Instalação etapas=8 local=t prazo=t itens=t evento=t iniciaAntes=blocked baixaAntes=blocked pcpEdita=ok pedidoFixo=t aprovada=Aguardando iniciaDepois=ok semMotivo=blocked comMotivo=Garantia escolheEspera=Aguardando voltaEspera=blocked urgenciaLiga=t tirarSemMotivo=blocked trocaPedido=1/t excluida=0 antigaEdita=ok comercialSalva=blocked
+-- ordens=2 situacao=Aguardando liberação tipos=Colagem,Instalação etapas=8 local=t prazo=t itens=t evento=t iniciaAntes=blocked baixaAntes=blocked pcpEdita=ok pedidoFixo=t aprovada=Aguardando iniciaDepois=ok semMotivo=blocked comMotivo=Garantia escolheEspera=Aguardando voltaEspera=blocked urgenciaLiga=t tirarSemMotivo=blocked trocaPedido=1/t excluida=0 antigaEdita=ok comercialSalva=blocked
 do $$
 declare
   co uuid := gen_random_uuid(); pc uuid := gen_random_uuid();
@@ -36,7 +36,8 @@ begin
     || ' tipos=' || (select string_agg(tipo, ',' order by tipo) from ordens_producao where liberacao_id = lib)
     || ' etapas=' || (select count(*) from ordens_producao_etapas e join ordens_producao o2 on o2.id = e.ordem_id where o2.liberacao_id = lib)
     || ' local=' || ((select local_instalacao from ordens_producao where liberacao_id = lib and tipo = 'Instalação') = 'Rua A, 10')
-    || ' prazo=' || (select bool_and(data_prevista = '2026-12-20' and venda_id = ped and cadastro_id = c) from ordens_producao where liberacao_id = lib)
+    -- A Colagem (0042) tem como prazo o início do período do item.
+    || ' prazo=' || (select bool_and(data_prevista = case when tipo = 'Colagem' then '2026-12-01'::date else '2026-12-20' end and venda_id = ped and cadastro_id = c) from ordens_producao where liberacao_id = lib)
     || ' itens=' || ((select count(distinct venda_item_id) from ordens_producao where liberacao_id = lib) = 2
                     and exists (select 1 from ordens_producao where liberacao_id = lib and descricao = 'Outdoor — P-10'
                                 and observacao = 'Quantidade: 1 · Período: 01/12/2026 a 14/12/2026'))

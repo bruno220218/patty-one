@@ -20,7 +20,8 @@ export function canExecutarOperacao(user: CurrentUser | null | undefined): boole
 
 // ---------- Ordens de produção ----------
 
-export const TIPOS_ORDEM = ["Instalação", "Impressão"] as const;
+/** Colagem (0042): a Mídia OOH item — keeps the ponto and the bi-semana. */
+export const TIPOS_ORDEM = ["Instalação", "Impressão", "Colagem"] as const;
 export const STATUS_ORDEM = [
   "Aguardando liberação",
   "Aguardando",
@@ -51,7 +52,25 @@ export type PrioridadeOrdem = (typeof PRIORIDADES_ORDEM)[number];
 export const ETAPAS_PADRAO: Record<TipoOrdem, string[]> = {
   Instalação: ["Preparação", "Logística", "Instalação", "Conferência"],
   Impressão: ["Arte e preparação", "Impressão", "Acabamento", "Conferência"],
+  Colagem: ["Impressão", "Separação do material", "Colagem", "Foto de comprovação"],
 };
+
+/**
+ * Bi-semanas offered on a Colagem order: from the one before today to the next ~6 months,
+ * plus the order's current one even if it is outside that window. Oldest first.
+ */
+export function bissemanasParaOrdem<
+  T extends { ano: number; numero: number; inicio: string; fim: string },
+>(calendario: readonly T[], hoje: string, atual?: { ano: number; numero: number } | null): T[] {
+  const ordenado = [...calendario].sort((a, b) => a.inicio.localeCompare(b.inicio));
+  const i = Math.max(0, ordenado.findIndex((p) => p.fim >= hoje) - 1);
+  const janela = ordenado.slice(i, i + 14);
+  const daOrdem = atual
+    ? ordenado.find((p) => p.ano === atual.ano && p.numero === atual.numero)
+    : undefined;
+  if (daOrdem && !janela.includes(daOrdem)) janela.push(daOrdem);
+  return janela.sort((a, b) => a.inicio.localeCompare(b.inicio));
+}
 
 /** The service's own steps (from SIGE), or the default flow of the order type. */
 export function etapasDaOrdem(tipo: TipoOrdem, etapasServico?: unknown): string[] {

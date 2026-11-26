@@ -14,6 +14,7 @@ import {
   textoAlertaPrazo,
   validarEquipe,
   validarOrdem,
+  bissemanasParaOrdem,
   validarVeiculo,
 } from "./producao-rules";
 import {
@@ -140,6 +141,21 @@ describe("ordens de produção", () => {
         motivoSemPedido: "Garantia",
       }),
     ).toBeNull();
+  });
+});
+
+describe("bi-semanas da ordem de colagem", () => {
+  const cal = [
+    { ano: 2026, numero: 24, inicio: "2026-11-10", fim: "2026-11-23" },
+    { ano: 2026, numero: 25, inicio: "2026-11-24", fim: "2026-12-07" },
+    { ano: 2026, numero: 26, inicio: "2026-12-08", fim: "2026-12-21" },
+    { ano: 2020, numero: 1, inicio: "2020-01-01", fim: "2020-01-14" },
+  ];
+  it("oferece a anterior, a atual e as próximas, mais a da ordem", () => {
+    expect(bissemanasParaOrdem(cal, "2026-11-26").map((p) => p.numero)).toEqual([24, 25, 26]);
+    expect(
+      bissemanasParaOrdem(cal, "2026-11-26", { ano: 2020, numero: 1 }).map((p) => p.numero),
+    ).toEqual([1, 24, 25, 26]);
   });
 });
 

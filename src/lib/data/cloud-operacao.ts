@@ -157,6 +157,9 @@ export interface OrdemResumo {
   veiculoId: string | null;
   veiculoRotulo: string;
   localInstalacao: string;
+  /** Colagem (0042): the media point and the bi-semana; null when not set. */
+  pontoId: string | null;
+  bissemana: { ano: number; numero: number } | null;
   equipe: Colaborador[];
   etapas: { concluido: boolean }[];
 }
@@ -236,6 +239,9 @@ export interface OrdemInput {
   observacao: string;
   equipe: string[];
   etapas: string[];
+  /** Colagem (0042); "" / null = none. */
+  pontoId: string;
+  bissemana: { ano: number; numero: number } | null;
 }
 
 export interface Agendamento {
@@ -491,6 +497,11 @@ async function carregarOrdens(
       veiculoId,
       veiculoRotulo: veiculoId ? (veiMap.get(veiculoId)?.rotulo ?? "") : "",
       localInstalacao: txt(r["local_instalacao"]),
+      pontoId: txtOuNull(r["ponto_id"]),
+      bissemana:
+        r["bissemana_ano"] != null && r["bissemana_numero"] != null
+          ? { ano: num(r["bissemana_ano"]), numero: num(r["bissemana_numero"]) }
+          : null,
       equipe: equipe
         .filter((e) => e["ordem_id"] === id)
         .map((e) => colMap.get(txt(e["colaborador_id"])))
@@ -588,7 +599,7 @@ const ORDENS_FORA_DO_PLANEJAMENTO =
   '("Concluída","Cancelada","Aguardando liberação","Aguardando conferência","Aguardando cliente")';
 
 const ORDEM_COLUNAS =
-  "id, numero, tipo, status, prioridade, descricao, data_prevista, created_at, updated_at, cadastro_id, servico_id, veiculo_id, local_instalacao, venda_id, observacao";
+  "id, numero, tipo, status, prioridade, descricao, data_prevista, created_at, updated_at, cadastro_id, servico_id, veiculo_id, local_instalacao, venda_id, observacao, ponto_id, bissemana_ano, bissemana_numero";
 
 async function carregarAgendamentos(
   query: PromiseLike<{ data: unknown; error: { message: string; code?: string } | null }>,
@@ -980,6 +991,9 @@ export const operacaoRepository = {
         descricao: dados.descricao,
         data_prevista: dados.dataPrevista,
         local_instalacao: dados.localInstalacao,
+        ponto_id: dados.pontoId,
+        bissemana_ano: dados.bissemana?.ano ?? "",
+        bissemana_numero: dados.bissemana?.numero ?? "",
         veiculo_id: dados.veiculoId,
         observacao: dados.observacao,
         equipe: dados.equipe,
@@ -1021,7 +1035,7 @@ export const operacaoRepository = {
 
   async checklistsPadrao(): Promise<ChecklistsPadrao> {
     const lista = await rows(db.from("ordens_checklist_padrao").select("tipo, checklist_id"));
-    const padrao: ChecklistsPadrao = { Instalação: null, Impressão: null };
+    const padrao: ChecklistsPadrao = { Instalação: null, Impressão: null, Colagem: null };
     for (const p of lista) {
       const tipo = p["tipo"] as TipoOrdem;
       if (tipo in padrao) padrao[tipo] = txtOuNull(p["checklist_id"]);

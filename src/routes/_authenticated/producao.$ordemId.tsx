@@ -28,6 +28,7 @@ import { ClientePicker, OrdemStatusBadge, TOM, selectClass } from "@/components/
 import { EtapasComTempo } from "@/components/app/etapas-tempo";
 import { VinculosBriefingVisita } from "@/components/app/vinculos-briefing-visita";
 import { ConclusaoOrdemPanel } from "@/components/app/ordem-conclusao";
+import { ColagemCampos, enderecoDoPonto } from "@/components/app/ordem-colagem-campos";
 import {
   useChecklists,
   useCurrentUser,
@@ -118,6 +119,8 @@ type Form = {
   observacao: string;
   equipe: string[];
   etapas: string[];
+  pontoId: string;
+  bissemana: { ano: number; numero: number } | null;
 };
 
 function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undefined }) {
@@ -148,6 +151,8 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           observacao: doc.observacao,
           equipe: doc.equipe.map((c) => c.id),
           etapas: doc.etapasDetalhe.map((e) => e.nome),
+          pontoId: doc.pontoId ?? "",
+          bissemana: doc.bissemana,
         }
       : {
           tipo: "Instalação",
@@ -166,6 +171,8 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           observacao: "",
           equipe: [],
           etapas: etapasDaOrdem("Instalação"),
+          pontoId: "",
+          bissemana: null,
         },
   );
   const set = (p: Partial<Form>) => setF((a) => ({ ...a, ...p }));
@@ -294,11 +301,13 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             checklistId: f.checklistId,
             descricao: f.descricao,
             dataPrevista: f.dataPrevista,
-            localInstalacao: f.tipo === "Instalação" ? f.localInstalacao : "",
+            localInstalacao: f.tipo === "Impressão" ? "" : f.localInstalacao,
             veiculoId: f.tipo === "Instalação" ? f.veiculoId : "",
             observacao: f.observacao,
             equipe: f.equipe,
             etapas: f.etapas,
+            pontoId: f.tipo === "Colagem" ? f.pontoId : "",
+            bissemana: f.tipo === "Colagem" ? f.bissemana : null,
           },
           doc?.id,
         ),
@@ -569,6 +578,33 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
             onChange={(e) => set({ descricao: e.target.value })}
           />
         </div>
+        {f.tipo === "Colagem" && (
+          <>
+            <ColagemCampos
+              pontoId={f.pontoId}
+              bissemana={f.bissemana}
+              disabled={bloqueado}
+              onPonto={(p) =>
+                set({
+                  pontoId: p?.id ?? "",
+                  localInstalacao:
+                    p && !f.localInstalacao.trim() ? enderecoDoPonto(p) : f.localInstalacao,
+                })
+              }
+              onBissemana={(bissemana) => set({ bissemana })}
+            />
+            <div className="space-y-1.5 md:col-span-2">
+              <Label htmlFor="local-colagem">Local</Label>
+              <Input
+                id="local-colagem"
+                placeholder="Endereço do ponto"
+                value={f.localInstalacao}
+                disabled={bloqueado}
+                onChange={(e) => set({ localInstalacao: e.target.value })}
+              />
+            </div>
+          </>
+        )}
         {f.tipo === "Instalação" && (
           <>
             <div className="space-y-1.5 md:col-span-2">
