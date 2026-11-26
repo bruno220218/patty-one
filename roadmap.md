@@ -29,7 +29,7 @@
 
 ## Fluxo Comercial → Produção → Execução (prioridade 100%)
 Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-producao-perguntas.md`).
-- [ ] 1. Liberação ligada ao pedido e ao cadastro (uma por pedido) — 0032 (código na migracao-pattyone; falta rodar o SQL)
+- [x] 1. Liberação ligada ao pedido e ao cadastro (uma por pedido) — 0032 (no ar em 26/11)
 - [ ] 2. Solicitar prazo: comercial pede, PCP dá a data — 0033
 - [ ] 3. Itens do pedido com identidade fixa — 0034
 - [ ] 4. Ordens automáticas (uma por item, todos os itens) e ordem sem pedido com motivo — 0035
