@@ -31,7 +31,7 @@
 Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-producao-perguntas.md`).
 - [x] 1. Liberação ligada ao pedido e ao cadastro (uma por pedido) — 0032 (no ar em 26/11)
 - [x] 2. Solicitar prazo: comercial pede, PCP dá a data — 0033 (no ar em 26/11)
-- [ ] 3. Itens do pedido com identidade fixa — 0034
+- [ ] 3. Itens do pedido com identidade fixa — 0034 (código na migracao-pattyone; falta rodar o SQL)
 - [ ] 4. Ordens automáticas (uma por item, todos os itens) e ordem sem pedido com motivo — 0035
 - [ ] 5. Mudança no pedido depois da liberação vira comentário automático + aviso ao PCP — 0036
 - [ ] 6. Etapas da ordem a partir do checklist (Projeto deixa de ser controle separado) — 0037

@@ -56,6 +56,8 @@ export const valorParaCampo = (n: number | null | undefined) =>
   n ? String(n).replace(".", ",") : "";
 
 export type ItemForm = {
+  /** Saved item's id (kept on save since 0034, so orders can point at it); absent when new. */
+  id?: string;
   categoria: CategoriaItem;
   descricao: string;
   ponto: string;

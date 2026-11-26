@@ -122,6 +122,7 @@ function formDoDoc(tipo: TipoVenda, doc: Venda | undefined): Form {
     observacao: doc.observacao,
     desconto: valorParaCampo(doc.desconto),
     itens: doc.itens.map((i) => ({
+      id: i.id,
       categoria: i.categoria,
       descricao: i.descricao,
       ponto: i.ponto ?? "",

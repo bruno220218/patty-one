@@ -43,6 +43,8 @@ export interface VendaLinha {
 }
 
 export interface VendaItem {
+  /** Stays the same across saves since 0034. */
+  id: string;
   categoria: CategoriaItem;
   descricao: string;
   ponto: string | null;
@@ -143,6 +145,7 @@ const umDe = (v: unknown): Row | null =>
   Array.isArray(v) ? ((v[0] as Row | undefined) ?? null) : ((v as Row | null) ?? null);
 
 const toItem = (i: Row): VendaItem => ({
+  id: txt(i["id"]),
   categoria: txt(i["categoria"]) as CategoriaItem,
   descricao: txt(i["descricao"]),
   ponto: txtOuNull(i["ponto"]),
@@ -305,6 +308,8 @@ export const comercialRepository = {
         const c = calcDoItem(i);
         const midia = i.categoria === "Mídia OOH";
         return {
+          // Same id = same item (updated in place); no id = new item (0034).
+          ...(i.id ? { id: i.id } : {}),
           categoria: i.categoria,
           descricao: i.descricao,
           ponto: midia ? i.ponto : "",
