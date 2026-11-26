@@ -24,6 +24,7 @@ import { ClientePicker, OrdemStatusBadge, selectClass } from "@/components/app/o
 import { VendaStatusBadge } from "@/components/app/venda-status";
 import { LiberacaoStatusBadge } from "@/components/app/liberacao-status";
 import { PrazoPedidoSection } from "@/components/app/prazo-pedido";
+import { VinculosBriefingVisita } from "@/components/app/vinculos-briefing-visita";
 import { useCurrentUser, useDataAction, useEmpresas, useVenda } from "@/hooks/use-data";
 import {
   brl,
@@ -550,6 +551,8 @@ function Editor({
       {doc && tipo === "pedido" && (
         <PrazoPedidoSection vendaId={doc.id} cancelado={doc.status === "Cancelado"} />
       )}
+
+      {doc && <VinculosBriefingVisita vendaId={doc.id} />}
 
       {doc && tipo === "pedido" && (
         <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">

@@ -21,11 +21,16 @@ import { ArquivosPicker } from "@/components/app/arquivos-picker";
 import { anexarArquivo } from "@/lib/drive-upload";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { vinculosRepository } from "@/lib/data/cloud-vinculos";
 
 export const Route = createFileRoute("/_authenticated/briefings/novo")({
   // ?destino=criacao|projetos_especiais: each menu entry creates only its own kind (default: criacao).
-  validateSearch: (search: Record<string, unknown>): { destino: BriefingDestino } => ({
+  // ?venda=<id>: opened from a pedido/proposta, the new briefing is linked to it (0041).
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { destino: BriefingDestino; venda?: string } => ({
     destino: search["destino"] === "projetos_especiais" ? "projetos_especiais" : "criacao",
+    ...(typeof search["venda"] === "string" && search["venda"] ? { venda: search["venda"] } : {}),
   }),
   head: () => ({
     meta: [{ title: "Novo briefing — Patty One" }, { name: "robots", content: "noindex" }],
@@ -34,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/briefings/novo")({
 });
 
 function NovoBriefingPage() {
-  const { destino } = Route.useSearch();
+  const { destino, venda } = Route.useSearch();
   const { data: me, isPending } = useCurrentUser();
   const [arquivos, setArquivos] = useState<File[]>([]);
   const queryClient = useQueryClient();
@@ -94,6 +99,14 @@ function NovoBriefingPage() {
             () => briefingRepository.create(input),
             "Briefing criado e enviado para a equipe.",
           );
+          if (created && venda) {
+            await run(() =>
+              vinculosRepository.vincular("briefing", created.numero, {
+                vendaId: venda,
+                ordemId: null,
+              }),
+            );
+          }
           if (created) {
             // Files go to Drive after the briefing exists (its folder is named after it).
             for (const file of arquivos) {

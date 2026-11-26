@@ -26,6 +26,7 @@ import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, OrdemStatusBadge, TOM, selectClass } from "@/components/app/operacao-ui";
 import { EtapasComTempo } from "@/components/app/etapas-tempo";
+import { VinculosBriefingVisita } from "@/components/app/vinculos-briefing-visita";
 import { ConclusaoOrdemPanel } from "@/components/app/ordem-conclusao";
 import {
   useChecklists,
@@ -756,6 +757,8 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           </div>
         </section>
       </div>
+
+      {doc && <VinculosBriefingVisita ordemId={doc.id} />}
 
       {doc && (
         <section className="space-y-4 rounded-2xl border bg-card p-5 shadow-sm">

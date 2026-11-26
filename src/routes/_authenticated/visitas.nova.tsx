@@ -8,8 +8,12 @@ import { DetailSkeleton } from "@/components/app/card-grid-skeleton";
 import { VisitaForm } from "@/components/app/visita-form";
 import { useCurrentUser, useDataAction } from "@/hooks/use-data";
 import { canSolicitarVisita, SOLICITACAO_VAZIA, visitaRepository } from "@/lib/data";
+import { vinculosRepository } from "@/lib/data/cloud-vinculos";
 
 export const Route = createFileRoute("/_authenticated/visitas/nova")({
+  // ?venda=<id>: opened from a pedido/proposta, the new visita is linked to it (0041).
+  validateSearch: (search: Record<string, unknown>): { venda?: string } =>
+    typeof search["venda"] === "string" && search["venda"] ? { venda: search["venda"] } : {},
   head: () => ({
     meta: [{ title: "Solicitar visita — Patty One" }, { name: "robots", content: "noindex" }],
   }),
@@ -17,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/visitas/nova")({
 });
 
 function NovaVisitaPage() {
+  const { venda } = Route.useSearch();
   const { data: me, isPending } = useCurrentUser();
   const run = useDataAction();
   const navigate = useNavigate();
@@ -63,6 +68,14 @@ function NovaVisitaPage() {
             () => visitaRepository.create(s),
             "Visita solicitada. O PCP foi avisado.",
           );
+          if (created && venda) {
+            await run(() =>
+              vinculosRepository.vincular("visita", created.numero, {
+                vendaId: venda,
+                ordemId: null,
+              }),
+            );
+          }
           setSaving(false);
           if (created)
             void navigate({ to: "/visitas/$visitaId", params: { visitaId: created.id } });
