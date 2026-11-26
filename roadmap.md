@@ -39,8 +39,8 @@ Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-produ
 - [x] 7. Conclusão: montagem → PCP confere → comercial registra a confirmação do cliente — 0040 (no ar em 26/11)
 - [x] 8. Status Serviços lendo as ordens (no ar em 26/11)
 - [ ] 9. IA que ajuda o PCP a dar o prazo (sugere pela carga; o PCP decide)
-- [ ] 10. Briefing e visita ligados ao pedido ou à ordem — 0041
-- [ ] 11. Mídia OOH: ordem de colagem — 0042
+- [x] 10. Briefing e visita ligados ao pedido ou à ordem — 0041 (no ar em 26/11)
+- [x] 11. Mídia OOH: ordem de colagem — 0042 (no ar em 26/11)
 
 ## Tarefas futuras (agendadas)
 - [x] Financeiro: a receber, contratos de aluguel e de energia (vindos do PattyOne; só Gestão, Direção e Financeiro) — migração 0026
