@@ -6,6 +6,7 @@ import {
   juntarConsultas,
   orquestradorRequestSchema,
   respostaSemAgente,
+  semCota,
   setorPorFerramenta,
   textoDaSkill,
 } from "./orquestrador-schema";
@@ -37,6 +38,18 @@ describe("orquestrador", () => {
     expect(respostaSemAgente(criacao, "sem_dados")).toMatch(/^SEM_DADOS: .*Criação/);
     expect(respostaSemAgente(criacao, "sem_acesso")).toMatch(/^SEM_ACESSO/);
     expect(respostaSemAgente(criacao, "erro")).toMatch(/^ERRO/);
+  });
+
+  it("reconhece falta de cota, também embrulhada pelas tentativas do SDK", () => {
+    expect(semCota({ statusCode: 429 })).toBe(true);
+    expect(semCota({ message: "You exceeded your current quota" })).toBe(true);
+    expect(semCota({ message: "Failed after 2 attempts", lastError: { statusCode: 429 } })).toBe(
+      true,
+    );
+    expect(semCota({ errors: [{ statusCode: 500 }, { statusCode: 429 }] })).toBe(true);
+    expect(semCota({ statusCode: 503, message: "high demand" })).toBe(false);
+    expect(semCota(new Error("timeout"))).toBe(false);
+    expect(semCota(null)).toBe(false);
   });
 
   it("tira o cabeçalho da skill", () => {

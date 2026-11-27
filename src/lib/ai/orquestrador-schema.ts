@@ -154,6 +154,22 @@ export function respostaSemAgente(setor: DefinicaoSetor, situacao: SituacaoSetor
   }
 }
 
+/**
+ * True when the AI provider refused for lack of quota (HTTP 429 / RESOURCE_EXHAUSTED), also when
+ * the SDK wrapped it after its retries (`lastError`, `errors`).
+ */
+export function semCota(e: unknown, profundidade = 0): boolean {
+  if (!e || typeof e !== "object" || profundidade > 3) return false;
+  const x = e as { statusCode?: unknown; message?: unknown; lastError?: unknown; errors?: unknown };
+  if (x.statusCode === 429) return true;
+  if (typeof x.message === "string" && /quota|RESOURCE_EXHAUSTED/i.test(x.message)) return true;
+  if (semCota(x.lastError, profundidade + 1)) return true;
+  return Array.isArray(x.errors) && x.errors.some((y) => semCota(y, profundidade + 1));
+}
+
+export const MENSAGEM_SEM_COTA =
+  "A cota grátis de IA de hoje acabou. Ela volta de madrugada; tente de novo amanhã.";
+
 /** Removes the skill file's front matter (name/description). */
 export function textoDaSkill(markdown: string): string {
   return markdown.replace(/^---[\s\S]*?---\s*/, "").trim();

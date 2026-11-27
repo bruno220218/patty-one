@@ -30,6 +30,11 @@ function nomeDoModelo(papel: PapelModelo): string {
   );
 }
 
+/** Whether AI_MODEL_SETOR names a different model, usable as a fallback when one runs out. */
+export function temModeloAlternativo(): boolean {
+  return nomeDoModelo("setor") !== nomeDoModelo("principal");
+}
+
 /** The configured model, or null when AI_API_KEY is not set. */
 export function modeloIA(papel: PapelModelo = "principal"): LanguageModel | null {
   const apiKey = process.env["AI_API_KEY"];

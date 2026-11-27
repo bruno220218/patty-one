@@ -10,10 +10,12 @@ import skillPcp from "./orquestrador/skills/skill-pcp.md?raw";
 import skillProjetos from "./orquestrador/skills/skill-projetos.md?raw";
 import {
   MAX_DADOS_CHARS,
+  MENSAGEM_SEM_COTA,
   SETORES,
   juntarConsultas,
   orquestradorRequestSchema,
   respostaSemAgente,
+  semCota,
   textoDaSkill,
   type ConsultaSetor,
   type DefinicaoSetor,
@@ -21,7 +23,14 @@ import {
   type OrquestradorResposta,
   type SetorId,
 } from "./orquestrador-schema";
-import { checarAcesso, modeloIA, opcoesProvedor, tokenDaRequisicao } from "./provider.server";
+import {
+  checarAcesso,
+  modeloIA,
+  opcoesProvedor,
+  temModeloAlternativo,
+  tokenDaRequisicao,
+  type PapelModelo,
+} from "./provider.server";
 
 // Orquestrador: a central agent reads the question and consults the sector agents (tools), each
 // following its skill and only the data the page loaded as the signed-in person. Nothing is
@@ -67,6 +76,7 @@ function instrucoesOrquestrador(pedido: OrquestradorPedido): string {
     .join("\n");
 }
 
+/** A sector's answer; when its model is out of quota, tries the other configured model once. */
 async function consultarSetor(
   setor: DefinicaoSetor,
   pergunta: string,
@@ -74,7 +84,23 @@ async function consultarSetor(
   origem: string,
   abortSignal: AbortSignal,
 ): Promise<string> {
-  const model = modeloIA("setor");
+  try {
+    return await consultarSetorCom("setor", setor, pergunta, dados, origem, abortSignal);
+  } catch (e) {
+    if (!semCota(e) || !temModeloAlternativo()) throw e;
+    return consultarSetorCom("principal", setor, pergunta, dados, origem, abortSignal);
+  }
+}
+
+async function consultarSetorCom(
+  papel: PapelModelo,
+  setor: DefinicaoSetor,
+  pergunta: string,
+  dados: Record<string, unknown>,
+  origem: string,
+  abortSignal: AbortSignal,
+): Promise<string> {
+  const model = modeloIA(papel);
   if (!model) throw new Error("IA desligada");
   const { text } = await generateText({
     model,
@@ -89,7 +115,7 @@ async function consultarSetor(
     ].join("\n\n"),
     maxOutputTokens: 900,
     maxRetries: 1,
-    providerOptions: opcoesProvedor("setor"),
+    providerOptions: opcoesProvedor(papel),
     abortSignal: AbortSignal.any([abortSignal, AbortSignal.timeout(TEMPO_SETOR_MS)]),
   });
   return text.trim() || "O setor não trouxe resposta.";
@@ -168,9 +194,19 @@ export async function handleOrquestrador(request: Request): Promise<Response> {
   const respostas: string[] = [];
   const inicio = Date.now();
   const abortSignal = AbortSignal.any([request.signal, AbortSignal.timeout(TEMPO_TOTAL_MS)]);
-  try {
+  const responder = (texto: string, aviso: string | null) =>
+    Response.json({
+      resposta: texto || "Não consegui montar uma resposta agora.",
+      consultas: juntarConsultas(consultas),
+      aviso,
+      segundos: Math.round((Date.now() - inicio) / 1000),
+    } satisfies OrquestradorResposta);
+
+  const rodar = async (papel: PapelModelo) => {
+    const modelo = modeloIA(papel);
+    if (!modelo) throw new Error("IA desligada");
     const { text } = await generateText({
-      model,
+      model: modelo,
       instructions: instrucoesOrquestrador(pedido),
       messages: [
         ...pedido.historico.map((h) => ({
@@ -188,19 +224,40 @@ export async function handleOrquestrador(request: Request): Promise<Response> {
         stepNumber >= MAX_RODADAS - 1 ? { toolChoice: "none" as const } : undefined,
       maxOutputTokens: 1500,
       maxRetries: 1,
-      providerOptions: opcoesProvedor(),
+      providerOptions: opcoesProvedor(papel),
       abortSignal,
     });
-    const final = text.trim() || respostaUnica(consultas, respostas) || respostas.join("\n\n");
-    const resposta: OrquestradorResposta = {
-      resposta: final || "Não consegui montar uma resposta agora.",
-      consultas: juntarConsultas(consultas),
-      aviso: null,
-      segundos: Math.round((Date.now() - inicio) / 1000),
-    };
-    return Response.json(resposta);
+    return text.trim() || respostaUnica(consultas, respostas) || respostas.join("\n\n");
+  };
+
+  try {
+    return responder(await rodar("principal"), null);
   } catch (e) {
     console.error("orquestrador AI error", e instanceof Error ? e.message : e);
-    return erro("A IA não respondeu agora. Tente de novo em instantes.", 502);
+    // Sectors already answered: give their answers rather than nothing.
+    if (respostas.length) {
+      return responder(
+        respostas.join("\n\n"),
+        "O orquestrador não conseguiu juntar as respostas; abaixo vai o que os setores disseram.",
+      );
+    }
+    if (!semCota(e)) return erro("A IA não respondeu agora. Tente de novo em instantes.", 502);
+    if (!temModeloAlternativo()) return erro(MENSAGEM_SEM_COTA, 429);
+  }
+
+  // The main model is out of quota: one more try with the alternative one (AI_MODEL_SETOR).
+  consultas.length = 0;
+  respostas.length = 0;
+  try {
+    return responder(
+      await rodar("setor"),
+      "O modelo principal estava sem cota hoje; esta resposta usou o modelo alternativo.",
+    );
+  } catch (e) {
+    console.error("orquestrador AI error (alternativo)", e instanceof Error ? e.message : e);
+    if (respostas.length) return responder(respostas.join("\n\n"), null);
+    return semCota(e)
+      ? erro(MENSAGEM_SEM_COTA, 429)
+      : erro("A IA não respondeu agora. Tente de novo em instantes.", 502);
   }
 }

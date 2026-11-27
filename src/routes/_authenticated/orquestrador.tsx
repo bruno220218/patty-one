@@ -32,6 +32,7 @@ type Mensagem =
       texto: string;
       consultas: ConsultaSetor[];
       segundos?: number | undefined;
+      aviso?: string | null;
     }
   | { papel: "erro"; texto: string };
 
@@ -103,7 +104,13 @@ function OrquestradorPage() {
       });
       setMensagens((atual) => [
         ...atual,
-        { papel: "assistente", texto: r.resposta, consultas: r.consultas, segundos: r.segundos },
+        {
+          papel: "assistente",
+          texto: r.resposta,
+          consultas: r.consultas,
+          segundos: r.segundos,
+          aviso: r.aviso,
+        },
       ]);
     } catch (e) {
       setMensagens((atual) => [
@@ -174,6 +181,9 @@ function OrquestradorPage() {
                   <Bot className="size-4" />
                   Orquestrador
                 </div>
+              )}
+              {m.papel === "assistente" && m.aviso && (
+                <p className="mb-2 text-xs text-muted-foreground">{m.aviso}</p>
               )}
               <p className="whitespace-pre-wrap break-words leading-relaxed">{m.texto}</p>
               {m.papel === "assistente" && (m.consultas.length > 0 || m.segundos !== undefined) && (
