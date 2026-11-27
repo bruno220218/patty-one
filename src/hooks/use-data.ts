@@ -398,3 +398,34 @@ export const useMovimentosEstoque = (produtoId?: string, enabled = true) =>
     queryFn: () => estoqueRepository.movimentos(produtoId),
     enabled,
   });
+
+// ---------- Lista de material e previsão (0048) ----------
+/** Null data = migration 0048 isn't applied yet. */
+export const useMateriaisDaVenda = (vendaId: string) =>
+  useQuery({
+    queryKey: ["estoque", "materiais", "venda", vendaId],
+    queryFn: () => estoqueRepository.materiaisDaVenda(vendaId),
+    enabled: !!vendaId,
+  });
+
+export const useMateriaisDaOrdem = (ordemId: string) =>
+  useQuery({
+    queryKey: ["estoque", "materiais", "ordem", ordemId],
+    queryFn: () => estoqueRepository.materiaisDaOrdem(ordemId),
+    enabled: !!ordemId,
+  });
+
+export const useDemandaEstoque = (produtoId?: string, enabled = true) =>
+  useQuery({
+    queryKey: ["estoque", "demanda", produtoId ?? "todos"],
+    queryFn: () => estoqueRepository.demanda(produtoId),
+    enabled,
+  });
+
+/** Null data = migration 0048 isn't applied yet. */
+export const usePrevisaoEstoque = (enabled = true) =>
+  useQuery({
+    queryKey: ["estoque", "previsao"],
+    queryFn: () => estoqueRepository.previsao(),
+    enabled,
+  });

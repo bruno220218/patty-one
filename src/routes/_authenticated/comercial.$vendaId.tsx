@@ -25,6 +25,7 @@ import { VendaStatusBadge } from "@/components/app/venda-status";
 import { LiberacaoStatusBadge } from "@/components/app/liberacao-status";
 import { PrazoPedidoSection } from "@/components/app/prazo-pedido";
 import { VinculosBriefingVisita } from "@/components/app/vinculos-briefing-visita";
+import { ListaMaterialVenda } from "@/components/app/estoque-lista-material";
 import { useCurrentUser, useDataAction, useEmpresas, useVenda } from "@/hooks/use-data";
 import {
   brl,
@@ -551,6 +552,8 @@ function Editor({
       {doc && tipo === "pedido" && (
         <PrazoPedidoSection vendaId={doc.id} cancelado={doc.status === "Cancelado"} />
       )}
+
+      {doc && <ListaMaterialVenda vendaId={doc.id} itens={doc.itens} pedido={tipo === "pedido"} />}
 
       {doc && <VinculosBriefingVisita vendaId={doc.id} />}
 

@@ -39,6 +39,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, TOM, selectClass } from "@/components/app/operacao-ui";
 import { ProdutoPicker } from "@/components/app/estoque-produto-picker";
 import { NotaXmlDialog } from "@/components/app/estoque-nota-xml";
+import { PrevisaoEstoqueTab } from "@/components/app/estoque-previsao";
 import {
   useCurrentUser,
   useDataAction,
@@ -198,6 +199,7 @@ function EstoquePage() {
           <TabsList>
             <TabsTrigger value="produtos">Produtos</TabsTrigger>
             <TabsTrigger value="movimentos">Movimentos</TabsTrigger>
+            <TabsTrigger value="previsao">Previsão e compras</TabsTrigger>
           </TabsList>
           <TabsContent value="produtos" className="mt-4">
             <ListaProdutos
@@ -212,6 +214,9 @@ function EstoquePage() {
           </TabsContent>
           <TabsContent value="movimentos" className="mt-4">
             <ListaMovimentos verCusto={verCusto} podeExcluir={canExcluirMovimento(user)} />
+          </TabsContent>
+          <TabsContent value="previsao" className="mt-4">
+            <PrevisaoEstoqueTab verCusto={verCusto} />
           </TabsContent>
         </Tabs>
       )}

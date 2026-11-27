@@ -167,3 +167,47 @@ export function linhasDaPlanilha(rows: Record<string, string>[]): LinhaPlanilhaE
     })
     .filter((l) => l.produto !== "");
 }
+
+// ---------- Lista de material, previsão e lista de compras (migration 0048) ----------
+/** Who builds the material list of a proposta/pedido item (database: estoque.pode_listar_material). */
+export const canListarMaterial = (user: WithFuncoes) =>
+  tem(user, "gestor", "direcao", "estoque", "projetos_especiais");
+
+interface ItemPrevisao {
+  codigo: string;
+  nome: string;
+  unidade: string;
+  fornecedor: string | null;
+  ultimoValor: number | null;
+  ultimoLote: string | null;
+  saldo: number;
+  reservado: number;
+  falta: number;
+  faltaComMinimo: number;
+}
+
+/** What to buy: falta (or falta + estoque mínimo) above zero. */
+export const quantoComprar = (p: ItemPrevisao, comMinimo: boolean) =>
+  comMinimo ? p.faltaComMinimo : p.falta;
+
+/**
+ * Rows of the downloadable shopping list (Material | Fornecedor | Último valor pago | Lote, plus
+ * the quantities), only the products missing something, ordered by code. The price column is
+ * left empty when the person can't see costs.
+ */
+export function linhasListaCompras(previsao: ItemPrevisao[], comMinimo: boolean) {
+  return previsao
+    .filter((p) => quantoComprar(p, comMinimo) > 0)
+    .sort((a, b) => a.codigo.localeCompare(b.codigo))
+    .map((p) => ({
+      material: p.nome,
+      codigo: p.codigo,
+      fornecedor: p.fornecedor ?? "",
+      ultimo_valor_pago: p.ultimoValor === null ? "" : String(p.ultimoValor),
+      lote: p.ultimoLote ?? "",
+      comprar: String(quantoComprar(p, comMinimo)),
+      unidade: p.unidade,
+      saldo: String(p.saldo),
+      reservado: String(p.reservado),
+    }));
+}

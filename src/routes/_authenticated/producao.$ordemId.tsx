@@ -27,6 +27,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, OrdemStatusBadge, TOM, selectClass } from "@/components/app/operacao-ui";
 import { EtapasComTempo } from "@/components/app/etapas-tempo";
 import { VinculosBriefingVisita } from "@/components/app/vinculos-briefing-visita";
+import { MaterialDaOrdem } from "@/components/app/estoque-lista-material";
 import { ConclusaoOrdemPanel } from "@/components/app/ordem-conclusao";
 import { AssistentePcp } from "@/components/app/assistente-pcp";
 import { ColagemCampos, enderecoDoPonto } from "@/components/app/ordem-colagem-campos";
@@ -808,6 +809,8 @@ function Editor({ recursos, doc }: { recursos: Recursos; doc: OrdemFicha | undef
           </div>
         </section>
       </div>
+
+      {doc && <MaterialDaOrdem ordemId={doc.id} />}
 
       {doc && <VinculosBriefingVisita ordemId={doc.id} />}
 

@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   canExcluirMovimento,
+  canListarMaterial,
   canMovimentarEstoque,
   canVerCustoEstoque,
   filtrarProdutos,
   lerNumero,
   linhasDaPlanilha,
+  linhasListaCompras,
   nomeDoSetor,
   sinalMovimento,
 } from "./estoque-rules";
@@ -81,5 +83,47 @@ describe("planilha do estoque", () => {
   });
   it("planilha vazia não tem linhas", () => {
     expect(linhasDaPlanilha([])).toEqual([]);
+  });
+});
+
+describe("lista de compras (0048)", () => {
+  const base = {
+    unidade: "m²",
+    fornecedor: "Forn A",
+    ultimoValor: 20,
+    ultimoLote: "L1",
+    saldo: 7,
+    reservado: 9,
+  };
+  const previsao = [
+    { ...base, codigo: "06.0001", nome: "Cola", falta: 0, faltaComMinimo: 3, ultimoValor: null },
+    { ...base, codigo: "01.0001", nome: "Lona", falta: 2, faltaComMinimo: 3 },
+    { ...base, codigo: "01.0002", nome: "Vinil", falta: 0, faltaComMinimo: 0 },
+  ];
+  it("só o que falta, em ordem de código", () => {
+    expect(linhasListaCompras(previsao, false)).toEqual([
+      {
+        material: "Lona",
+        codigo: "01.0001",
+        fornecedor: "Forn A",
+        ultimo_valor_pago: "20",
+        lote: "L1",
+        comprar: "2",
+        unidade: "m²",
+        saldo: "7",
+        reservado: "9",
+      },
+    ]);
+  });
+  it("com o estoque mínimo entra quem fica abaixo dele; sem custo, valor vazio", () => {
+    const linhas = linhasListaCompras(previsao, true);
+    expect(linhas.map((l) => [l.codigo, l.comprar, l.ultimo_valor_pago])).toEqual([
+      ["01.0001", "3", "20"],
+      ["06.0001", "3", ""],
+    ]);
+  });
+  it("quem monta a lista de material", () => {
+    expect(canListarMaterial({ funcoes: ["projetos_especiais"] })).toBe(true);
+    expect(canListarMaterial({ funcoes: ["comercial", "producao"] })).toBe(false);
   });
 });

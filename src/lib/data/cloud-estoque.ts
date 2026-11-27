@@ -233,6 +233,153 @@ const movimentoDaLinha = (r: MovimentoRow): MovimentoEstoque => ({
   createdAt: r.created_at,
 });
 
+/** One line of a service's material list (view estoque.v_materiais_item, migration 0048). */
+export interface MaterialItem {
+  id: string;
+  vendaItemId: string;
+  vendaId: string;
+  vendaTipo: "proposta" | "pedido";
+  vendaNumero: number | null;
+  vendaStatus: string;
+  cliente: string | null;
+  itemOrdem: number;
+  itemDescricao: string;
+  ordemId: string | null;
+  ordemNumero: number | null;
+  ordemStatus: string | null;
+  produtoId: string;
+  codigo: string;
+  produto: string;
+  unidade: string;
+  quantidade: number;
+  /** Baixas − devoluções already made for the item's ordem. */
+  baixado: number;
+  pendente: number;
+  /** Approved and still open: counts in the previsão. */
+  contaNaPrevisao: boolean;
+  observacao: string | null;
+  atualizadoPorNome: string | null;
+}
+
+/** One product in the previsão (view estoque.v_previsao). ultimoValor is null without permission. */
+export interface PrevisaoEstoque {
+  id: string;
+  codigo: string;
+  setor: string;
+  nome: string;
+  unidade: string;
+  estoqueMinimo: number | null;
+  ativo: boolean;
+  fornecedor: string | null;
+  ultimoValor: number | null;
+  ultimaEntrada: string | null;
+  ultimoLote: string | null;
+  saldo: number;
+  reservado: number;
+  previsto: number;
+  falta: number;
+  faltaComMinimo: number;
+  servicos: number;
+}
+
+export interface LinhaListaMaterial {
+  produtoId: string;
+  quantidade: number;
+  observacao?: string | null;
+}
+
+interface MaterialRow {
+  id: string;
+  venda_item_id: string;
+  venda_id: string;
+  venda_tipo: string;
+  venda_numero: N;
+  venda_status: string;
+  cliente: string | null;
+  item_ordem: N;
+  item_descricao: string;
+  ordem_id: string | null;
+  ordem_numero: N;
+  ordem_status: string | null;
+  produto_id: string;
+  codigo: string;
+  produto: string;
+  unidade: string;
+  quantidade: N;
+  baixado: N;
+  pendente: N;
+  conta_na_previsao: boolean | null;
+  observacao: string | null;
+  atualizado_por_nome: string | null;
+}
+const materialDaLinha = (r: MaterialRow): MaterialItem => ({
+  id: r.id,
+  vendaItemId: r.venda_item_id,
+  vendaId: r.venda_id,
+  vendaTipo: r.venda_tipo === "pedido" ? "pedido" : "proposta",
+  vendaNumero: num(r.venda_numero),
+  vendaStatus: r.venda_status,
+  cliente: r.cliente ?? null,
+  itemOrdem: Number(r.item_ordem ?? 0),
+  itemDescricao: r.item_descricao,
+  ordemId: r.ordem_id ?? null,
+  ordemNumero: num(r.ordem_numero),
+  ordemStatus: r.ordem_status ?? null,
+  produtoId: r.produto_id,
+  codigo: r.codigo,
+  produto: r.produto,
+  unidade: r.unidade,
+  quantidade: Number(r.quantidade ?? 0),
+  baixado: Number(r.baixado ?? 0),
+  pendente: Number(r.pendente ?? 0),
+  contaNaPrevisao: Boolean(r.conta_na_previsao),
+  observacao: r.observacao ?? null,
+  atualizadoPorNome: r.atualizado_por_nome ?? null,
+});
+
+interface PrevisaoRow {
+  id: string;
+  codigo: string;
+  setor: string;
+  nome: string;
+  unidade: string;
+  estoque_minimo: N;
+  ativo: boolean;
+  fornecedor: string | null;
+  ultimo_valor: N;
+  ultima_entrada: string | null;
+  ultimo_lote: string | null;
+  saldo: N;
+  reservado: N;
+  previsto: N;
+  falta: N;
+  falta_com_minimo: N;
+  servicos: N;
+}
+const previsaoDaLinha = (r: PrevisaoRow): PrevisaoEstoque => ({
+  id: r.id,
+  codigo: r.codigo,
+  setor: r.setor,
+  nome: r.nome,
+  unidade: r.unidade,
+  estoqueMinimo: num(r.estoque_minimo),
+  ativo: Boolean(r.ativo),
+  fornecedor: r.fornecedor ?? null,
+  ultimoValor: num(r.ultimo_valor),
+  ultimaEntrada: r.ultima_entrada ?? null,
+  ultimoLote: r.ultimo_lote ?? null,
+  saldo: Number(r.saldo ?? 0),
+  reservado: Number(r.reservado ?? 0),
+  previsto: Number(r.previsto ?? 0),
+  falta: Number(r.falta ?? 0),
+  faltaComMinimo: Number(r.falta_com_minimo ?? 0),
+  servicos: Number(r.servicos ?? 0),
+});
+
+/** True when the 0048 views aren't there yet (older database): the screens then hide the list. */
+const listaAusente = (error: { code?: string; message?: string }) =>
+  estoqueAusente(error) || /v_materiais_item|v_previsao|v_demanda/.test(error.message ?? "");
+
 export const estoqueRepository = {
   /** Null when the estoque schema isn't available yet (migration or Data API setting missing). */
   async produtos(): Promise<ProdutoEstoque[] | null> {
@@ -437,5 +584,70 @@ export const estoqueRepository = {
   async excluirSimilar(id: string): Promise<void> {
     const { error } = await db.rpc("excluir_similar", { _id: id });
     if (error) throw erro(error);
+  },
+
+  /** Material lists of a proposta/pedido (all its items). Null when 0048 isn't applied yet. */
+  async materiaisDaVenda(vendaId: string): Promise<MaterialItem[] | null> {
+    const { data, error } = await db
+      .from("v_materiais_item")
+      .select("*")
+      .eq("venda_id", vendaId)
+      .order("item_ordem")
+      .order("codigo");
+    if (error) {
+      if (listaAusente(error)) return null;
+      throw erro(error);
+    }
+    return ((data ?? []) as MaterialRow[]).map(materialDaLinha);
+  },
+
+  /** Material list of the item behind a production order (empty when the order has no item). */
+  async materiaisDaOrdem(ordemId: string): Promise<MaterialItem[]> {
+    const { data, error } = await db
+      .from("v_materiais_item")
+      .select("*")
+      .eq("ordem_id", ordemId)
+      .order("codigo");
+    if (error) {
+      if (listaAusente(error)) return [];
+      throw erro(error);
+    }
+    return ((data ?? []) as MaterialRow[]).map(materialDaLinha);
+  },
+
+  /** What the open, approved services still need (pending > 0), optionally for one product. */
+  async demanda(produtoId?: string): Promise<MaterialItem[]> {
+    let q = db.from("v_demanda").select("*").order("venda_numero").order("item_ordem");
+    if (produtoId) q = q.eq("produto_id", produtoId);
+    const { data, error } = await q;
+    if (error) {
+      if (listaAusente(error)) return [];
+      throw erro(error);
+    }
+    return ((data ?? []) as MaterialRow[]).map(materialDaLinha);
+  },
+
+  /** Balance − reserved for every product. Null when 0048 isn't applied yet. */
+  async previsao(): Promise<PrevisaoEstoque[] | null> {
+    const { data, error } = await db.from("v_previsao").select("*").order("codigo");
+    if (error) {
+      if (listaAusente(error)) return null;
+      throw erro(error);
+    }
+    return ((data ?? []) as PrevisaoRow[]).map(previsaoDaLinha);
+  },
+
+  /** Replaces the whole material list of one item (empty list clears it). */
+  async salvarListaMaterial(vendaItemId: string, linhas: LinhaListaMaterial[]): Promise<number> {
+    const { data, error } = await db.rpc("salvar_lista_material", {
+      _venda_item: vendaItemId,
+      _linhas: linhas.map((l) => ({
+        produto_id: l.produtoId,
+        quantidade: l.quantidade,
+        observacao: l.observacao ?? null,
+      })),
+    });
+    if (error) throw erro(error);
+    return Number(data ?? 0);
   },
 };
