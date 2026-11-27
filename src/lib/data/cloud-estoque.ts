@@ -408,8 +408,7 @@ const previsaoDaLinha = (r: PrevisaoRow): PrevisaoEstoque => ({
 });
 
 /** True when the 0048 views aren't there yet (older database): the screens then hide the list. */
-const listaAusente = (error: { code?: string; message?: string }) =>
-  estoqueAusente(error) || /v_materiais_item|v_previsao|v_demanda/.test(error.message ?? "");
+const listaAusente = (error: { code?: string; message?: string }) => estoqueAusente(error);
 
 export const estoqueRepository = {
   /** Null when the estoque schema isn't available yet (migration or Data API setting missing). */

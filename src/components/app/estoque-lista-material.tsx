@@ -54,7 +54,33 @@ export function ListaMaterialVenda({
   const catalogo = useCustosOrcamento(verCusto);
   const config = useOrcamentoConfig().data ?? CONFIG_PADRAO;
   const [editando, setEditando] = useState<string | null>(null);
-  if (!materiais.data || !produtos.data) return null;
+  const falha = materiais.error ?? produtos.error ?? custos.error ?? catalogo.error;
+  if (falha) {
+    return (
+      <section className="space-y-1 rounded-2xl border border-destructive/40 bg-card p-5 shadow-sm">
+        <h2 className="flex items-center gap-2 font-semibold">
+          <Boxes className="size-5 text-primary" />
+          Composição de custo e material
+        </h2>
+        <p className="text-sm text-destructive">Não foi possível carregar: {falha.message}</p>
+      </section>
+    );
+  }
+  if (materiais.isPending || produtos.isPending) return null;
+  if (!materiais.data || !produtos.data) {
+    return (
+      <section className="space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
+        <h2 className="flex items-center gap-2 font-semibold">
+          <Boxes className="size-5 text-primary" />
+          Composição de custo e material
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          O estoque ainda não está ligado neste banco (migrations 0046 a 0050 e o schema “estoque”
+          exposto no Supabase).
+        </p>
+      </section>
+    );
+  }
   const comComposicao = verCusto && Array.isArray(custos.data) && Array.isArray(catalogo.data);
   const conta = materiais.data.some((m) => m.contaNaPrevisao);
 
