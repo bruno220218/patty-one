@@ -1,6 +1,6 @@
 # Setor Compras: proposta e perguntas
 
-**Para:** Vitor · **Situação:** aguardando respostas (27/11/2026)
+**Para:** Vitor · **Situação:** substituído em 27/11/2026 pelo plano em `docs/estoque-plano.md`
 
 No PattyOne, "Compras e Estoque" era só uma tela "Em breve": não existe regra antiga para copiar.
 Este arquivo traz uma proposta de como o setor funcionaria no app e as perguntas que decidem os
