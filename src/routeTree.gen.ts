@@ -54,6 +54,8 @@ import { Route as AuthenticatedLiberacoesNovaRouteImport } from './routes/_authe
 import { Route as AuthenticatedMidiaOohIndexRouteImport } from './routes/_authenticated/midia-ooh.index'
 import { Route as AuthenticatedMidiaOohPontoIdRouteImport } from './routes/_authenticated/midia-ooh.$pontoId'
 import { Route as AuthenticatedMidiaOohBissemanasRouteImport } from './routes/_authenticated/midia-ooh.bissemanas'
+import { Route as AuthenticatedOrcamentosIndexRouteImport } from './routes/_authenticated/orcamentos.index'
+import { Route as AuthenticatedOrcamentosOrcamentoIdRouteImport } from './routes/_authenticated/orcamentos.$orcamentoId'
 import { Route as AuthenticatedPaineisMidiasRouteImport } from './routes/_authenticated/paineis_.midias'
 import { Route as AuthenticatedPlanejamentoIndexRouteImport } from './routes/_authenticated/planejamento.index'
 import { Route as AuthenticatedPlanejamentoCatalogosRouteImport } from './routes/_authenticated/planejamento.catalogos'
@@ -318,6 +320,18 @@ const AuthenticatedMidiaOohBissemanasRoute =
     path: '/midia-ooh/bissemanas',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOrcamentosIndexRoute =
+  AuthenticatedOrcamentosIndexRouteImport.update({
+    id: '/orcamentos/',
+    path: '/orcamentos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOrcamentosOrcamentoIdRoute =
+  AuthenticatedOrcamentosOrcamentoIdRouteImport.update({
+    id: '/orcamentos/$orcamentoId',
+    path: '/orcamentos/$orcamentoId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPaineisMidiasRoute =
   AuthenticatedPaineisMidiasRouteImport.update({
     id: '/paineis_/midias',
@@ -433,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
   '/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
+  '/orcamentos/$orcamentoId': typeof AuthenticatedOrcamentosOrcamentoIdRoute
   '/paineis/midias': typeof AuthenticatedPaineisMidiasRoute
   '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
@@ -450,6 +465,7 @@ export interface FileRoutesByFullPath {
   '/financeiro/': typeof AuthenticatedFinanceiroIndexRoute
   '/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/midia-ooh/': typeof AuthenticatedMidiaOohIndexRoute
+  '/orcamentos/': typeof AuthenticatedOrcamentosIndexRoute
   '/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
   '/producao/': typeof AuthenticatedProducaoIndexRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
@@ -491,6 +507,7 @@ export interface FileRoutesByTo {
   '/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
   '/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
+  '/orcamentos/$orcamentoId': typeof AuthenticatedOrcamentosOrcamentoIdRoute
   '/paineis/midias': typeof AuthenticatedPaineisMidiasRoute
   '/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
@@ -508,6 +525,7 @@ export interface FileRoutesByTo {
   '/financeiro': typeof AuthenticatedFinanceiroIndexRoute
   '/liberacoes': typeof AuthenticatedLiberacoesIndexRoute
   '/midia-ooh': typeof AuthenticatedMidiaOohIndexRoute
+  '/orcamentos': typeof AuthenticatedOrcamentosIndexRoute
   '/planejamento': typeof AuthenticatedPlanejamentoIndexRoute
   '/producao': typeof AuthenticatedProducaoIndexRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
@@ -552,6 +570,7 @@ export interface FileRoutesById {
   '/_authenticated/liberacoes/nova': typeof AuthenticatedLiberacoesNovaRoute
   '/_authenticated/midia-ooh/$pontoId': typeof AuthenticatedMidiaOohPontoIdRoute
   '/_authenticated/midia-ooh/bissemanas': typeof AuthenticatedMidiaOohBissemanasRoute
+  '/_authenticated/orcamentos/$orcamentoId': typeof AuthenticatedOrcamentosOrcamentoIdRoute
   '/_authenticated/paineis_/midias': typeof AuthenticatedPaineisMidiasRoute
   '/_authenticated/planejamento/catalogos': typeof AuthenticatedPlanejamentoCatalogosRoute
   '/_authenticated/planejamento/equipes': typeof AuthenticatedPlanejamentoEquipesRoute
@@ -569,6 +588,7 @@ export interface FileRoutesById {
   '/_authenticated/financeiro/': typeof AuthenticatedFinanceiroIndexRoute
   '/_authenticated/liberacoes/': typeof AuthenticatedLiberacoesIndexRoute
   '/_authenticated/midia-ooh/': typeof AuthenticatedMidiaOohIndexRoute
+  '/_authenticated/orcamentos/': typeof AuthenticatedOrcamentosIndexRoute
   '/_authenticated/planejamento/': typeof AuthenticatedPlanejamentoIndexRoute
   '/_authenticated/producao/': typeof AuthenticatedProducaoIndexRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
@@ -612,6 +632,7 @@ export interface FileRouteTypes {
     | '/liberacoes/nova'
     | '/midia-ooh/$pontoId'
     | '/midia-ooh/bissemanas'
+    | '/orcamentos/$orcamentoId'
     | '/paineis/midias'
     | '/planejamento/catalogos'
     | '/planejamento/equipes'
@@ -629,6 +650,7 @@ export interface FileRouteTypes {
     | '/financeiro/'
     | '/liberacoes/'
     | '/midia-ooh/'
+    | '/orcamentos/'
     | '/planejamento/'
     | '/producao/'
     | '/projetos/'
@@ -670,6 +692,7 @@ export interface FileRouteTypes {
     | '/liberacoes/nova'
     | '/midia-ooh/$pontoId'
     | '/midia-ooh/bissemanas'
+    | '/orcamentos/$orcamentoId'
     | '/paineis/midias'
     | '/planejamento/catalogos'
     | '/planejamento/equipes'
@@ -687,6 +710,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/liberacoes'
     | '/midia-ooh'
+    | '/orcamentos'
     | '/planejamento'
     | '/producao'
     | '/projetos'
@@ -730,6 +754,7 @@ export interface FileRouteTypes {
     | '/_authenticated/liberacoes/nova'
     | '/_authenticated/midia-ooh/$pontoId'
     | '/_authenticated/midia-ooh/bissemanas'
+    | '/_authenticated/orcamentos/$orcamentoId'
     | '/_authenticated/paineis_/midias'
     | '/_authenticated/planejamento/catalogos'
     | '/_authenticated/planejamento/equipes'
@@ -747,6 +772,7 @@ export interface FileRouteTypes {
     | '/_authenticated/financeiro/'
     | '/_authenticated/liberacoes/'
     | '/_authenticated/midia-ooh/'
+    | '/_authenticated/orcamentos/'
     | '/_authenticated/planejamento/'
     | '/_authenticated/producao/'
     | '/_authenticated/projetos/'
@@ -1080,6 +1106,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMidiaOohBissemanasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/orcamentos/': {
+      id: '/_authenticated/orcamentos/'
+      path: '/orcamentos'
+      fullPath: '/orcamentos/'
+      preLoaderRoute: typeof AuthenticatedOrcamentosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/orcamentos/$orcamentoId': {
+      id: '/_authenticated/orcamentos/$orcamentoId'
+      path: '/orcamentos/$orcamentoId'
+      fullPath: '/orcamentos/$orcamentoId'
+      preLoaderRoute: typeof AuthenticatedOrcamentosOrcamentoIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/paineis_/midias': {
       id: '/_authenticated/paineis_/midias'
       path: '/paineis/midias'
@@ -1225,6 +1265,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLiberacoesNovaRoute: typeof AuthenticatedLiberacoesNovaRoute
   AuthenticatedMidiaOohPontoIdRoute: typeof AuthenticatedMidiaOohPontoIdRoute
   AuthenticatedMidiaOohBissemanasRoute: typeof AuthenticatedMidiaOohBissemanasRoute
+  AuthenticatedOrcamentosOrcamentoIdRoute: typeof AuthenticatedOrcamentosOrcamentoIdRoute
   AuthenticatedPaineisMidiasRoute: typeof AuthenticatedPaineisMidiasRoute
   AuthenticatedPlanejamentoCatalogosRoute: typeof AuthenticatedPlanejamentoCatalogosRoute
   AuthenticatedPlanejamentoEquipesRoute: typeof AuthenticatedPlanejamentoEquipesRoute
@@ -1242,6 +1283,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceiroIndexRoute: typeof AuthenticatedFinanceiroIndexRoute
   AuthenticatedLiberacoesIndexRoute: typeof AuthenticatedLiberacoesIndexRoute
   AuthenticatedMidiaOohIndexRoute: typeof AuthenticatedMidiaOohIndexRoute
+  AuthenticatedOrcamentosIndexRoute: typeof AuthenticatedOrcamentosIndexRoute
   AuthenticatedPlanejamentoIndexRoute: typeof AuthenticatedPlanejamentoIndexRoute
   AuthenticatedProducaoIndexRoute: typeof AuthenticatedProducaoIndexRoute
   AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
@@ -1275,6 +1317,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLiberacoesNovaRoute: AuthenticatedLiberacoesNovaRoute,
   AuthenticatedMidiaOohPontoIdRoute: AuthenticatedMidiaOohPontoIdRoute,
   AuthenticatedMidiaOohBissemanasRoute: AuthenticatedMidiaOohBissemanasRoute,
+  AuthenticatedOrcamentosOrcamentoIdRoute:
+    AuthenticatedOrcamentosOrcamentoIdRoute,
   AuthenticatedPaineisMidiasRoute: AuthenticatedPaineisMidiasRoute,
   AuthenticatedPlanejamentoCatalogosRoute:
     AuthenticatedPlanejamentoCatalogosRoute,
@@ -1295,6 +1339,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceiroIndexRoute: AuthenticatedFinanceiroIndexRoute,
   AuthenticatedLiberacoesIndexRoute: AuthenticatedLiberacoesIndexRoute,
   AuthenticatedMidiaOohIndexRoute: AuthenticatedMidiaOohIndexRoute,
+  AuthenticatedOrcamentosIndexRoute: AuthenticatedOrcamentosIndexRoute,
   AuthenticatedPlanejamentoIndexRoute: AuthenticatedPlanejamentoIndexRoute,
   AuthenticatedProducaoIndexRoute: AuthenticatedProducaoIndexRoute,
   AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,

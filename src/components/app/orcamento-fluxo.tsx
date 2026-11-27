@@ -44,31 +44,9 @@ export function FluxoOrcamento({ venda, alterado }: { venda: Venda; alterado: bo
 
   if (venda.tipo !== "proposta") return null;
 
-  if (!sit) {
-    if (!canVender(me) || venda.status !== "Rascunho") return null;
-    return (
-      <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed bg-card p-4 text-sm">
-        <span className="text-muted-foreground">
-          Precisa de orçamento de Projetos (materiais, mão de obra e preço aprovado pela Gestão)?
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={alterado}
-          title={alterado ? "Salve antes" : undefined}
-          onClick={() =>
-            void run(async () => {
-              await fluxoOrcamentoRepository.iniciar(venda.id);
-              return true;
-            }, "Proposta enviada para Projetos orçar")
-          }
-        >
-          <Workflow />
-          Mandar para Projetos orçar
-        </Button>
-      </section>
-    );
-  }
+  // Since 0052 the orçamento is made on its own sheet (/orcamentos); this panel only shows the
+  // propostas that entered the 0051 flow.
+  if (!sit) return null;
 
   const etapa = etapaDoOrcamento(sit);
   const valor = Math.max(

@@ -4,12 +4,16 @@ import {
   canDecidirOrcamento,
   canEditarCustosOrcamento,
   canEnviarOrcamento,
+  canMontarOrcamento,
   CONFIG_PADRAO,
   etapaDoOrcamento,
   margemPct,
   orcamentoTravado,
   podeEditarItensVenda,
+  rotuloOrcamento,
   secaoDe,
+  situacaoDaLinha,
+  totaisPlanilha,
 } from "./orcamento-rules";
 
 describe("composição do orçamento", () => {
@@ -73,5 +77,32 @@ describe("fluxo do orçamento", () => {
     expect(podeEditarItensVenda({ funcoes: ["comercial"] }, true, "pedido", null)).toBe(true);
     expect(canDecidirOrcamento(pj)).toBe(false);
     expect(canEnviarOrcamento(pj)).toBe(true);
+  });
+});
+
+describe("orçamento como a planilha", () => {
+  it("rótulo e somatória (MP + MOD) com os fatores", () => {
+    expect(rotuloOrcamento({ numero: 1, mes: 11 })).toBe("Nº 01 · NOVEMBRO");
+    const t = totaisPlanilha(
+      [
+        { secao: "Painel", quantidade: 0.5, valorUnitario: 480 },
+        { secao: "Letreiro", quantidade: 10, valorUnitario: 4.5 },
+        { secao: "Mão de obra", quantidade: 0.11, valorUnitario: 305.52 },
+        { secao: "Deslocamento", quantidade: 10, valorUnitario: 8 },
+        { secao: "Estrutura", quantidade: 0, valorUnitario: 42 },
+      ],
+      CONFIG_PADRAO,
+    );
+    expect(t).toMatchObject({ materiaPrima: 285, maoDeObra: 113.61, custo: 398.61 });
+    expect(t.porCamada.Painel).toBe(240);
+    expect(t.venda).toBe(724.74);
+  });
+  it("situação da linha pelo estoque", () => {
+    expect(situacaoDaLinha(0, 5).tipo).toBe("vazio");
+    expect(situacaoDaLinha(2, null).tipo).toBe("sem_estoque");
+    expect(situacaoDaLinha(2, 5).tipo).toBe("ok");
+    expect(situacaoDaLinha(2, -1)).toEqual({ tipo: "comprar", falta: 2 });
+    expect(situacaoDaLinha(3, 1)).toEqual({ tipo: "comprar", falta: 2 });
+    expect(canMontarOrcamento({ funcoes: ["comercial"] })).toBe(false);
   });
 });

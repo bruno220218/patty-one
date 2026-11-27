@@ -77,6 +77,7 @@ type NavTo =
   | "/equipe"
   | "/relatorios"
   | "/custos-orcamento"
+  | "/orcamentos"
   | "/lixeira"
   | "/briefings"
   | "/visitas"
@@ -146,6 +147,12 @@ const SETORES: Setor[] = [
         titulo: "Vendas",
         itens: [
           { id: "vendas", label: "Propostas e pedidos", icon: ShoppingCart, to: "/comercial" },
+          {
+            id: "orcamentos-pe",
+            label: "Orçamentos de projetos",
+            icon: Calculator,
+            to: "/orcamentos",
+          },
           {
             id: "historico-sige",
             label: "Histórico SIGE",
@@ -340,6 +347,7 @@ const SETORES: Setor[] = [
             to: "/briefings",
             search: { destino: "projetos_especiais" },
           },
+          { id: "pe-orcamentos", label: "Orçamentos", icon: Calculator, to: "/orcamentos" },
           { id: "pe-liberacoes", label: "Liberações", icon: FileCheck2, to: "/liberacoes" },
           { id: "pe-medidas", label: "Medidas", icon: Ruler, to: "/medidas" },
           { id: "pe-projetos", label: "Projetos", icon: FolderOpen, to: "/projetos" },

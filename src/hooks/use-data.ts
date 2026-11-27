@@ -35,6 +35,7 @@ import {
   teamRepository,
   estoqueRepository,
   fluxoOrcamentoRepository,
+  orcamentosPERepository,
   orcamentoRepository,
 } from "@/lib/data";
 
@@ -456,4 +457,30 @@ export const useRevisoesOrcamento = (vendaId: string, enabled = true) =>
     queryKey: ["orcamento", "revisoes", vendaId],
     queryFn: () => fluxoOrcamentoRepository.revisoes(vendaId),
     enabled: enabled && !!vendaId,
+  });
+
+// ---------- Orçamentos de Projetos Especiais (0052) ----------
+/** Null data = migration 0052 isn't applied yet. */
+export const useOrcamentosPE = () =>
+  useQuery({ queryKey: ["orcamentos-pe", "lista"], queryFn: () => orcamentosPERepository.lista() });
+
+export const useOrcamentoPE = (id: string) =>
+  useQuery({
+    queryKey: ["orcamentos-pe", "um", id],
+    queryFn: () => orcamentosPERepository.um(id),
+    enabled: !!id,
+  });
+
+export const useRevisoesOrcamentoPE = (id: string) =>
+  useQuery({
+    queryKey: ["orcamentos-pe", "revisoes", id],
+    queryFn: () => orcamentosPERepository.revisoes(id),
+    enabled: !!id,
+  });
+
+export const useOrcamentoDoBriefing = (briefingId: string) =>
+  useQuery({
+    queryKey: ["orcamentos-pe", "briefing", briefingId],
+    queryFn: () => orcamentosPERepository.porBriefing(briefingId),
+    enabled: !!briefingId,
   });

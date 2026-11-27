@@ -167,3 +167,114 @@ export const podeEditarItensVenda = (
 /** Margin over the sale value: (valor − custo) ÷ valor, in %. Null without a value. */
 export const margemPct = (custo: number, valor: number) =>
   valor > 0 ? Math.round(((valor - custo) / valor) * 1000) / 10 : null;
+
+// ---------- Orçamento de Projetos Especiais como a planilha (migration 0052) ----------
+/** Layers of the sheet, in order. Materials/services first, then mão de obra and deslocamento. */
+export const CAMADAS_ORCAMENTO = [
+  "Painel",
+  "Estrutura",
+  "Letreiro",
+  "Pintura",
+  "Iluminação",
+  "Outros",
+  "Mão de obra",
+  "Deslocamento",
+] as const;
+export type CamadaOrcamento = (typeof CAMADAS_ORCAMENTO)[number];
+export const CAMADAS_MATERIAL: readonly CamadaOrcamento[] = [
+  "Painel",
+  "Estrutura",
+  "Letreiro",
+  "Pintura",
+  "Iluminação",
+  "Outros",
+];
+
+const MESES = [
+  "JANEIRO",
+  "FEVEREIRO",
+  "MARÇO",
+  "ABRIL",
+  "MAIO",
+  "JUNHO",
+  "JULHO",
+  "AGOSTO",
+  "SETEMBRO",
+  "OUTUBRO",
+  "NOVEMBRO",
+  "DEZEMBRO",
+];
+/** "Nº 01 · NOVEMBRO" (the number restarts every month). */
+export const rotuloOrcamento = (o: { numero: number; mes: number }) =>
+  `Nº ${String(o.numero).padStart(2, "0")} · ${MESES[o.mes - 1] ?? ""}`;
+
+/** Projetos Especiais, Gestão and Direção fill the sheet (database: pode_montar_orcamento). */
+export const canMontarOrcamento = (user: WithFuncoes) =>
+  tem(user, "gestor", "direcao", "projetos_especiais");
+
+export interface LinhaPlanilha {
+  secao: string;
+  quantidade: number;
+  valorUnitario: number;
+}
+export interface TotaisPlanilha {
+  porCamada: Record<CamadaOrcamento, number>;
+  /** "Valor MP": the material layers. */
+  materiaPrima: number;
+  /** "Valor - MOD": mão de obra + deslocamento. */
+  maoDeObra: number;
+  custo: number;
+  venda: number;
+  desconto: number;
+  semNota: number;
+  entrada: number;
+}
+
+/** Same math as the spreadsheet: Somatória = MP + MOD; preço = somatória ÷ fator. */
+export function totaisPlanilha(linhas: LinhaPlanilha[], config: OrcamentoConfig): TotaisPlanilha {
+  const porCamada = Object.fromEntries(CAMADAS_ORCAMENTO.map((c) => [c, 0])) as Record<
+    CamadaOrcamento,
+    number
+  >;
+  for (const l of linhas) {
+    const c = (CAMADAS_ORCAMENTO as readonly string[]).includes(l.secao)
+      ? (l.secao as CamadaOrcamento)
+      : "Outros";
+    porCamada[c] += l.quantidade * l.valorUnitario;
+  }
+  const mp = CAMADAS_MATERIAL.reduce((s, c) => s + porCamada[c], 0);
+  const mod = porCamada["Mão de obra"] + porCamada.Deslocamento;
+  const custo = mp + mod;
+  const venda = div(custo, config.fatorVenda);
+  return {
+    porCamada: Object.fromEntries(
+      Object.entries(porCamada).map(([k, v]) => [k, centavos(v)]),
+    ) as Record<CamadaOrcamento, number>,
+    materiaPrima: centavos(mp),
+    maoDeObra: centavos(mod),
+    custo: centavos(custo),
+    venda: centavos(venda),
+    desconto: centavos(div(custo, config.fatorDesconto)),
+    semNota: centavos(div(custo, config.fatorSemNota)),
+    entrada: centavos((venda * config.entradaPct) / 100),
+  };
+}
+
+/** SITUAÇÃO column: what the stock says about a filled material line. */
+export function situacaoDaLinha(
+  quantidade: number,
+  saldo: number | null,
+): { tipo: "vazio" | "sem_estoque" | "ok" | "comprar"; falta: number } {
+  if (quantidade <= 0) return { tipo: "vazio", falta: 0 };
+  if (saldo === null) return { tipo: "sem_estoque", falta: 0 };
+  if (saldo >= quantidade) return { tipo: "ok", falta: 0 };
+  return { tipo: "comprar", falta: Math.round((quantidade - Math.max(saldo, 0)) * 1000) / 1000 };
+}
+
+/** Pill classes per situation (app colors: idle grey, progress yellow, done black/yellow). */
+export const CLASSE_SITUACAO_ORCAMENTO: Record<SituacaoOrcamento, string> = {
+  em_orcamento: "bg-status-idle text-status-idle-foreground",
+  devolvido: "bg-destructive/15 text-destructive",
+  aguardando_aprovacao: "bg-status-progress text-status-progress-foreground",
+  aprovado: "bg-status-done text-status-done-foreground",
+};

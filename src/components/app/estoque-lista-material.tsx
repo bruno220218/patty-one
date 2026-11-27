@@ -48,7 +48,8 @@ export function ListaMaterialVenda({
 }) {
   const me = useCurrentUser().data;
   const verCusto = canVerCustoEstoque(me);
-  const podeEditar = canListarMaterial(me) && !travado;
+  // Since 0052 the composition is built on the orçamento sheet; here it is read-only.
+  const podeEditar: boolean = false;
   const podeAplicar = (canListarMaterial(me) || canVender(me)) && !travado;
   const run = useDataAction();
   const materiais = useMateriaisDaVenda(vendaId);

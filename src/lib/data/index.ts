@@ -113,4 +113,5 @@ export * from "./estoque-rules";
 export * from "./cloud-estoque";
 export * from "./orcamento-rules";
 export * from "./cloud-orcamento";
+export * from "./cloud-orcamentos-pe";
 export * from "./nfe-xml";
