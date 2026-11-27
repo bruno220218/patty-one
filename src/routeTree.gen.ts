@@ -20,11 +20,13 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedLixeiraRouteImport } from './routes/_authenticated/lixeira'
 import { Route as AuthenticatedMedidasRouteImport } from './routes/_authenticated/medidas'
+import { Route as AuthenticatedOrquestradorRouteImport } from './routes/_authenticated/orquestrador'
 import { Route as AuthenticatedPaineisRouteImport } from './routes/_authenticated/paineis'
 import { Route as AuthenticatedPrazosRouteImport } from './routes/_authenticated/prazos'
 import { Route as AuthenticatedStatusServicosRouteImport } from './routes/_authenticated/status-servicos'
 import { Route as ApiAssistentePcpRouteImport } from './routes/api/assistente-pcp'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
+import { Route as ApiOrquestradorRouteImport } from './routes/api/orquestrador'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorImportarRouteImport } from './routes/_authenticated/_gestor/importar'
 import { Route as AuthenticatedGestorImportarHistoricoRouteImport } from './routes/_authenticated/_gestor/importar-historico'
@@ -119,6 +121,12 @@ const AuthenticatedMedidasRoute = AuthenticatedMedidasRouteImport.update({
   path: '/medidas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOrquestradorRoute =
+  AuthenticatedOrquestradorRouteImport.update({
+    id: '/orquestrador',
+    path: '/orquestrador',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPaineisRoute = AuthenticatedPaineisRouteImport.update({
   id: '/paineis',
   path: '/paineis',
@@ -143,6 +151,11 @@ const ApiAssistentePcpRoute = ApiAssistentePcpRouteImport.update({
 const ApiNextStepsRoute = ApiNextStepsRouteImport.update({
   id: '/api/next-steps',
   path: '/api/next-steps',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOrquestradorRoute = ApiOrquestradorRouteImport.update({
+  id: '/api/orquestrador',
+  path: '/api/orquestrador',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedGestorEquipeRoute =
@@ -381,11 +394,13 @@ export interface FileRoutesByFullPath {
   '/inicio': typeof AuthenticatedInicioRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/medidas': typeof AuthenticatedMedidasRoute
+  '/orquestrador': typeof AuthenticatedOrquestradorRoute
   '/paineis': typeof AuthenticatedPaineisRoute
   '/prazos': typeof AuthenticatedPrazosRoute
   '/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
+  '/api/orquestrador': typeof ApiOrquestradorRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
   '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -435,11 +450,13 @@ export interface FileRoutesByTo {
   '/inicio': typeof AuthenticatedInicioRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/medidas': typeof AuthenticatedMedidasRoute
+  '/orquestrador': typeof AuthenticatedOrquestradorRoute
   '/paineis': typeof AuthenticatedPaineisRoute
   '/prazos': typeof AuthenticatedPrazosRoute
   '/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
+  '/api/orquestrador': typeof ApiOrquestradorRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
   '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -492,11 +509,13 @@ export interface FileRoutesById {
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/lixeira': typeof AuthenticatedLixeiraRoute
   '/_authenticated/medidas': typeof AuthenticatedMedidasRoute
+  '/_authenticated/orquestrador': typeof AuthenticatedOrquestradorRoute
   '/_authenticated/paineis': typeof AuthenticatedPaineisRoute
   '/_authenticated/prazos': typeof AuthenticatedPrazosRoute
   '/_authenticated/status-servicos': typeof AuthenticatedStatusServicosRoute
   '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
+  '/api/orquestrador': typeof ApiOrquestradorRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/importar': typeof AuthenticatedGestorImportarRoute
   '/_authenticated/_gestor/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -548,11 +567,13 @@ export interface FileRouteTypes {
     | '/inicio'
     | '/lixeira'
     | '/medidas'
+    | '/orquestrador'
     | '/paineis'
     | '/prazos'
     | '/status-servicos'
     | '/api/assistente-pcp'
     | '/api/next-steps'
+    | '/api/orquestrador'
     | '/equipe'
     | '/importar'
     | '/importar-historico'
@@ -602,11 +623,13 @@ export interface FileRouteTypes {
     | '/inicio'
     | '/lixeira'
     | '/medidas'
+    | '/orquestrador'
     | '/paineis'
     | '/prazos'
     | '/status-servicos'
     | '/api/assistente-pcp'
     | '/api/next-steps'
+    | '/api/orquestrador'
     | '/equipe'
     | '/importar'
     | '/importar-historico'
@@ -658,11 +681,13 @@ export interface FileRouteTypes {
     | '/_authenticated/inicio'
     | '/_authenticated/lixeira'
     | '/_authenticated/medidas'
+    | '/_authenticated/orquestrador'
     | '/_authenticated/paineis'
     | '/_authenticated/prazos'
     | '/_authenticated/status-servicos'
     | '/api/assistente-pcp'
     | '/api/next-steps'
+    | '/api/orquestrador'
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/importar'
     | '/_authenticated/_gestor/importar-historico'
@@ -710,6 +735,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiAssistentePcpRoute: typeof ApiAssistentePcpRoute
   ApiNextStepsRoute: typeof ApiNextStepsRoute
+  ApiOrquestradorRoute: typeof ApiOrquestradorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -791,6 +817,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMedidasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/orquestrador': {
+      id: '/_authenticated/orquestrador'
+      path: '/orquestrador'
+      fullPath: '/orquestrador'
+      preLoaderRoute: typeof AuthenticatedOrquestradorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/paineis': {
       id: '/_authenticated/paineis'
       path: '/paineis'
@@ -824,6 +857,13 @@ declare module '@tanstack/react-router' {
       path: '/api/next-steps'
       fullPath: '/api/next-steps'
       preLoaderRoute: typeof ApiNextStepsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/orquestrador': {
+      id: '/api/orquestrador'
+      path: '/api/orquestrador'
+      fullPath: '/api/orquestrador'
+      preLoaderRoute: typeof ApiOrquestradorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_gestor/equipe': {
@@ -1126,6 +1166,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
   AuthenticatedMedidasRoute: typeof AuthenticatedMedidasRoute
+  AuthenticatedOrquestradorRoute: typeof AuthenticatedOrquestradorRoute
   AuthenticatedPaineisRoute: typeof AuthenticatedPaineisRoute
   AuthenticatedPrazosRoute: typeof AuthenticatedPrazosRoute
   AuthenticatedStatusServicosRoute: typeof AuthenticatedStatusServicosRoute
@@ -1172,6 +1213,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
   AuthenticatedMedidasRoute: AuthenticatedMedidasRoute,
+  AuthenticatedOrquestradorRoute: AuthenticatedOrquestradorRoute,
   AuthenticatedPaineisRoute: AuthenticatedPaineisRoute,
   AuthenticatedPrazosRoute: AuthenticatedPrazosRoute,
   AuthenticatedStatusServicosRoute: AuthenticatedStatusServicosRoute,
@@ -1225,6 +1267,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ApiAssistentePcpRoute: ApiAssistentePcpRoute,
   ApiNextStepsRoute: ApiNextStepsRoute,
+  ApiOrquestradorRoute: ApiOrquestradorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

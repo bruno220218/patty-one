@@ -42,6 +42,7 @@ import {
   Receipt,
   Wallet,
   Zap,
+  Bot,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser, useNotifications } from "@/hooks/use-data";
@@ -96,7 +97,8 @@ type NavTo =
   | "/planejamento/veiculos"
   | "/planejamento/catalogos"
   | "/financeiro"
-  | "/dashboard";
+  | "/dashboard"
+  | "/orquestrador";
 
 type NavItem = {
   id: string;
@@ -124,7 +126,12 @@ const SETORES: Setor[] = [
     titulo: "Visão geral",
     funcoes: ["direcao", "comercial", "pcp", "financeiro"],
     subs: [
-      { itens: [{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" }] },
+      {
+        itens: [
+          { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
+          { id: "orquestrador", label: "Orquestrador", icon: Bot, to: "/orquestrador" },
+        ],
+      },
     ],
   },
   {

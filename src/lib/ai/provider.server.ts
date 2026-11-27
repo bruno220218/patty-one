@@ -1,23 +1,43 @@
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
-import type { LanguageModel } from "ai";
+import type { JSONValue, LanguageModel } from "ai";
 
 // IA opcional: qualquer provedor compatível com a API da OpenAI. Este é o único lugar que sabe
 // qual provedor está em uso (trocar de provedor = mudar aqui e os segredos na Cloudflare).
 // AI_API_KEY (obrigatória para ligar), AI_BASE_URL (padrão: OpenAI) e AI_MODEL.
 // Ex. grátis: Google Gemini -> AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-//   AI_MODEL=gemini-2.5-flash
+//   AI_MODEL=gemini-3.5-flash (o gemini-2.5-flash não é mais liberado para chaves novas)
+// Com o endereço do Google usa o cliente nativo do Gemini: os modelos Gemini 3 exigem a
+// "thought signature" nas chamadas de ferramenta, que o cliente compatível com OpenAI descarta.
 const DEFAULT_BASE_URL = "https://api.openai.com/v1";
 const DEFAULT_MODEL = "gpt-4o-mini";
+
+function ehGoogle(): boolean {
+  return (process.env["AI_BASE_URL"] || DEFAULT_BASE_URL).includes(
+    "generativelanguage.googleapis.com",
+  );
+}
 
 /** The configured model, or null when AI_API_KEY is not set. */
 export function modeloIA(): LanguageModel | null {
   const apiKey = process.env["AI_API_KEY"];
   if (!apiKey) return null;
+  const modelo = process.env["AI_MODEL"] || DEFAULT_MODEL;
+  if (ehGoogle()) return createGoogleGenerativeAI({ apiKey })(modelo);
   const provider = createOpenAI({
     baseURL: process.env["AI_BASE_URL"] || DEFAULT_BASE_URL,
     apiKey,
   });
-  return provider.chat(process.env["AI_MODEL"] || DEFAULT_MODEL);
+  return provider.chat(modelo);
+}
+
+/**
+ * Provider-specific options for `generateText`. Gemini 3 thinks before answering; "low" is much
+ * faster and enough for reading a summary and answering. Other providers: nothing extra.
+ */
+export function opcoesProvedor(): Record<string, Record<string, JSONValue>> {
+  const gemini3 = /^gemini-3/.test(process.env["AI_MODEL"] || "");
+  return ehGoogle() && gemini3 ? { google: { thinkingConfig: { thinkingLevel: "low" } } } : {};
 }
 
 /** Bearer token of the signed-in caller (Supabase session), or null. */
