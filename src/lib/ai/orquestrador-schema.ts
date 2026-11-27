@@ -136,6 +136,8 @@ export interface OrquestradorResposta {
   resposta: string;
   consultas: ConsultaSetor[];
   aviso: string | null;
+  /** How long the server took, to compare speed. */
+  segundos?: number;
 }
 
 /** What a sector tool returns to the orchestrator when it doesn't call the AI. */

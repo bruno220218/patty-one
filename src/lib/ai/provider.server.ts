@@ -18,11 +18,23 @@ function ehGoogle(): boolean {
   );
 }
 
+/**
+ * "setor" = the Orquestrador's sector agents, which may use a faster model (AI_MODEL_SETOR,
+ * optional, e.g. gemini-3.5-flash-lite; each Gemini model also has its own free quota).
+ */
+export type PapelModelo = "principal" | "setor";
+
+function nomeDoModelo(papel: PapelModelo): string {
+  return (
+    (papel === "setor" && process.env["AI_MODEL_SETOR"]) || process.env["AI_MODEL"] || DEFAULT_MODEL
+  );
+}
+
 /** The configured model, or null when AI_API_KEY is not set. */
-export function modeloIA(): LanguageModel | null {
+export function modeloIA(papel: PapelModelo = "principal"): LanguageModel | null {
   const apiKey = process.env["AI_API_KEY"];
   if (!apiKey) return null;
-  const modelo = process.env["AI_MODEL"] || DEFAULT_MODEL;
+  const modelo = nomeDoModelo(papel);
   if (ehGoogle()) return createGoogleGenerativeAI({ apiKey })(modelo);
   const provider = createOpenAI({
     baseURL: process.env["AI_BASE_URL"] || DEFAULT_BASE_URL,
@@ -35,8 +47,10 @@ export function modeloIA(): LanguageModel | null {
  * Provider-specific options for `generateText`. Gemini 3 thinks before answering; "low" is much
  * faster and enough for reading a summary and answering. Other providers: nothing extra.
  */
-export function opcoesProvedor(): Record<string, Record<string, JSONValue>> {
-  const gemini3 = /^gemini-3/.test(process.env["AI_MODEL"] || "");
+export function opcoesProvedor(
+  papel: PapelModelo = "principal",
+): Record<string, Record<string, JSONValue>> {
+  const gemini3 = /^gemini-3/.test(nomeDoModelo(papel));
   return ehGoogle() && gemini3 ? { google: { thinkingConfig: { thinkingLevel: "low" } } } : {};
 }
 

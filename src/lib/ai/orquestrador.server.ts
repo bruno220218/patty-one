@@ -45,6 +45,13 @@ const TEMPO_TOTAL_MS = 180_000;
 
 const erro = (mensagem: string, status: number) => Response.json({ error: mensagem }, { status });
 
+/** The single sector's answer when exactly one sector was consulted and it answered. */
+function respostaUnica(consultas: ConsultaSetor[], respostas: string[]): string | null {
+  return consultas.length === 1 && consultas[0]?.situacao === "respondeu" && respostas.length === 1
+    ? (respostas[0] ?? null)
+    : null;
+}
+
 function instrucoesOrquestrador(pedido: OrquestradorPedido): string {
   const quem = pedido.usuario.nome
     ? `O usuário é ${pedido.usuario.nome} (funções: ${pedido.usuario.funcoes.join(", ") || "não informadas"}).`
@@ -67,7 +74,7 @@ async function consultarSetor(
   origem: string,
   abortSignal: AbortSignal,
 ): Promise<string> {
-  const model = modeloIA();
+  const model = modeloIA("setor");
   if (!model) throw new Error("IA desligada");
   const { text } = await generateText({
     model,
@@ -78,11 +85,11 @@ async function consultarSetor(
       `Pergunta recebida de: ${origem || "usuário do sistema"}`,
       `Dados atuais do Patty One (JSON):\n${JSON.stringify(dados)}`,
       `Pergunta:\n${pergunta}`,
-      "Responda de forma objetiva e técnica, para o orquestrador repassar ao usuário. Use só os dados acima; se faltar algum dado, diga o que falta em vez de supor. Ignore os passos da skill que pedem dados que não vieram.",
+      "Sua resposta pode ir direto para o usuário: responda em português do Brasil, em texto simples (sem markdown: sem #, sem ** e sem tabelas), curta e acionável, com no máximo 15 linhas e listas em linhas começando com '- '. Use só os dados acima; se faltar algum dado, diga o que falta em vez de supor. Ignore os passos da skill que pedem dados que não vieram e não devolva JSON.",
     ].join("\n\n"),
-    maxOutputTokens: 1500,
+    maxOutputTokens: 900,
     maxRetries: 1,
-    providerOptions: opcoesProvedor(),
+    providerOptions: opcoesProvedor("setor"),
     abortSignal: AbortSignal.any([abortSignal, AbortSignal.timeout(TEMPO_SETOR_MS)]),
   });
   return text.trim() || "O setor não trouxe resposta.";
@@ -91,6 +98,7 @@ async function consultarSetor(
 function montarFerramentas(
   pedido: OrquestradorPedido,
   consultas: ConsultaSetor[],
+  respostas: string[],
   abortSignal: AbortSignal,
 ): ToolSet {
   const ferramentas: ToolSet = {};
@@ -114,6 +122,7 @@ function montarFerramentas(
         try {
           const resposta = await consultarSetor(setor, pergunta, dados, origem, abortSignal);
           registrar("respondeu");
+          respostas.push(resposta);
           return resposta;
         } catch (e) {
           console.error(`orquestrador: setor ${setor.id}`, e instanceof Error ? e.message : e);
@@ -156,6 +165,8 @@ export async function handleOrquestrador(request: Request): Promise<Response> {
   if (acesso === "limite") return erro("Você chegou ao limite de perguntas de hoje.", 429);
 
   const consultas: ConsultaSetor[] = [];
+  const respostas: string[] = [];
+  const inicio = Date.now();
   const abortSignal = AbortSignal.any([request.signal, AbortSignal.timeout(TEMPO_TOTAL_MS)]);
   try {
     const { text } = await generateText({
@@ -168,8 +179,10 @@ export async function handleOrquestrador(request: Request): Promise<Response> {
         })),
         { role: "user" as const, content: pedido.mensagem },
       ],
-      tools: montarFerramentas(pedido, consultas, abortSignal),
-      stopWhen: stepCountIs(MAX_RODADAS),
+      tools: montarFerramentas(pedido, consultas, respostas, abortSignal),
+      // Faster path: when the first round consulted a single sector and it answered, its answer
+      // already goes to the user (it was written for them), saving one AI round.
+      stopWhen: [stepCountIs(MAX_RODADAS), () => respostaUnica(consultas, respostas) !== null],
       // Last round without tools: the model has to answer with what it already has.
       prepareStep: ({ stepNumber }) =>
         stepNumber >= MAX_RODADAS - 1 ? { toolChoice: "none" as const } : undefined,
@@ -178,10 +191,12 @@ export async function handleOrquestrador(request: Request): Promise<Response> {
       providerOptions: opcoesProvedor(),
       abortSignal,
     });
+    const final = text.trim() || respostaUnica(consultas, respostas) || respostas.join("\n\n");
     const resposta: OrquestradorResposta = {
-      resposta: text.trim() || "Não consegui montar uma resposta agora.",
+      resposta: final || "Não consegui montar uma resposta agora.",
       consultas: juntarConsultas(consultas),
       aviso: null,
+      segundos: Math.round((Date.now() - inicio) / 1000),
     };
     return Response.json(resposta);
   } catch (e) {

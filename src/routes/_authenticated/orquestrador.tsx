@@ -27,7 +27,12 @@ export const Route = createFileRoute("/_authenticated/orquestrador")({
 
 type Mensagem =
   | { papel: "usuario"; texto: string }
-  | { papel: "assistente"; texto: string; consultas: ConsultaSetor[] }
+  | {
+      papel: "assistente";
+      texto: string;
+      consultas: ConsultaSetor[];
+      segundos?: number | undefined;
+    }
   | { papel: "erro"; texto: string };
 
 /** The sectors' data is reloaded after this long, so answers follow the day. */
@@ -53,18 +58,25 @@ function OrquestradorPage() {
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [etapa, setEtapa] = useState("");
-  const dados = useRef<{ em: number; valor: DadosSetores } | null>(null);
+  const dados = useRef<{ em: number; valor: Promise<DadosSetores> } | null>(null);
   const fim = useRef<HTMLDivElement>(null);
+
+  // Starts loading the sectors' data as soon as the page opens, so the first question doesn't
+  // wait for it.
+  useEffect(() => {
+    if (me && !dados.current) void dadosAtuais();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me]);
 
   useEffect(() => {
     fim.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [mensagens, enviando]);
 
-  async function dadosAtuais(): Promise<DadosSetores> {
+  function dadosAtuais(): Promise<DadosSetores> {
     if (dados.current && Date.now() - dados.current.em < VALIDADE_DADOS_MS) {
       return dados.current.valor;
     }
-    const valor = me ? await carregarDadosSetores(me) : {};
+    const valor = me ? carregarDadosSetores(me) : Promise.resolve({});
     dados.current = { em: Date.now(), valor };
     return valor;
   }
@@ -91,7 +103,7 @@ function OrquestradorPage() {
       });
       setMensagens((atual) => [
         ...atual,
-        { papel: "assistente", texto: r.resposta, consultas: r.consultas },
+        { papel: "assistente", texto: r.resposta, consultas: r.consultas, segundos: r.segundos },
       ]);
     } catch (e) {
       setMensagens((atual) => [
@@ -164,8 +176,8 @@ function OrquestradorPage() {
                 </div>
               )}
               <p className="whitespace-pre-wrap break-words leading-relaxed">{m.texto}</p>
-              {m.papel === "assistente" && m.consultas.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
+              {m.papel === "assistente" && (m.consultas.length > 0 || m.segundos !== undefined) && (
+                <div className="mt-3 flex flex-wrap items-center gap-1.5">
                   {m.consultas.map((c) => (
                     <Badge
                       key={c.setor}
@@ -175,6 +187,11 @@ function OrquestradorPage() {
                       {c.nome}: {ROTULO[c.situacao]}
                     </Badge>
                   ))}
+                  {m.segundos !== undefined && (
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {m.segundos} s
+                    </span>
+                  )}
                 </div>
               )}
             </li>
