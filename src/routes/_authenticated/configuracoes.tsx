@@ -14,6 +14,8 @@ import { useCurrentUser, useDataAction } from "@/hooks/use-data";
 import { teamRepository } from "@/lib/data";
 import { supabase } from "@/integrations/supabase/client";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
+import { TAMANHOS_FONTE } from "@/lib/font-scale";
+import { useTamanhoFonte } from "@/hooks/use-tamanho-fonte";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
@@ -63,6 +65,7 @@ function ConfiguracoesPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [tema, setTema] = useState<Tema>("system");
+  const [fonte, escolherFonte] = useTamanhoFonte();
   const [nome, setNome] = useState("");
   const [salvando, setSalvando] = useState(false);
 
@@ -131,6 +134,31 @@ function ConfiguracoesPage() {
                     )}
                   >
                     <t.icon className="h-6 w-6" />
+                    <span className="text-sm font-medium">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <h3 className="mt-8 font-semibold">Tamanho da letra</h3>
+              <p className="text-sm text-muted-foreground">
+                Aumenta letra e espaços juntos, só neste computador. Também fica no botão “A” do
+                topo.
+              </p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {TAMANHOS_FONTE.map((t) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    aria-pressed={fonte === t.value}
+                    onClick={() => escolherFonte(t.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-2 rounded-2xl border-2 p-5 transition-colors",
+                      fonte === t.value
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border text-muted-foreground hover:border-primary/40",
+                    )}
+                  >
+                    <span className={cn("font-semibold", t.amostra)}>Aa</span>
                     <span className="text-sm font-medium">{t.label}</span>
                   </button>
                 ))}

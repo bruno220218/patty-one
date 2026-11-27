@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { AppShell } from "@/components/app/app-shell";
 import { Toaster } from "@/components/ui/sonner";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { FONT_INIT_SCRIPT } from "@/lib/font-scale";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -109,7 +110,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT + FONT_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>

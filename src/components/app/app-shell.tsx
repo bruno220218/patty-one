@@ -62,6 +62,7 @@ import {
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { EmptyState } from "./empty-state";
 import { ThemeToggle } from "./theme-toggle";
+import { FontSizeToggle } from "./font-size-toggle";
 import { NotificationBell } from "./notification-bell";
 
 /** Served from public/ so it works on any host. */
@@ -895,12 +896,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     <TooltipProvider delayDuration={150}>
       <div
         className="min-h-screen w-full bg-background"
-        style={{ ["--sidebar-w" as string]: `${width + 32}px` }}
+        style={{ ["--sidebar-w" as string]: `${(width + 32) / 16}rem` }}
       >
         {/* Desktop: floating blue menu */}
         <aside
           className="fixed top-4 bottom-4 left-4 z-30 hidden overflow-hidden rounded-2xl bg-sidebar shadow-[var(--shadow-floating)] transition-[width] duration-300 ease-in-out md:block"
-          style={{ width }}
+          style={{ width: `${width / 16}rem` }}
         >
           <SidebarBody
             me={me}
@@ -918,7 +919,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
           title="Ctrl/Cmd + B"
           className="fixed top-1/2 z-40 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border bg-card text-foreground shadow-[var(--shadow-floating)] transition-[left,color] duration-300 ease-in-out hover:text-primary md:flex"
-          style={{ left: 16 + width - 14 }}
+          style={{ left: `${(16 + width - 14) / 16}rem` }}
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
@@ -927,7 +928,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent
             side="left"
-            className="top-4 bottom-4 left-4 h-auto w-[260px] rounded-2xl border-0 bg-sidebar p-0 text-sidebar-primary shadow-[var(--shadow-floating)] md:hidden"
+            className="top-4 bottom-4 left-4 h-auto w-[16.25rem] rounded-2xl border-0 bg-sidebar p-0 text-sidebar-primary shadow-[var(--shadow-floating)] md:hidden"
           >
             <SheetTitle className="sr-only">Menu</SheetTitle>
             <SidebarBody
@@ -963,6 +964,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {showNotifications && (
                 <NotificationBell notifications={notifications} variant="icon" />
               )}
+              <FontSizeToggle />
               <ThemeToggle round />
               {me && (
                 <DropdownMenu>

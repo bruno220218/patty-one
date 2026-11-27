@@ -622,7 +622,7 @@ function NaoRealizados({
   const hoje = hojeISO();
   return (
     <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
-      <table className="w-full min-w-[960px] text-sm">
+      <table className="w-full min-w-[60rem] text-sm">
         <thead className="bg-muted text-left text-xs text-muted-foreground uppercase">
           <tr>
             {[

@@ -457,7 +457,7 @@ export function ProgramacaoGrid({
       </datalist>
       <TooltipProvider>
         <div className="overflow-x-auto rounded-xl border">
-          <table className="w-full min-w-[2050px] text-xs">
+          <table className="w-full min-w-[128rem] text-xs">
             <thead className="bg-muted text-left text-xs tracking-wide text-muted-foreground uppercase">
               <tr>
                 {[

@@ -653,7 +653,7 @@ function VisaoSemanal({
 }) {
   return (
     <div className="overflow-x-auto rounded-xl border">
-      <div className="grid min-w-[840px] grid-cols-7 divide-x">
+      <div className="grid min-w-[52.5rem] grid-cols-7 divide-x">
         {dias.map((dia, i) => {
           const doDia = eventos.filter((e) => eventoNoDia(e, dia));
           return (
@@ -708,7 +708,7 @@ function VisaoMensal({
 }) {
   return (
     <div className="overflow-x-auto rounded-xl border">
-      <div className="min-w-[840px]">
+      <div className="min-w-[52.5rem]">
         <div className="grid grid-cols-7 border-b bg-muted">
           {DIAS_SEMANA_CURTOS.map((d) => (
             <div
