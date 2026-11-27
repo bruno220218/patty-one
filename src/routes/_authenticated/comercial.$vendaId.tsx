@@ -431,7 +431,7 @@ function Editor({
             <Input
               aria-label={`Descrição do item ${i + 1}`}
               placeholder="Descrição"
-              className="md:col-span-4"
+              className="md:col-span-3"
               value={it.descricao}
               disabled={bloqueado}
               onChange={(e) => setItem(i, { descricao: e.target.value })}
@@ -458,7 +458,7 @@ function Editor({
               aria-label={`Desconto do item ${i + 1}`}
               placeholder="Desconto R$"
               inputMode="decimal"
-              className="md:col-span-1"
+              className="md:col-span-2"
               value={it.desconto}
               disabled={bloqueado}
               onChange={(e) => setItem(i, { desconto: e.target.value })}
