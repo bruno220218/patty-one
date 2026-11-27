@@ -51,4 +51,4 @@ Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-produ
 - [x] Financeiro: contas a pagar (fornecedores, aluguel com parcelas geradas, energia, impostos e outros) e comissões geradas quando o cliente paga (vendedor + agência) — migração 0029
 - [x] Dashboard com números reais (decisões do Vitor em `docs/dashboard-indicadores.md`): 20 cartões, cada função vê as suas seções, Gestão e Direção abrem nele — migração 0037
 - [ ] Dashboard, 2ª versão: filtro por empresa do grupo e gráficos (pedidos por mês em 12 meses, ocupação das próximas 6 bi-semanas)
-- [ ] Telas que eram só "Em breve" no PattyOne: Compras e Estoque (plano em `docs/estoque-plano.md`; etapa 1 = 0046 pronta, aguardando SQL), Administrativo, Painel de Gestão (Balcão foi descartado em 25/11)
+- [ ] Telas que eram só "Em breve" no PattyOne: Compras e Estoque (plano em `docs/estoque-plano.md`; etapa 1 = 0046 no ar em 27/11), Administrativo, Painel de Gestão (Balcão foi descartado em 25/11)
