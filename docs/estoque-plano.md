@@ -5,7 +5,9 @@ de `docs/compras-perguntas.md`). Decidido no mesmo dia:
 
 - **Banco separado = schema `estoque`** no mesmo Supabase: tabelas e permissões próprias, mesmo
   login. O Patty One lê dele direto.
-- **A lista de material de cada serviço** é montada por **Projetos/Criação**.
+- **A lista de material de cada serviço** nasce no **orçamento** (proposta/pedido, item por
+  item) e quem monta é a **equipe de Projetos**. Quando o pedido é liberado, a lista segue para
+  as ordens de produção de cada item.
 - **A baixa de material** (saída real) é feita por **uma pessoa do estoque**: nova função
   **Estoque** (almoxarife). Gestor e direção também podem.
 
@@ -18,13 +20,13 @@ Entrada (NF-e/XML ou manual) ──► Estoque ◄── Devolução
                                    │
           Baixa de material ◄──────┤──────► Perda (retrabalho, defeito…)
 
-Lista de material da ordem ──► Previsão (não mexe no estoque) ──► Lista de compras
+Lista de material do orçamento ──► Previsão (não mexe no estoque) ──► Lista de compras
 ```
 
 - **Saldo** de cada produto = entradas + devoluções − baixas − perdas. Nada é apagado: cada
   movimento fica registrado com data, quantidade e responsável.
-- **Previsão** (a "triangulação"): estoque atual − material listado nas ordens ainda abertas
-  (descontando o que essas ordens já baixaram). Mostra, por insumo, quanto sobra depois de todos
+- **Previsão** (a "triangulação"): estoque atual − material listado nos pedidos/ordens ainda abertos
+  (descontando o que já foi baixado para eles). Mostra, por insumo, quanto sobra depois de todos
   os serviços prontos e o que falta. **Não dá baixa.**
 - **Lista de compras**: tudo que fica negativo na previsão, para baixar em Excel/CSV.
 
@@ -101,7 +103,7 @@ inicial do estoque (produto, setor, quantidade, custo, fornecedor).
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
 | 1   | Schema `estoque`, função **Estoque**, produtos com código automático, lotes/entradas, movimentos (entrada manual, baixa, devolução, perda), tela Estoque + lista filha, exportar e importar planilha | 0046      |
 | 2   | Importar XML da NF-e + similares (ligar nomes de fornecedores a um produto)                                                                                                                          | 0047      |
-| 3   | Lista de material na ordem (Projetos/Criação), previsão sem baixa e lista de compras para baixar; a baixa pode apontar a ordem                                                                       | 0048      |
+| 3   | Lista de material no orçamento, por item (feita por Projetos, segue para as ordens), previsão sem baixa e lista de compras para baixar; a baixa pode apontar a ordem                                 | 0048      |
 | 4   | (depois) Compras: pedido de compra a partir da lista, recebimento → entrada, e conta a pagar "Fornecedor"                                                                                            | —         |
 
 Os números de migration são conferidos de novo antes de cada etapa, porque outra janela também
