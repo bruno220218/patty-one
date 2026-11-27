@@ -386,6 +386,12 @@ export const usePercentuaisVendedores = (enabled = true) =>
 export const useProdutosEstoque = () =>
   useQuery({ queryKey: ["estoque", "produtos"], queryFn: () => estoqueRepository.produtos() });
 
+export const useSimilaresEstoque = (produtoId: string) =>
+  useQuery({
+    queryKey: ["estoque", "similares", produtoId],
+    queryFn: () => estoqueRepository.similares(produtoId),
+  });
+
 export const useMovimentosEstoque = (produtoId?: string, enabled = true) =>
   useQuery({
     queryKey: ["estoque", "movimentos", produtoId ?? "todos"],

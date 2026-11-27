@@ -111,3 +111,4 @@ export * from "./dashboard";
 export * from "./cloud-dashboard";
 export * from "./estoque-rules";
 export * from "./cloud-estoque";
+export * from "./nfe-xml";

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import type { NotaNfe } from "./nfe-xml";
 import type {
   LinhaPlanilhaEstoque,
   MotivoPerda,
@@ -84,6 +85,40 @@ export interface MovimentoInput {
   motivo?: MotivoPerda | null;
   notaNumero?: string;
   observacao?: string;
+}
+
+/** How a note item was recognized (null = no match). */
+export type OrigemItemNota = "codigo" | "similar" | "similar_geral" | "produto";
+
+export interface IdentificacaoNota {
+  fornecedorId: string | null;
+  jaImportada: boolean;
+  itens: { produtoId: string | null; origem: OrigemItemNota | null; fator: number }[];
+}
+
+/** What to do with each note item when importing. */
+export interface ItemImportacao {
+  acao: "produto" | "novo" | "ignorar";
+  produtoId: string | null;
+  novoSetor: string;
+  novoNome: string;
+  novaUnidade: UnidadeEstoque;
+  /** Stock units per note unit (1 box = 12 un → 12). */
+  fator: number;
+  lote: string;
+  /** Save this supplier name/code as a similar of the product (default true). */
+  lembrar: boolean;
+}
+
+/** A supplier name (or a general name) linked to a product. */
+export interface SimilarEstoque {
+  id: string;
+  produtoId: string;
+  nome: string;
+  fornecedorCnpj: string | null;
+  fornecedorNome: string | null;
+  codigoFornecedor: string | null;
+  fator: number;
 }
 
 export interface ImportacaoEstoque {
@@ -288,5 +323,119 @@ export const estoqueRepository = {
     const { data, error } = await db.rpc("importar_planilha", { _linhas: linhas });
     if (error) throw erro(error);
     return data as ImportacaoEstoque;
+  },
+
+  // ---------- NF-e XML and similares (0047) ----------
+  /** Suggests the product of each note item (supplier code → supplier name → general → product). */
+  async identificarNota(nota: NotaNfe): Promise<IdentificacaoNota> {
+    const { data, error } = await db.rpc("identificar_itens_nota", {
+      _cnpj: nota.cnpj,
+      _chave: nota.chave,
+      _itens: nota.itens.map((i) => ({ codigo: i.codigo, nome: i.nome })),
+    });
+    if (error) throw erro(error);
+    const r = data as {
+      fornecedor_id: string | null;
+      ja_importada: boolean;
+      itens: { produto_id: string | null; origem: OrigemItemNota | null; fator: N }[];
+    };
+    return {
+      fornecedorId: r.fornecedor_id,
+      jaImportada: r.ja_importada,
+      itens: r.itens.map((i) => ({
+        produtoId: i.produto_id,
+        origem: i.origem,
+        fator: Number(i.fator ?? 1),
+      })),
+    };
+  },
+
+  /** Saves the note, the similares (when `lembrar`) and one Entrada per item; returns its id. */
+  async importarNota(
+    nota: NotaNfe,
+    fornecedorId: string | null,
+    itens: ItemImportacao[],
+  ): Promise<string> {
+    const { data, error } = await db.rpc("importar_nota", {
+      _nota: {
+        chave: nota.chave,
+        numero: nota.numero,
+        serie: nota.serie,
+        emissao: nota.emissao,
+        cnpj: nota.cnpj,
+        fornecedor_nome: nota.fornecedorNome,
+        fornecedor_id: fornecedorId,
+        valor_total: nota.valorTotal,
+        itens: nota.itens.map((item, i) => {
+          const d = itens[i];
+          if (!d || d.acao === "ignorar") return { nome: item.nome, ignorar: true };
+          return {
+            codigo: item.codigo,
+            nome: item.nome,
+            quantidade: item.quantidade,
+            valor_unitario: item.valorUnitario,
+            lote: d.lote,
+            fator: d.fator,
+            lembrar: d.lembrar,
+            ...(d.acao === "novo"
+              ? { novo: { setor: d.novoSetor, nome: d.novoNome, unidade: d.novaUnidade } }
+              : { produto_id: d.produtoId }),
+          };
+        }),
+      },
+    });
+    if (error) {
+      if (error.code === "23505") throw new Error("Esta nota já foi importada.");
+      throw erro(error);
+    }
+    return data as string;
+  },
+
+  async similares(produtoId: string): Promise<SimilarEstoque[]> {
+    const { data, error } = await db
+      .from("v_similares")
+      .select("id, produto_id, nome, fornecedor_cnpj, fornecedor_nome, codigo_fornecedor, fator")
+      .eq("produto_id", produtoId)
+      .order("nome");
+    if (error) {
+      if (estoqueAusente(error)) return [];
+      throw erro(error);
+    }
+    return (
+      (data ?? []) as {
+        id: string;
+        produto_id: string;
+        nome: string;
+        fornecedor_cnpj: string | null;
+        fornecedor_nome: string | null;
+        codigo_fornecedor: string | null;
+        fator: N;
+      }[]
+    ).map((s) => ({
+      id: s.id,
+      produtoId: s.produto_id,
+      nome: s.nome,
+      fornecedorCnpj: s.fornecedor_cnpj,
+      fornecedorNome: s.fornecedor_nome,
+      codigoFornecedor: s.codigo_fornecedor,
+      fator: Number(s.fator ?? 1),
+    }));
+  },
+
+  async salvarSimilar(produtoId: string, nome: string, fator = 1): Promise<void> {
+    const { error } = await db.rpc("salvar_similar", {
+      _produto: produtoId,
+      _nome: nome,
+      _fator: fator,
+    });
+    if (error) {
+      if (error.code === "23505") throw new Error("Esse nome já está ligado a um produto.");
+      throw erro(error);
+    }
+  },
+
+  async excluirSimilar(id: string): Promise<void> {
+    const { error } = await db.rpc("excluir_similar", { _id: id });
+    if (error) throw erro(error);
   },
 };

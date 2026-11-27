@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronRight,
   Download,
+  FileCode2,
   PackageMinus,
   PackagePlus,
   Pencil,
@@ -16,6 +17,7 @@ import {
   Trash2,
   Undo2,
   Upload,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,11 +37,14 @@ import { EmptyState } from "@/components/app/empty-state";
 import { CardGridSkeleton } from "@/components/app/card-grid-skeleton";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { ClientePicker, TOM, selectClass } from "@/components/app/operacao-ui";
+import { ProdutoPicker } from "@/components/app/estoque-produto-picker";
+import { NotaXmlDialog } from "@/components/app/estoque-nota-xml";
 import {
   useCurrentUser,
   useDataAction,
   useMovimentosEstoque,
   useProdutosEstoque,
+  useSimilaresEstoque,
 } from "@/hooks/use-data";
 import {
   canExcluirMovimento,
@@ -48,6 +53,7 @@ import {
   COLUNAS_PLANILHA_ESTOQUE,
   estoqueRepository,
   filtrarProdutos,
+  formatarCnpj,
   formatCusto,
   formatQtd,
   lerNumero,
@@ -86,6 +92,7 @@ type Dialogo =
   | { tipo: "produto"; produto: ProdutoEstoque | null }
   | { tipo: "movimento"; movimento: TipoMovimento; produto: ProdutoEstoque | null }
   | { tipo: "importar" }
+  | { tipo: "xml" }
   | null;
 
 function baixarArquivo(nome: string, conteudo: string) {
@@ -157,6 +164,10 @@ function EstoquePage() {
                     <Plus />
                     Novo produto
                   </Button>
+                  <Button variant="outline" onClick={() => setDialogo({ tipo: "xml" })}>
+                    <FileCode2 />
+                    Importar XML
+                  </Button>
                   <Button variant="outline" onClick={() => setDialogo({ tipo: "importar" })}>
                     <Upload />
                     Importar
@@ -218,6 +229,9 @@ function EstoquePage() {
         />
       )}
       {dialogo?.tipo === "importar" && <ImportarDialog onClose={() => setDialogo(null)} />}
+      {dialogo?.tipo === "xml" && (
+        <NotaXmlDialog produtos={lista} verCusto={verCusto} onClose={() => setDialogo(null)} />
+      )}
     </>
   );
 }
@@ -475,6 +489,7 @@ function ListaFilha({
           </tbody>
         </table>
       </div>
+      <Similares produtoId={produto.id} podeEditar={podeMovimentar} />
       {outros.length > 0 && (
         <div>
           <p className="mb-1 text-xs font-medium text-muted-foreground">Últimas saídas e ajustes</p>
@@ -494,6 +509,83 @@ function ListaFilha({
             ))}
           </ul>
         </div>
+      )}
+    </div>
+  );
+}
+/** Names suppliers use for this product (similares, 0047), set when importing a note or by hand. */
+function Similares({ produtoId, podeEditar }: { produtoId: string; podeEditar: boolean }) {
+  const similares = useSimilaresEstoque(produtoId);
+  const run = useDataAction();
+  const [nome, setNome] = useState("");
+  const lista = similares.data ?? [];
+  if (!podeEditar && lista.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">
+        Nomes similares (como os fornecedores chamam este produto)
+      </p>
+      {lista.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nenhum ainda.</p>
+      ) : (
+        <ul className="flex flex-wrap gap-2">
+          {lista.map((s) => (
+            <li
+              key={s.id}
+              className="flex items-center gap-1 rounded-full border bg-background px-3 py-1 text-xs"
+              title={[
+                s.fornecedorNome ??
+                  (s.fornecedorCnpj ? formatarCnpj(s.fornecedorCnpj) : "Qualquer fornecedor"),
+                s.codigoFornecedor && `cód. ${s.codigoFornecedor}`,
+                s.fator !== 1 && `1 un da nota = ${formatQtd(s.fator)}`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            >
+              <span className="font-medium">{s.nome}</span>
+              <span className="text-muted-foreground">
+                {s.fornecedorNome ?? (s.fornecedorCnpj ? formatarCnpj(s.fornecedorCnpj) : "geral")}
+                {s.fator !== 1 && ` · ×${formatQtd(s.fator)}`}
+              </span>
+              {podeEditar && (
+                <button
+                  type="button"
+                  aria-label={`Desligar ${s.nome}`}
+                  className="ml-1 text-muted-foreground hover:text-destructive"
+                  onClick={() =>
+                    void run(() => estoqueRepository.excluirSimilar(s.id), "Nome desligado")
+                  }
+                >
+                  <X className="size-3" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {podeEditar && (
+        <form
+          className="flex max-w-md gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const ok = await run(async () => {
+              await estoqueRepository.salvarSimilar(produtoId, nome);
+              return true;
+            }, "Nome similar ligado");
+            if (ok) setNome("");
+          }}
+        >
+          <Input
+            aria-label="Nome similar"
+            className="h-8"
+            placeholder="Ex.: COLA SUPER CIANO"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+          />
+          <Button size="sm" variant="outline" type="submit" disabled={!nome.trim()}>
+            Ligar nome
+          </Button>
+        </form>
       )}
     </div>
   );
@@ -848,7 +940,6 @@ function MovimentoDialog({
 }) {
   const run = useDataAction();
   const [produtoId, setProdutoId] = useState(produtoInicial?.id ?? "");
-  const [busca, setBusca] = useState("");
   const [f, setF] = useState({
     data: localToday(),
     quantidade: "",
@@ -865,15 +956,6 @@ function MovimentoDialog({
   const [salvando, setSalvando] = useState(false);
   const set = (p: Partial<typeof f>) => setF((v) => ({ ...v, ...p }));
   const produto = produtos.find((p) => p.id === produtoId) ?? null;
-  const opcoes = useMemo(
-    () =>
-      filtrarProdutos(
-        produtos.filter((p) => p.ativo || p.id === produtoId),
-        busca,
-        "",
-      ).slice(0, 50),
-    [produtos, busca, produtoId],
-  );
   const qtd = lerNumero(f.quantidade);
   const saidas = tipo === "Baixa" || tipo === "Perda";
   const ficaNegativo = produto && qtd !== null && saidas && produto.quantidade - qtd < 0;
@@ -924,46 +1006,7 @@ function MovimentoDialog({
         </DialogHeader>
         <div className="grid gap-3 sm:grid-cols-2">
           <Campo label="Material" className="sm:col-span-2">
-            {produto ? (
-              <div className="flex h-10 items-center justify-between rounded-md border bg-background px-3 text-sm">
-                <span className="truncate">
-                  <span className="tabular-nums text-muted-foreground">{produto.codigo}</span>{" "}
-                  {produto.nome} · saldo {formatQtd(produto.quantidade)} {produto.unidade}
-                </span>
-                <button
-                  type="button"
-                  className="text-primary hover:underline"
-                  onClick={() => setProdutoId("")}
-                >
-                  Trocar
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                <Input
-                  aria-label="Buscar material"
-                  placeholder="Buscar por nome ou código…"
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                />
-                <div className="max-h-48 overflow-y-auto rounded-md border">
-                  {opcoes.map((p) => (
-                    <button
-                      type="button"
-                      key={p.id}
-                      className="block w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                      onClick={() => setProdutoId(p.id)}
-                    >
-                      <span className="tabular-nums text-muted-foreground">{p.codigo}</span>{" "}
-                      {p.nome}
-                    </button>
-                  ))}
-                  {opcoes.length === 0 && (
-                    <p className="px-3 py-2 text-sm text-muted-foreground">Nenhum produto.</p>
-                  )}
-                </div>
-              </div>
-            )}
+            <ProdutoPicker produtos={produtos} value={produtoId} onChange={setProdutoId} />
           </Campo>
           <Campo id="mv-data" label="Data">
             <Input
@@ -1113,7 +1156,7 @@ function ImportarDialog({ onClose }: { onClose: () => void }) {
       const primeira = texto.split(/\r?\n/, 1)[0] ?? "";
       const sep =
         (primeira.match(/;/g)?.length ?? 0) > (primeira.match(/,/g)?.length ?? 0) ? ";" : ",";
-      setLinhas(linhasDaPlanilha(parseCsv(texto.replace(/^﻿/, ""), sep).rows));
+      setLinhas(linhasDaPlanilha(parseCsv(texto.replace(/^\uFEFF/, ""), sep).rows));
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Não foi possível ler o arquivo.");
     }
