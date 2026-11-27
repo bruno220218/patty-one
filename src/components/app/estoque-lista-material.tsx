@@ -1,32 +1,38 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Boxes, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { Boxes, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ProdutoPicker } from "@/components/app/estoque-produto-picker";
+import { EditorComposicao, ResumoComposicao } from "@/components/app/orcamento-composicao";
 import {
   useCurrentUser,
+  useCustosDaVenda,
+  useCustosOrcamento,
   useDataAction,
   useMateriaisDaOrdem,
   useMateriaisDaVenda,
+  useOrcamentoConfig,
   useProdutosEstoque,
 } from "@/hooks/use-data";
 import {
+  brl,
   canListarMaterial,
-  estoqueRepository,
+  canVender,
+  canVerCustoEstoque,
+  composicaoDoItem,
+  CONFIG_PADRAO,
   formatQtd,
-  lerNumero,
+  orcamentoRepository,
   type MaterialItem,
   type ProdutoEstoque,
 } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 /**
- * Lista de material (migration 0048): per item of a proposta/pedido, which stock products and how
- * much. Projetos Especiais, Estoque, Gestão and Direção edit it; everyone approved reads it. It
- * never moves stock: the estoque screen uses it for the previsão and the shopping list, and the
- * item's ordem de produção shows the same list with what was already taken out (baixas).
- * Renders nothing while the estoque schema or 0048 isn't there.
+ * Composição e lista de material de cada item de proposta/pedido (migrations 0048 and 0050).
+ * Projetos Especiais, Estoque, Gestão and Direção build it; whoever may see costs (also Comercial)
+ * sees values and prices; the rest sees only the materials. It never moves stock: the estoque
+ * screen uses the materials for the previsão and the shopping list, and the item's ordem de
+ * produção shows them with what was already taken out. Renders nothing without the estoque schema.
  */
 export function ListaMaterialVenda({
   vendaId,
@@ -34,70 +40,110 @@ export function ListaMaterialVenda({
   pedido,
 }: {
   vendaId: string;
-  itens: { id: string; descricao: string }[];
+  itens: { id: string; descricao: string; quantidade: number }[];
   pedido: boolean;
 }) {
   const me = useCurrentUser().data;
+  const verCusto = canVerCustoEstoque(me);
+  const podeEditar = canListarMaterial(me);
+  const podeAplicar = podeEditar || canVender(me);
+  const run = useDataAction();
   const materiais = useMateriaisDaVenda(vendaId);
   const produtos = useProdutosEstoque();
+  const custos = useCustosDaVenda(vendaId, verCusto);
+  const catalogo = useCustosOrcamento(verCusto);
+  const config = useOrcamentoConfig().data ?? CONFIG_PADRAO;
   const [editando, setEditando] = useState<string | null>(null);
   if (!materiais.data || !produtos.data) return null;
-  const podeEditar = canListarMaterial(me);
-  const porItem = (id: string) => materiais.data?.filter((m) => m.vendaItemId === id) ?? [];
+  const comComposicao = verCusto && Array.isArray(custos.data) && Array.isArray(catalogo.data);
   const conta = materiais.data.some((m) => m.contaNaPrevisao);
 
   return (
     <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Boxes className="size-5 text-primary" />
-            Lista de material
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Material do estoque para cada item, montado pela equipe de Projetos. Não tira nada do
-            estoque: entra na{" "}
-            <Link to="/estoque" className="text-primary hover:underline">
-              previsão do estoque
-            </Link>{" "}
-            quando o orçamento é aprovado.
-            {materiais.data.length > 0 && !conta && " Este documento ainda não conta na previsão."}
-          </p>
-        </div>
+      <div>
+        <h2 className="flex items-center gap-2 font-semibold">
+          <Boxes className="size-5 text-primary" />
+          {comComposicao ? "Composição de custo e material" : "Lista de material"}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Montada pela equipe de Projetos em cada item: material do estoque
+          {comComposicao && ", serviços, mão de obra e deslocamento, com o preço que sai deles"}. O
+          material não sai do estoque: entra na{" "}
+          <Link to="/estoque" className="text-primary hover:underline">
+            previsão do estoque
+          </Link>{" "}
+          quando o orçamento é aprovado.
+          {materiais.data.length > 0 && !conta && " Este documento ainda não conta na previsão."}
+        </p>
       </div>
       {itens.length === 0 && (
-        <p className="text-sm text-muted-foreground">Salve o documento para montar a lista.</p>
+        <p className="text-sm text-muted-foreground">Salve o documento para montar a composição.</p>
       )}
       {itens.map((it, i) => {
-        const linhas = porItem(it.id);
+        const mats = materiais.data?.filter((m) => m.vendaItemId === it.id) ?? [];
+        const outros = custos.data?.filter((c) => c.vendaItemId === it.id) ?? [];
+        const vazio = mats.length === 0 && outros.length === 0;
+        const c = comComposicao
+          ? composicaoDoItem(mats, outros, catalogo.data ?? [], config)
+          : null;
+        const cada =
+          it.quantidade !== 1 ? (v: number) => ` (${brl(v / it.quantidade)} cada)` : () => "";
         return (
           <div key={it.id} className="space-y-2 rounded-xl border bg-muted/30 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm font-medium">
                 Item {i + 1} · {it.descricao}
+                {c && !vazio && (
+                  <span className="ml-2 font-normal text-muted-foreground">
+                    custo {brl(c.custo)} · venda {brl(c.venda)}
+                  </span>
+                )}
               </p>
               {podeEditar && editando !== it.id && (
                 <Button variant="outline" size="sm" onClick={() => setEditando(it.id)}>
-                  {linhas.length ? <Pencil /> : <Plus />}
-                  {linhas.length ? "Editar lista" : "Montar lista"}
+                  {vazio ? <Plus /> : <Pencil />}
+                  {vazio ? "Montar composição" : "Editar composição"}
                 </Button>
               )}
             </div>
             {editando === it.id ? (
-              <EditorLista
+              <EditorComposicao
                 vendaItemId={it.id}
-                linhas={linhas}
+                materiais={mats}
+                outros={outros}
                 produtos={produtos.data ?? []}
+                catalogo={catalogo.data ?? []}
+                config={config}
                 onClose={() => setEditando(null)}
               />
-            ) : linhas.length ? (
-              <TabelaMaterial linhas={linhas} produtos={produtos.data ?? []} baixas={pedido} />
+            ) : vazio ? (
+              <p className="text-sm text-muted-foreground">Sem composição.</p>
+            ) : comComposicao ? (
+              <ResumoComposicao
+                materiais={mats}
+                outros={outros}
+                catalogo={catalogo.data ?? []}
+                config={config}
+                podeAplicar={podeAplicar}
+                onAplicar={(valor) =>
+                  void run(
+                    () => orcamentoRepository.aplicarPreco(it.id, valor),
+                    `Valor do item ${i + 1}: ${brl(valor)}${cada(valor)}`,
+                  )
+                }
+              />
             ) : (
-              <p className="text-sm text-muted-foreground">Sem material listado.</p>
+              <TabelaMaterial linhas={mats} produtos={produtos.data ?? []} baixas={pedido} />
             )}
           </div>
         );
       })}
+      {comComposicao && podeAplicar && (
+        <p className="text-xs text-muted-foreground">
+          “Usar no item” troca o valor do item pelo preço escolhido e recarrega o documento: salve
+          antes o que estiver editando nos itens.
+        </p>
+      )}
     </section>
   );
 }
@@ -115,13 +161,32 @@ export function MaterialDaOrdem({ ordemId }: { ordemId: string }) {
           Material previsto
         </h2>
         <p className="text-sm text-muted-foreground">
-          Da lista de material do pedido. O estoque dá a baixa apontando o número desta ordem; o
-          baixado aparece aqui.
+          Da composição do pedido. O estoque dá a baixa apontando o número desta ordem; o baixado
+          aparece aqui.
         </p>
       </div>
       <TabelaMaterial linhas={materiais.data} produtos={produtos.data ?? []} baixas />
     </section>
   );
+}
+
+/** One row per product (sections added up). */
+function porProduto(linhas: MaterialItem[]) {
+  const mapa = new Map<string, MaterialItem>();
+  for (const l of linhas) {
+    const a = mapa.get(l.produtoId);
+    mapa.set(
+      l.produtoId,
+      a
+        ? {
+            ...a,
+            quantidade: a.quantidade + l.quantidade,
+            observacao: [a.observacao, l.observacao].filter(Boolean).join("; ") || null,
+          }
+        : l,
+    );
+  }
+  return [...mapa.values()].sort((a, b) => a.codigo.localeCompare(b.codigo));
 }
 
 function TabelaMaterial({
@@ -148,10 +213,10 @@ function TabelaMaterial({
           </tr>
         </thead>
         <tbody>
-          {linhas.map((m) => {
+          {porProduto(linhas).map((m) => {
             const s = saldo(m.produtoId);
             return (
-              <tr key={m.id} className="border-t">
+              <tr key={m.produtoId} className="border-t">
                 <td className="p-2 text-muted-foreground tabular-nums">{m.codigo}</td>
                 <td className="p-2">
                   {m.produto}
@@ -184,121 +249,3 @@ function TabelaMaterial({
     </div>
   );
 }
-
-type Linha = { produtoId: string; quantidade: string; observacao: string };
-
-function EditorLista({
-  vendaItemId,
-  linhas,
-  produtos,
-  onClose,
-}: {
-  vendaItemId: string;
-  linhas: MaterialItem[];
-  produtos: ProdutoEstoque[];
-  onClose: () => void;
-}) {
-  const run = useDataAction();
-  const [salvando, setSalvando] = useState(false);
-  const [rows, setRows] = useState<Linha[]>(() =>
-    linhas.length
-      ? linhas.map((l) => ({
-          produtoId: l.produtoId,
-          quantidade: formatQtd(l.quantidade),
-          observacao: l.observacao ?? "",
-        }))
-      : [{ produtoId: "", quantidade: "", observacao: "" }],
-  );
-  const setRow = (k: number, p: Partial<Linha>) =>
-    setRows((a) => a.map((r, i) => (i === k ? { ...r, ...p } : r)));
-
-  const preenchidas = rows.filter((r) => r.produtoId || r.quantidade.trim());
-  const invalida = preenchidas.find((r) => !r.produtoId || !((lerNumero(r.quantidade) ?? 0) > 0));
-
-  async function salvar() {
-    setSalvando(true);
-    const ok = await run(async () => {
-      await estoqueRepository.salvarListaMaterial(
-        vendaItemId,
-        preenchidas.map((r) => ({
-          produtoId: r.produtoId,
-          quantidade: lerNumero(r.quantidade) ?? 0,
-          observacao: r.observacao.trim() || null,
-        })),
-      );
-      return true;
-    }, "Lista de material salva");
-    setSalvando(false);
-    if (ok) onClose();
-  }
-
-  return (
-    <div className="space-y-2">
-      {rows.map((r, i) => (
-        <div key={i} className="grid gap-2 rounded-lg border bg-background p-2 md:grid-cols-12">
-          <div className="md:col-span-6">
-            <ProdutoPicker
-              produtos={produtos}
-              value={r.produtoId}
-              onChange={(id) => setRow(i, { produtoId: id })}
-            />
-          </div>
-          <Input
-            aria-label={`Quantidade do material ${i + 1}`}
-            placeholder={`Qtd.${unidadeDe(produtos, r.produtoId)}`}
-            inputMode="decimal"
-            className="md:col-span-2"
-            value={r.quantidade}
-            onChange={(e) => setRow(i, { quantidade: e.target.value })}
-          />
-          <Input
-            aria-label={`Observação do material ${i + 1}`}
-            placeholder="Observação (opcional)"
-            className="md:col-span-3"
-            value={r.observacao}
-            onChange={(e) => setRow(i, { observacao: e.target.value })}
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:col-span-1"
-            aria-label={`Remover material ${i + 1}`}
-            onClick={() => setRows((a) => a.filter((_, k) => k !== i))}
-          >
-            <Trash2 />
-          </Button>
-        </div>
-      ))}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setRows((a) => [...a, { produtoId: "", quantidade: "", observacao: "" }])}
-        >
-          <Plus />
-          Adicionar material
-        </Button>
-        <div className="flex items-center gap-2">
-          {invalida && (
-            <span className="text-xs text-destructive">
-              Escolha o material e a quantidade em todas as linhas.
-            </span>
-          )}
-          <Button variant="ghost" size="sm" onClick={onClose} disabled={salvando}>
-            <X />
-            Cancelar
-          </Button>
-          <Button size="sm" onClick={() => void salvar()} disabled={salvando || !!invalida}>
-            <Save />
-            Salvar lista
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const unidadeDe = (produtos: ProdutoEstoque[], id: string) => {
-  const u = produtos.find((p) => p.id === id)?.unidade;
-  return u ? ` (${u})` : "";
-};

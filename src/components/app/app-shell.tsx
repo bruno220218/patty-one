@@ -75,6 +75,7 @@ type NavTo =
   | "/arquivados"
   | "/equipe"
   | "/relatorios"
+  | "/custos-orcamento"
   | "/lixeira"
   | "/briefings"
   | "/visitas"
@@ -466,6 +467,13 @@ const SETORES: Setor[] = [
             label: "Relatórios",
             icon: BarChart3,
             to: "/relatorios",
+            gestorOnly: true,
+          },
+          {
+            id: "custos-orcamento",
+            label: "Custos do orçamento",
+            icon: Calculator,
+            to: "/custos-orcamento",
             gestorOnly: true,
           },
         ],

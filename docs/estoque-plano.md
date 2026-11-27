@@ -103,7 +103,8 @@ inicial do estoque (produto, setor, quantidade, custo, fornecedor).
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
 | 1 ✅ | Schema `estoque`, função **Estoque**, produtos com código automático, lotes/entradas, movimentos (entrada manual, baixa, devolução, perda), tela Estoque + lista filha, exportar e importar planilha | 0046      |
 | 2 ✅ | Importar XML da NF-e + similares (ligar nomes de fornecedores a um produto)                                                                                                                          | 0047      |
-| 3    | Lista de material no orçamento, por item (feita por Projetos, segue para as ordens), previsão sem baixa e lista de compras para baixar; a baixa pode apontar a ordem                                 | 0048      |
+| 3 ✅ | Lista de material no orçamento, por item (feita por Projetos, segue para as ordens), previsão sem baixa e lista de compras para baixar; a baixa pode apontar a ordem                                 | 0048      |
+| 3b ✅ | Preço de referência (tabela de preços) e composição de custo do orçamento dentro do item (seções, mão de obra, deslocamento, fatores 0,55/0,59/0,62) | 0049, 0050 |
 | 4    | (depois) Compras: pedido de compra a partir da lista, recebimento → entrada, e conta a pagar "Fornecedor"                                                                                            | —         |
 
 Os números de migration são conferidos de novo antes de cada etapa, porque outra janela também

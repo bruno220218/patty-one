@@ -28,6 +28,7 @@ import { Route as AuthenticatedStatusServicosRouteImport } from './routes/_authe
 import { Route as ApiAssistentePcpRouteImport } from './routes/api/assistente-pcp'
 import { Route as ApiNextStepsRouteImport } from './routes/api/next-steps'
 import { Route as ApiOrquestradorRouteImport } from './routes/api/orquestrador'
+import { Route as AuthenticatedGestorCustosOrcamentoRouteImport } from './routes/_authenticated/_gestor/custos-orcamento'
 import { Route as AuthenticatedGestorEquipeRouteImport } from './routes/_authenticated/_gestor/equipe'
 import { Route as AuthenticatedGestorImportarRouteImport } from './routes/_authenticated/_gestor/importar'
 import { Route as AuthenticatedGestorImportarHistoricoRouteImport } from './routes/_authenticated/_gestor/importar-historico'
@@ -164,6 +165,12 @@ const ApiOrquestradorRoute = ApiOrquestradorRouteImport.update({
   path: '/api/orquestrador',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedGestorCustosOrcamentoRoute =
+  AuthenticatedGestorCustosOrcamentoRouteImport.update({
+    id: '/custos-orcamento',
+    path: '/custos-orcamento',
+    getParentRoute: () => AuthenticatedGestorRouteRoute,
+  } as any)
 const AuthenticatedGestorEquipeRoute =
   AuthenticatedGestorEquipeRouteImport.update({
     id: '/equipe',
@@ -408,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/api/orquestrador': typeof ApiOrquestradorRoute
+  '/custos-orcamento': typeof AuthenticatedGestorCustosOrcamentoRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
   '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -465,6 +473,7 @@ export interface FileRoutesByTo {
   '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/api/orquestrador': typeof ApiOrquestradorRoute
+  '/custos-orcamento': typeof AuthenticatedGestorCustosOrcamentoRoute
   '/equipe': typeof AuthenticatedGestorEquipeRoute
   '/importar': typeof AuthenticatedGestorImportarRoute
   '/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -525,6 +534,7 @@ export interface FileRoutesById {
   '/api/assistente-pcp': typeof ApiAssistentePcpRoute
   '/api/next-steps': typeof ApiNextStepsRoute
   '/api/orquestrador': typeof ApiOrquestradorRoute
+  '/_authenticated/_gestor/custos-orcamento': typeof AuthenticatedGestorCustosOrcamentoRoute
   '/_authenticated/_gestor/equipe': typeof AuthenticatedGestorEquipeRoute
   '/_authenticated/_gestor/importar': typeof AuthenticatedGestorImportarRoute
   '/_authenticated/_gestor/importar-historico': typeof AuthenticatedGestorImportarHistoricoRoute
@@ -584,6 +594,7 @@ export interface FileRouteTypes {
     | '/api/assistente-pcp'
     | '/api/next-steps'
     | '/api/orquestrador'
+    | '/custos-orcamento'
     | '/equipe'
     | '/importar'
     | '/importar-historico'
@@ -641,6 +652,7 @@ export interface FileRouteTypes {
     | '/api/assistente-pcp'
     | '/api/next-steps'
     | '/api/orquestrador'
+    | '/custos-orcamento'
     | '/equipe'
     | '/importar'
     | '/importar-historico'
@@ -700,6 +712,7 @@ export interface FileRouteTypes {
     | '/api/assistente-pcp'
     | '/api/next-steps'
     | '/api/orquestrador'
+    | '/_authenticated/_gestor/custos-orcamento'
     | '/_authenticated/_gestor/equipe'
     | '/_authenticated/_gestor/importar'
     | '/_authenticated/_gestor/importar-historico'
@@ -884,6 +897,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/orquestrador'
       preLoaderRoute: typeof ApiOrquestradorRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_gestor/custos-orcamento': {
+      id: '/_authenticated/_gestor/custos-orcamento'
+      path: '/custos-orcamento'
+      fullPath: '/custos-orcamento'
+      preLoaderRoute: typeof AuthenticatedGestorCustosOrcamentoRouteImport
+      parentRoute: typeof AuthenticatedGestorRouteRoute
     }
     '/_authenticated/_gestor/equipe': {
       id: '/_authenticated/_gestor/equipe'
@@ -1155,6 +1175,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedGestorRouteRouteChildren {
+  AuthenticatedGestorCustosOrcamentoRoute: typeof AuthenticatedGestorCustosOrcamentoRoute
   AuthenticatedGestorEquipeRoute: typeof AuthenticatedGestorEquipeRoute
   AuthenticatedGestorImportarRoute: typeof AuthenticatedGestorImportarRoute
   AuthenticatedGestorImportarHistoricoRoute: typeof AuthenticatedGestorImportarHistoricoRoute
@@ -1164,6 +1185,8 @@ interface AuthenticatedGestorRouteRouteChildren {
 
 const AuthenticatedGestorRouteRouteChildren: AuthenticatedGestorRouteRouteChildren =
   {
+    AuthenticatedGestorCustosOrcamentoRoute:
+      AuthenticatedGestorCustosOrcamentoRoute,
     AuthenticatedGestorEquipeRoute: AuthenticatedGestorEquipeRoute,
     AuthenticatedGestorImportarRoute: AuthenticatedGestorImportarRoute,
     AuthenticatedGestorImportarHistoricoRoute:

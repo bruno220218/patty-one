@@ -111,4 +111,6 @@ export * from "./dashboard";
 export * from "./cloud-dashboard";
 export * from "./estoque-rules";
 export * from "./cloud-estoque";
+export * from "./orcamento-rules";
+export * from "./cloud-orcamento";
 export * from "./nfe-xml";

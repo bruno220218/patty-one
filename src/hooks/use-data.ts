@@ -34,6 +34,7 @@ import {
   projectRepository,
   teamRepository,
   estoqueRepository,
+  orcamentoRepository,
 } from "@/lib/data";
 
 // Queries run client-side only: the signed-in session lives in the browser.
@@ -428,4 +429,23 @@ export const usePrevisaoEstoque = (enabled = true) =>
     queryKey: ["estoque", "previsao"],
     queryFn: () => estoqueRepository.previsao(),
     enabled,
+  });
+
+// ---------- Composição do orçamento (0050) ----------
+export const useOrcamentoConfig = () =>
+  useQuery({ queryKey: ["orcamento", "config"], queryFn: () => orcamentoRepository.config() });
+
+/** Null data = migration 0050 isn't applied yet. */
+export const useCustosOrcamento = (enabled = true) =>
+  useQuery({
+    queryKey: ["orcamento", "custos"],
+    queryFn: () => orcamentoRepository.custos(),
+    enabled,
+  });
+
+export const useCustosDaVenda = (vendaId: string, enabled = true) =>
+  useQuery({
+    queryKey: ["orcamento", "custos-venda", vendaId],
+    queryFn: () => orcamentoRepository.custosDaVenda(vendaId),
+    enabled: enabled && !!vendaId,
   });

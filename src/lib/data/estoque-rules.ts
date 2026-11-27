@@ -46,7 +46,7 @@ export const canMovimentarEstoque = (user: WithFuncoes) =>
 
 /** Costs and prices paid (database: estoque.pode_ver_custo; the views return null otherwise). */
 export const canVerCustoEstoque = (user: WithFuncoes) =>
-  tem(user, "gestor", "direcao", "estoque", "financeiro");
+  tem(user, "gestor", "direcao", "estoque", "financeiro", "projetos_especiais", "comercial");
 
 /** Only gestão deletes a wrong entry (database: estoque.excluir_movimento). */
 export const canExcluirMovimento = (user: WithFuncoes) => tem(user, "gestor");

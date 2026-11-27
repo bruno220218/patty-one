@@ -275,6 +275,13 @@ export interface MaterialItem {
   contaNaPrevisao: boolean;
   observacao: string | null;
   atualizadoPorNome: string | null;
+  /** Seção da composição (0050; "" = sem seção). */
+  secao: string;
+  /** Null without permission to see costs. */
+  valorUnitario: number | null;
+  /** Quantity of this product in all sections of the item. */
+  quantidadeTotal: number;
+  ordem: number;
 }
 
 /** One product in the previsão (view estoque.v_previsao). ultimoValor is null without permission. */
@@ -327,6 +334,10 @@ interface MaterialRow {
   conta_na_previsao: boolean | null;
   observacao: string | null;
   atualizado_por_nome: string | null;
+  secao?: string | null;
+  valor_unitario?: N;
+  quantidade_total?: N;
+  ordem?: N;
 }
 const materialDaLinha = (r: MaterialRow): MaterialItem => ({
   id: r.id,
@@ -351,6 +362,10 @@ const materialDaLinha = (r: MaterialRow): MaterialItem => ({
   contaNaPrevisao: Boolean(r.conta_na_previsao),
   observacao: r.observacao ?? null,
   atualizadoPorNome: r.atualizado_por_nome ?? null,
+  secao: r.secao ?? "",
+  valorUnitario: num(r.valor_unitario),
+  quantidadeTotal: Number(r.quantidade_total ?? r.quantidade ?? 0),
+  ordem: Number(r.ordem ?? 0),
 });
 
 interface PrevisaoRow {
