@@ -38,15 +38,18 @@ export function ListaMaterialVenda({
   vendaId,
   itens,
   pedido,
+  travado = false,
 }: {
   vendaId: string;
   itens: { id: string; descricao: string; quantidade: number }[];
   pedido: boolean;
+  /** Orçamento with the Gestão or closed (0051): no editing, no "Usar no item". */
+  travado?: boolean;
 }) {
   const me = useCurrentUser().data;
   const verCusto = canVerCustoEstoque(me);
-  const podeEditar = canListarMaterial(me);
-  const podeAplicar = podeEditar || canVender(me);
+  const podeEditar = canListarMaterial(me) && !travado;
+  const podeAplicar = (canListarMaterial(me) || canVender(me)) && !travado;
   const run = useDataAction();
   const materiais = useMateriaisDaVenda(vendaId);
   const produtos = useProdutosEstoque();

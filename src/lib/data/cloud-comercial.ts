@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { dbError } from "./db-errors";
+import type { SituacaoOrcamento } from "./orcamento-rules";
 import {
   calcDoItem,
   totaisVenda,
@@ -87,6 +88,9 @@ export interface Venda {
   ordens: { id: string; numero: number; status: string; descricao: string }[];
   /** The pedido's liberação for production (one per pedido, since 0032). */
   liberacao: { id: string; numero: number; status: string } | null;
+  /** Fluxo do orçamento (0051); null = proposta fora do fluxo. */
+  orcamentoSituacao: SituacaoOrcamento | null;
+  orcamentoRevisao: number;
 }
 
 export interface VendaInput {
@@ -276,6 +280,8 @@ export const comercialRepository = {
       condicoesPagamento: txt(r["condicoes_pagamento"]),
       observacao: txt(r["observacao"]),
       desconto: num(r["desconto"]),
+      orcamentoSituacao: (txtOuNull(r["orcamento_situacao"]) as SituacaoOrcamento | null) ?? null,
+      orcamentoRevisao: num(r["orcamento_revisao"]),
       createdAt: txt(r["created_at"]),
       updatedAt: txt(r["updated_at"]),
       itens: ((r["vendas_itens"] as Row[] | null) ?? []).map(toItem),

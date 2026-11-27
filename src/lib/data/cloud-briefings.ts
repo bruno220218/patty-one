@@ -49,6 +49,8 @@ export interface Briefing extends BriefingInput {
   createdByNome: string;
   createdAt: string;
   updatedAt: string;
+  /** Proposta/pedido ligado (0041); no briefing de orçamento, a proposta criada dele (0051). */
+  vendaId: string | null;
 }
 
 export const BRIEFING_VAZIO: BriefingInput = {
@@ -68,6 +70,7 @@ export const BRIEFING_VAZIO: BriefingInput = {
 };
 
 interface Row {
+  venda_id?: string | null;
   id: string;
   numero: number;
   destino: BriefingDestino;
@@ -119,6 +122,7 @@ const toBriefing = (r: Row): Briefing => ({
   createdByNome: r.created_by_nome,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
+  vendaId: r.venda_id ?? null,
 });
 
 const toRow = (i: BriefingInput) => ({

@@ -257,3 +257,103 @@ export function composicaoDoItem(
     config,
   );
 }
+
+// ---------- Fluxo do orçamento (0051) ----------
+/** One send to the Gestão (R1, R2…) with its decision. */
+export interface RevisaoOrcamento {
+  id: string;
+  numero: number;
+  custo: number;
+  valor: number;
+  enviadaPorNome: string;
+  enviadaEm: string;
+  decisao: "aprovado" | "devolvido" | null;
+  decididoPorNome: string | null;
+  decididoEm: string | null;
+  motivo: string | null;
+  ajusteMotivo: string | null;
+}
+
+export const fluxoOrcamentoRepository = {
+  /** Revisions, newest first (empty without permission or before 0051). */
+  async revisoes(vendaId: string): Promise<RevisaoOrcamento[]> {
+    const { data, error } = await pub
+      .from("orcamento_revisoes")
+      .select(
+        "id, numero, custo, valor, enviada_por_nome, enviada_em, decisao, decidido_por_nome, decidido_em, motivo, ajuste_motivo",
+      )
+      .eq("venda_id", vendaId)
+      .order("numero", { ascending: false });
+    if (error) {
+      if (ausente(error) || /orcamento_revisoes/.test(error.message)) return [];
+      throw erro(error);
+    }
+    return (
+      (data ?? []) as {
+        id: string;
+        numero: N;
+        custo: N;
+        valor: N;
+        enviada_por_nome: string;
+        enviada_em: string;
+        decisao: "aprovado" | "devolvido" | null;
+        decidido_por_nome: string | null;
+        decidido_em: string | null;
+        motivo: string | null;
+        ajuste_motivo: string | null;
+      }[]
+    ).map((r) => ({
+      id: r.id,
+      numero: Number(r.numero ?? 0),
+      custo: Number(r.custo ?? 0),
+      valor: Number(r.valor ?? 0),
+      enviadaPorNome: r.enviada_por_nome,
+      enviadaEm: r.enviada_em,
+      decisao: r.decisao,
+      decididoPorNome: r.decidido_por_nome,
+      decididoEm: r.decidido_em,
+      motivo: r.motivo,
+      ajusteMotivo: r.ajuste_motivo,
+    }));
+  },
+
+  /** Briefing de orçamento → proposta "Com Projetos". Returns the proposta id. */
+  async criarDoBriefing(
+    briefingId: string,
+    cadastroId: string,
+    empresaId: string,
+  ): Promise<string> {
+    const { data, error } = await pub.rpc("criar_orcamento_briefing", {
+      _briefing: briefingId,
+      _cadastro: cadastroId,
+      _empresa: empresaId,
+    });
+    if (error) throw erro(error);
+    return data as string;
+  },
+
+  async iniciar(vendaId: string): Promise<void> {
+    const { error } = await pub.rpc("iniciar_orcamento", { _venda: vendaId });
+    if (error) throw erro(error);
+  },
+
+  async enviarParaAprovacao(vendaId: string): Promise<number> {
+    const { data, error } = await pub.rpc("enviar_orcamento_aprovacao", { _venda: vendaId });
+    if (error) throw erro(error);
+    return Number(data);
+  },
+
+  async decidir(vendaId: string, fechar: boolean, motivo?: string): Promise<void> {
+    const { error } = await pub.rpc("decidir_orcamento", {
+      _venda: vendaId,
+      _fechar: fechar,
+      _motivo: motivo ?? null,
+    });
+    if (error) throw erro(error);
+  },
+
+  async pedirAjuste(vendaId: string, motivo: string): Promise<void> {
+    const { error } = await pub.rpc("pedir_ajuste_orcamento", { _venda: vendaId, _motivo: motivo });
+    if (error) throw erro(error);
+  },
+};

@@ -16,6 +16,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { BriefingForm } from "@/components/app/briefing-form";
 import { BriefingStatusBadge } from "@/components/app/briefing-status";
 import { AnexosPanel } from "@/components/app/anexos-panel";
+import { OrcamentoDoBriefing } from "@/components/app/orcamento-do-briefing";
 import { useBriefing, useCurrentUser, useDataAction, usePessoasDaFuncao } from "@/hooks/use-data";
 import {
   BRIEFING_DESTINO_LABEL,
@@ -98,6 +99,8 @@ function BriefingPage() {
           ) : undefined
         }
       />
+
+      <OrcamentoDoBriefing briefing={b} />
 
       <section className="surface-card mb-6 flex flex-col gap-4 p-5 md:flex-row md:items-center">
         <div className="min-w-0 flex-1 space-y-1">

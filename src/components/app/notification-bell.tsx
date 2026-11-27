@@ -74,6 +74,29 @@ function NotificationText({ n }: { n: AppNotification }) {
           {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
         </span>
       );
+    case "orcamento_aprovacao":
+    case "orcamento_aprovado":
+    case "orcamento_devolvido":
+    case "orcamento_ajuste": {
+      const prop = (
+        <span className="font-medium">
+          proposta nº {n.refNumero}
+          {n.projectName && ` · ${n.projectName}`}
+        </span>
+      );
+      const texto = {
+        orcamento_aprovacao: "mandou para você fechar o orçamento da",
+        orcamento_aprovado: "fechou o orçamento da",
+        orcamento_devolvido: "devolveu para revisar o orçamento da",
+        orcamento_ajuste: "pediu ajuste no orçamento da",
+      }[n.tipo];
+      return (
+        <span className="block break-words">
+          {who} <span className="font-semibold">{texto}</span> {prop}
+          {n.detalhe && <span className="mt-0.5 block text-muted-foreground">{n.detalhe}</span>}
+        </span>
+      );
+    }
     case "liberacao_comentario":
       return (
         <span className="block break-words">

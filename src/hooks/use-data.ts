@@ -34,6 +34,7 @@ import {
   projectRepository,
   teamRepository,
   estoqueRepository,
+  fluxoOrcamentoRepository,
   orcamentoRepository,
 } from "@/lib/data";
 
@@ -447,5 +448,12 @@ export const useCustosDaVenda = (vendaId: string, enabled = true) =>
   useQuery({
     queryKey: ["orcamento", "custos-venda", vendaId],
     queryFn: () => orcamentoRepository.custosDaVenda(vendaId),
+    enabled: enabled && !!vendaId,
+  });
+
+export const useRevisoesOrcamento = (vendaId: string, enabled = true) =>
+  useQuery({
+    queryKey: ["orcamento", "revisoes", vendaId],
+    queryFn: () => fluxoOrcamentoRepository.revisoes(vendaId),
     enabled: enabled && !!vendaId,
   });

@@ -122,3 +122,48 @@ export function calcularComposicao(
     entrada: centavos((venda * config.entradaPct) / 100),
   };
 }
+
+// ---------- Fluxo do orçamento (migration 0051) ----------
+/** Briefing → Projetos (em_orcamento) → Gestão (aguardando_aprovacao) → fechado (aprovado) → Comercial. */
+export type SituacaoOrcamento = "em_orcamento" | "aguardando_aprovacao" | "devolvido" | "aprovado";
+
+export const NOME_SITUACAO_ORCAMENTO: Record<SituacaoOrcamento, string> = {
+  em_orcamento: "Com Projetos",
+  devolvido: "Devolvido para Projetos revisar",
+  aguardando_aprovacao: "Aguardando a Gestão",
+  aprovado: "Fechado pela Gestão",
+};
+
+/** Step of the flowchart where the proposta is (0 Projetos, 1 Gestão, 2 Comercial/cliente). */
+export const etapaDoOrcamento = (s: SituacaoOrcamento) =>
+  s === "aguardando_aprovacao" ? 1 : s === "aprovado" ? 2 : 0;
+
+/** Projetos (and Gestão) send the orçamento to the Gestão. */
+export const canEnviarOrcamento = (user: WithFuncoes) =>
+  tem(user, "gestor", "direcao", "projetos_especiais");
+
+/** Only Gestão/Direção close (approve price and margin) or return the orçamento. */
+export const canDecidirOrcamento = (user: WithFuncoes) => tem(user, "gestor", "direcao");
+
+/** Items, values and composition are locked while the Gestão decides and after it closes. */
+export const orcamentoTravado = (s: SituacaoOrcamento | null | undefined) =>
+  s === "aguardando_aprovacao" || s === "aprovado";
+
+/**
+ * Who edits the proposta's items (database: pode_editar_venda): Comercial/Gestão always,
+ * Projetos Especiais while the orçamento is with them.
+ */
+export const podeEditarItensVenda = (
+  user: WithFuncoes,
+  podeVender: boolean,
+  tipo: string,
+  s: SituacaoOrcamento | null | undefined,
+) =>
+  podeVender ||
+  (tem(user, "projetos_especiais") &&
+    tipo === "proposta" &&
+    (s === "em_orcamento" || s === "devolvido"));
+
+/** Margin over the sale value: (valor − custo) ÷ valor, in %. Null without a value. */
+export const margemPct = (custo: number, valor: number) =>
+  valor > 0 ? Math.round(((valor - custo) / valor) * 1000) / 10 : null;

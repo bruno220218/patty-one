@@ -245,7 +245,11 @@ export type NotificationTipo =
   | "prazo_definido"
   | "liberacao_pedido_alterado"
   | "ordem_conferencia"
-  | "ordem_aguardando_cliente";
+  | "ordem_aguardando_cliente"
+  | "orcamento_aprovacao"
+  | "orcamento_aprovado"
+  | "orcamento_devolvido"
+  | "orcamento_ajuste";
 
 /** In-app notification: a task was completed, or a liberação moved in the approval flow. */
 export interface AppNotification {

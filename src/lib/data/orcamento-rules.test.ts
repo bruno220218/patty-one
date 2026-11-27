@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   calcularComposicao,
+  canDecidirOrcamento,
   canEditarCustosOrcamento,
+  canEnviarOrcamento,
   CONFIG_PADRAO,
+  etapaDoOrcamento,
+  margemPct,
+  orcamentoTravado,
+  podeEditarItensVenda,
   secaoDe,
 } from "./orcamento-rules";
 
@@ -46,5 +52,26 @@ describe("composição do orçamento", () => {
     expect(secaoDe("")).toBe("Outros");
     expect(canEditarCustosOrcamento({ funcoes: ["direcao"] })).toBe(true);
     expect(canEditarCustosOrcamento({ funcoes: ["projetos_especiais"] })).toBe(false);
+  });
+});
+
+describe("fluxo do orçamento", () => {
+  it("margem, etapa e trava", () => {
+    expect(margemPct(55, 100)).toBe(45);
+    expect(margemPct(10, 0)).toBeNull();
+    expect(etapaDoOrcamento("devolvido")).toBe(0);
+    expect(etapaDoOrcamento("aguardando_aprovacao")).toBe(1);
+    expect(etapaDoOrcamento("aprovado")).toBe(2);
+    expect(orcamentoTravado("aprovado")).toBe(true);
+    expect(orcamentoTravado("em_orcamento")).toBe(false);
+  });
+  it("Projetos edita só a proposta que está com eles", () => {
+    const pj = { funcoes: ["projetos_especiais"] };
+    expect(podeEditarItensVenda(pj, false, "proposta", "em_orcamento")).toBe(true);
+    expect(podeEditarItensVenda(pj, false, "proposta", "aguardando_aprovacao")).toBe(false);
+    expect(podeEditarItensVenda(pj, false, "proposta", null)).toBe(false);
+    expect(podeEditarItensVenda({ funcoes: ["comercial"] }, true, "pedido", null)).toBe(true);
+    expect(canDecidirOrcamento(pj)).toBe(false);
+    expect(canEnviarOrcamento(pj)).toBe(true);
   });
 });

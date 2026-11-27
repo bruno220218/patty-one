@@ -26,6 +26,7 @@ import { LiberacaoStatusBadge } from "@/components/app/liberacao-status";
 import { PrazoPedidoSection } from "@/components/app/prazo-pedido";
 import { VinculosBriefingVisita } from "@/components/app/vinculos-briefing-visita";
 import { ListaMaterialVenda } from "@/components/app/estoque-lista-material";
+import { FluxoOrcamento } from "@/components/app/orcamento-fluxo";
 import { useCurrentUser, useDataAction, useEmpresas, useVenda } from "@/hooks/use-data";
 import {
   brl,
@@ -37,8 +38,10 @@ import {
   dataBR,
   itemVazio,
   NOME_TIPO_VENDA,
+  orcamentoTravado,
   parseValor,
   podeGerarPedido,
+  podeEditarItensVenda,
   STATUS_VENDA,
   totaisVenda,
   totalItem,
@@ -151,6 +154,10 @@ function Editor({
   const { data: me } = useCurrentUser();
   const podeVender = canVender(me);
   const bloqueado = !podeVender;
+  const sitOrcamento = doc?.orcamentoSituacao ?? null;
+  const travado = tipo === "proposta" && orcamentoTravado(sitOrcamento);
+  const editaItens = podeEditarItensVenda(me, podeVender, tipo, sitOrcamento);
+  const itensBloqueados = !editaItens || travado;
   const [f, setF] = useState<Form>(() => formDoDoc(tipo, doc));
   const [salvando, setSalvando] = useState(false);
   const [gerando, setGerando] = useState(false);
@@ -298,6 +305,7 @@ function Editor({
           )}
           {doc &&
             podeVender &&
+            (sitOrcamento === null || sitOrcamento === "aprovado") &&
             podeGerarPedido({
               tipo,
               status: doc.status,
@@ -313,7 +321,7 @@ function Editor({
                 Gerar pedido
               </Button>
             )}
-          {podeVender && (
+          {(podeVender || editaItens) && (
             <Button onClick={() => void salvar()} disabled={salvando}>
               {salvando ? <Loader2 className="animate-spin" /> : <Save />}
               Salvar
@@ -324,9 +332,13 @@ function Editor({
 
       {!podeVender && (
         <p className="text-sm text-muted-foreground">
-          Só Comercial e Gestão editam propostas e pedidos.
+          {editaItens
+            ? "Você edita os itens e a composição deste orçamento; cliente, situação e desconto ficam com o Comercial."
+            : "Só Comercial e Gestão editam propostas e pedidos."}
         </p>
       )}
+
+      {doc && <FluxoOrcamento venda={doc} alterado={Boolean(alterado)} />}
 
       <section className="grid gap-4 rounded-2xl border bg-card p-5 shadow-sm md:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5 lg:col-span-2">
@@ -373,7 +385,17 @@ function Editor({
             onChange={(e) => set({ status: e.target.value })}
           >
             {STATUS_VENDA[tipo].map((s) => (
-              <option key={s}>{s}</option>
+              <option
+                key={s}
+                disabled={
+                  tipo === "proposta" &&
+                  sitOrcamento !== null &&
+                  sitOrcamento !== "aprovado" &&
+                  (s === "Enviada" || s === "Aprovada")
+                }
+              >
+                {s}
+              </option>
             ))}
           </select>
         </div>
@@ -404,7 +426,7 @@ function Editor({
       <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Itens</h2>
-          {!bloqueado && (
+          {!itensBloqueados && (
             <Button
               variant="outline"
               size="sm"
@@ -421,7 +443,7 @@ function Editor({
               aria-label={`Tipo do item ${i + 1}`}
               className={`${selectClass} md:col-span-2`}
               value={it.categoria}
-              disabled={bloqueado}
+              disabled={itensBloqueados}
               onChange={(e) => setItem(i, { categoria: e.target.value as CategoriaItem })}
             >
               {CATEGORIAS_ITEM.map((c) => (
@@ -433,7 +455,7 @@ function Editor({
               placeholder="Descrição"
               className="md:col-span-3"
               value={it.descricao}
-              disabled={bloqueado}
+              disabled={itensBloqueados}
               onChange={(e) => setItem(i, { descricao: e.target.value })}
             />
             <Input
@@ -442,7 +464,7 @@ function Editor({
               inputMode="decimal"
               className="md:col-span-1"
               value={it.quantidade}
-              disabled={bloqueado}
+              disabled={itensBloqueados}
               onChange={(e) => setItem(i, { quantidade: e.target.value })}
             />
             <Input
@@ -451,7 +473,7 @@ function Editor({
               inputMode="decimal"
               className="md:col-span-2"
               value={it.valorUnitario}
-              disabled={bloqueado}
+              disabled={itensBloqueados}
               onChange={(e) => setItem(i, { valorUnitario: e.target.value })}
             />
             <Input
@@ -460,14 +482,14 @@ function Editor({
               inputMode="decimal"
               className="md:col-span-2"
               value={it.desconto}
-              disabled={bloqueado}
+              disabled={itensBloqueados}
               onChange={(e) => setItem(i, { desconto: e.target.value })}
             />
             <div className="flex items-center justify-end gap-2 md:col-span-2">
               <span className="text-sm font-medium">
                 {brl(totalItem(calc[i] ?? calcDoItem(it)))}
               </span>
-              {!bloqueado && (
+              {!itensBloqueados && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -486,7 +508,7 @@ function Editor({
                   placeholder="Ponto (ex.: Outdoor 9x3 — Av. Brasil, 1200)"
                   className="md:col-span-6"
                   value={it.ponto}
-                  disabled={bloqueado}
+                  disabled={itensBloqueados}
                   onChange={(e) => setItem(i, { ponto: e.target.value })}
                 />
                 <label className="flex items-center gap-2 text-sm md:col-span-3">
@@ -495,7 +517,7 @@ function Editor({
                     type="date"
                     aria-label={`Início do período do item ${i + 1}`}
                     value={it.periodoInicio}
-                    disabled={bloqueado}
+                    disabled={itensBloqueados}
                     onChange={(e) => setItem(i, { periodoInicio: e.target.value })}
                   />
                 </label>
@@ -505,7 +527,7 @@ function Editor({
                     type="date"
                     aria-label={`Fim do período do item ${i + 1}`}
                     value={it.periodoFim}
-                    disabled={bloqueado}
+                    disabled={itensBloqueados}
                     onChange={(e) => setItem(i, { periodoFim: e.target.value })}
                   />
                 </label>
@@ -527,7 +549,7 @@ function Editor({
               inputMode="decimal"
               className="h-8 w-28 text-right"
               value={f.desconto}
-              disabled={bloqueado}
+              disabled={bloqueado || travado}
               onChange={(e) => set({ desconto: e.target.value })}
             />
           </div>
@@ -553,7 +575,14 @@ function Editor({
         <PrazoPedidoSection vendaId={doc.id} cancelado={doc.status === "Cancelado"} />
       )}
 
-      {doc && <ListaMaterialVenda vendaId={doc.id} itens={doc.itens} pedido={tipo === "pedido"} />}
+      {doc && (
+        <ListaMaterialVenda
+          vendaId={doc.id}
+          itens={doc.itens}
+          pedido={tipo === "pedido"}
+          travado={travado}
+        />
+      )}
 
       {doc && <VinculosBriefingVisita vendaId={doc.id} />}
 
