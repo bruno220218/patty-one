@@ -103,10 +103,12 @@ export function ClientePicker({
   value,
   onChange,
   disabled = false,
+  placeholder = "Buscar cliente nos cadastros (opcional)…",
 }: {
   value: { id: string; nome: string } | null;
   onChange: (c: { id: string; nome: string } | null) => void;
   disabled?: boolean;
+  placeholder?: string;
 }) {
   const [busca, setBusca] = useState("");
   const [termo, setTermo] = useState("");
@@ -143,9 +145,9 @@ export function ClientePicker({
     <div className="relative">
       <Search className="pointer-events-none absolute top-3 left-3 size-4 text-muted-foreground" />
       <Input
-        aria-label="Buscar cliente"
+        aria-label={placeholder}
         className="pl-9"
-        placeholder="Buscar cliente nos cadastros (opcional)…"
+        placeholder={placeholder}
         value={busca}
         disabled={disabled}
         onChange={(e) => setBusca(e.target.value)}

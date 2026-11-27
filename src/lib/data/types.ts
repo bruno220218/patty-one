@@ -26,7 +26,8 @@ export type Funcao =
   | "producao"
   | "montagem"
   | "checking"
-  | "financeiro";
+  | "financeiro"
+  | "estoque";
 
 export interface ChecklistTask {
   id: string;

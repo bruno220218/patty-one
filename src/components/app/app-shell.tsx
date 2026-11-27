@@ -43,6 +43,7 @@ import {
   Wallet,
   Zap,
   Bot,
+  Boxes,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser, useNotifications } from "@/hooks/use-data";
@@ -98,7 +99,8 @@ type NavTo =
   | "/planejamento/catalogos"
   | "/financeiro"
   | "/dashboard"
-  | "/orquestrador";
+  | "/orquestrador"
+  | "/estoque";
 
 type NavItem = {
   id: string;
@@ -389,6 +391,12 @@ const SETORES: Setor[] = [
         ],
       },
     ],
+  },
+  {
+    // Estoque (0046): the almoxarife moves stock; production and projects look up balances.
+    titulo: "Estoque",
+    funcoes: ["estoque", "direcao", "pcp", "producao", "projetos_especiais", "financeiro"],
+    subs: [{ itens: [{ id: "estoque", label: "Estoque", icon: Boxes, to: "/estoque" }] }],
   },
   {
     titulo: "Financeiro",

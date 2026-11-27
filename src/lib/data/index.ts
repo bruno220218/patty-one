@@ -109,3 +109,5 @@ export * from "./cloud-financeiro";
 export * from "./financeiro-rules";
 export * from "./dashboard";
 export * from "./cloud-dashboard";
+export * from "./estoque-rules";
+export * from "./cloud-estoque";

@@ -33,6 +33,7 @@ import {
   notificationRepository,
   projectRepository,
   teamRepository,
+  estoqueRepository,
 } from "@/lib/data";
 
 // Queries run client-side only: the signed-in session lives in the browser.
@@ -377,5 +378,17 @@ export const usePercentuaisVendedores = (enabled = true) =>
       percentuais: await financeiroPagarRepository.percentuais(),
       vendedores: await financeiroPagarRepository.vendedoresDosPedidos(),
     }),
+    enabled,
+  });
+
+// ---------- Estoque (0046; everyone approved reads, costs only for whoever may see them) ----------
+/** Null data = the estoque schema isn't available yet. */
+export const useProdutosEstoque = () =>
+  useQuery({ queryKey: ["estoque", "produtos"], queryFn: () => estoqueRepository.produtos() });
+
+export const useMovimentosEstoque = (produtoId?: string, enabled = true) =>
+  useQuery({
+    queryKey: ["estoque", "movimentos", produtoId ?? "todos"],
+    queryFn: () => estoqueRepository.movimentos(produtoId),
     enabled,
   });

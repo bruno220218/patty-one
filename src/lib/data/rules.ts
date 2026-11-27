@@ -345,6 +345,11 @@ export const FUNCOES = [
     label: "Financeiro",
     descricao: "Vê e edita os dados bancários dos cadastros",
   },
+  {
+    value: "estoque",
+    label: "Estoque",
+    descricao: "Almoxarife: cadastra produtos e dá entrada, baixa, devolução e perda",
+  },
 ] as const;
 
 export const LIBERACAO_STATUS_LABEL: Record<"aguardando" | "reprovada" | "aprovada", string> = {

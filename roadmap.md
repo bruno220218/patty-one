@@ -20,6 +20,7 @@
 - [ ] Tela de gestão: charts of progress per project, per checklist, and blockers, for the team to see what is in progress (waiting on user go-ahead)
 
 ## Migração do PattyOne (sistema antigo) para cá
+
 - [x] Cadastros: lista, filtros, atribuir vendedor, ficha em abas (CEP pelo ViaCEP), importação do SIGE (só gestão); dados bancários só para Direção e Financeiro (função nova "Financeiro") — migração 0018
 - [x] Configurações: aparência, perfil e sair
 - [x] Operação (setor Produção): ordens de produção com alertas de prazo, cronograma, equipes de planejamento, veículos, produtos/serviços/colaboradores e "Programação Produção" com resumo para WhatsApp (imagens no Drive) — migração 0019
@@ -28,7 +29,9 @@
 - [x] Trazer os dados reais do PattyOne (cadastros, pontos, calendário, colaboradores, veículos, serviços)
 
 ## Fluxo Comercial → Produção → Execução (prioridade 100%)
+
 Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-producao-perguntas.md`).
+
 - [x] 1. Liberação ligada ao pedido e ao cadastro (uma por pedido) — 0032 (no ar em 26/11)
 - [x] 2. Solicitar prazo: comercial pede, PCP dá a data — 0033 (no ar em 26/11)
 - [x] 3. Itens do pedido com identidade fixa — 0034 (no ar em 26/11)
@@ -43,9 +46,9 @@ Plano em `docs/fluxo-producao-plano.md` (respostas do Vitor em `docs/fluxo-produ
 - [x] 11. Mídia OOH: ordem de colagem — 0042 (no ar em 26/11)
 
 ## Tarefas futuras (agendadas)
+
 - [x] Financeiro: a receber, contratos de aluguel e de energia (vindos do PattyOne; só Gestão, Direção e Financeiro) — migração 0026
 - [x] Financeiro: contas a pagar (fornecedores, aluguel com parcelas geradas, energia, impostos e outros) e comissões geradas quando o cliente paga (vendedor + agência) — migração 0029
 - [x] Dashboard com números reais (decisões do Vitor em `docs/dashboard-indicadores.md`): 20 cartões, cada função vê as suas seções, Gestão e Direção abrem nele — migração 0037
 - [ ] Dashboard, 2ª versão: filtro por empresa do grupo e gráficos (pedidos por mês em 12 meses, ocupação das próximas 6 bi-semanas)
-- [ ] Telas que eram só "Em breve" no PattyOne: Compras e Estoque, Administrativo, Painel de Gestão (Balcão foi descartado em 25/11)
-
+- [ ] Telas que eram só "Em breve" no PattyOne: Compras e Estoque (plano em `docs/estoque-plano.md`; etapa 1 = 0046 pronta, aguardando SQL), Administrativo, Painel de Gestão (Balcão foi descartado em 25/11)

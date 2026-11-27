@@ -17,6 +17,7 @@ import { Route as AuthenticatedGestorRouteRouteImport } from './routes/_authenti
 import { Route as AuthenticatedArquivadosRouteImport } from './routes/_authenticated/arquivados'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedEstoqueRouteImport } from './routes/_authenticated/estoque'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedLixeiraRouteImport } from './routes/_authenticated/lixeira'
 import { Route as AuthenticatedMedidasRouteImport } from './routes/_authenticated/medidas'
@@ -104,6 +105,11 @@ const AuthenticatedConfiguracoesRoute =
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEstoqueRoute = AuthenticatedEstoqueRouteImport.update({
+  id: '/estoque',
+  path: '/estoque',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInicioRoute = AuthenticatedInicioRouteImport.update({
@@ -391,6 +397,7 @@ export interface FileRoutesByFullPath {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/estoque': typeof AuthenticatedEstoqueRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/medidas': typeof AuthenticatedMedidasRoute
@@ -447,6 +454,7 @@ export interface FileRoutesByTo {
   '/arquivados': typeof AuthenticatedArquivadosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/estoque': typeof AuthenticatedEstoqueRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/lixeira': typeof AuthenticatedLixeiraRoute
   '/medidas': typeof AuthenticatedMedidasRoute
@@ -506,6 +514,7 @@ export interface FileRoutesById {
   '/_authenticated/arquivados': typeof AuthenticatedArquivadosRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/estoque': typeof AuthenticatedEstoqueRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/lixeira': typeof AuthenticatedLixeiraRoute
   '/_authenticated/medidas': typeof AuthenticatedMedidasRoute
@@ -564,6 +573,7 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/configuracoes'
     | '/dashboard'
+    | '/estoque'
     | '/inicio'
     | '/lixeira'
     | '/medidas'
@@ -620,6 +630,7 @@ export interface FileRouteTypes {
     | '/arquivados'
     | '/configuracoes'
     | '/dashboard'
+    | '/estoque'
     | '/inicio'
     | '/lixeira'
     | '/medidas'
@@ -678,6 +689,7 @@ export interface FileRouteTypes {
     | '/_authenticated/arquivados'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/estoque'
     | '/_authenticated/inicio'
     | '/_authenticated/lixeira'
     | '/_authenticated/medidas'
@@ -794,6 +806,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/estoque': {
+      id: '/_authenticated/estoque'
+      path: '/estoque'
+      fullPath: '/estoque'
+      preLoaderRoute: typeof AuthenticatedEstoqueRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inicio': {
@@ -1163,6 +1182,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedArquivadosRoute: typeof AuthenticatedArquivadosRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEstoqueRoute: typeof AuthenticatedEstoqueRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedLixeiraRoute: typeof AuthenticatedLixeiraRoute
   AuthenticatedMedidasRoute: typeof AuthenticatedMedidasRoute
@@ -1210,6 +1230,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedArquivadosRoute: AuthenticatedArquivadosRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEstoqueRoute: AuthenticatedEstoqueRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedLixeiraRoute: AuthenticatedLixeiraRoute,
   AuthenticatedMedidasRoute: AuthenticatedMedidasRoute,

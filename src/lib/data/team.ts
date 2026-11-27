@@ -54,6 +54,7 @@ const FUNCAO_VALUES: Funcao[] = [
   "montagem",
   "checking",
   "financeiro",
+  "estoque",
 ];
 const asFuncoes = (roles: string[]) => FUNCAO_VALUES.filter((f) => roles.includes(f));
 
