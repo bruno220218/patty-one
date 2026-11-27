@@ -1,6 +1,6 @@
 -- Self-checking test of migration 0046 (estoque, etapa 1). Run it as one statement: it always
 -- ends with an exception "RESULT: ..." so every change is rolled back. Expected:
--- setores=8 codigos=01.0001,06.0001,06.0002 producaoCria=blocked trocaSetor=blocked saldo=7 custoEstoque=12.5000 custoProducao=null producaoLe=3 diretoTabela=blocked perdaSemMotivo=blocked baixaSemResp=blocked clienteDaOrdem=t excluiComMov=blocked estoqueExcluiMov=blocked importa=1/2/1 negativo=-3 minimo=t
+-- setores=8 codigos=01.0001,06.0001,06.0002 producaoCria=blocked trocaSetor=blocked saldo=7 custoEstoque=12.5000 custoProducao=null producaoLe=3 diretoTabela=blocked perdaSemMotivo=blocked baixaSemResp=blocked clienteDaOrdem=true excluiComMov=blocked estoqueExcluiMov=blocked importa=1/2/1 negativo=-3 minimo=true
 do $$
 declare g uuid := gen_random_uuid(); e uuid := gen_random_uuid(); w uuid := gen_random_uuid();
   cli uuid; forn uuid; ord uuid; p1 uuid; p2 uuid; p3 uuid; res jsonb; out text := '';

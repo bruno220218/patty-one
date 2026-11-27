@@ -22,6 +22,7 @@ export const UNIDADES_ESTOQUE = [
   "m²",
   "chapa",
   "rolo",
+  "barra",
   "litro",
   "kg",
   "caixa",
@@ -104,6 +105,7 @@ export const COLUNAS_PLANILHA_ESTOQUE = [
   "fornecedor",
   "lote",
   "minimo",
+  "observacao",
 ] as const;
 
 export interface LinhaPlanilhaEstoque {
@@ -116,6 +118,7 @@ export interface LinhaPlanilhaEstoque {
   fornecedor: string;
   lote: string;
   minimo: string;
+  observacao: string;
 }
 
 /** Accepted header spellings (accents/case ignored) for each column. */
@@ -129,6 +132,7 @@ const APELIDOS: Record<keyof LinhaPlanilhaEstoque, string[]> = {
   fornecedor: ["fornecedor"],
   lote: ["lote"],
   minimo: ["minimo", "estoque minimo"],
+  observacao: ["observacao", "obs", "observacoes"],
 };
 
 /**
@@ -163,6 +167,7 @@ export function linhasDaPlanilha(rows: Record<string, string>[]): LinhaPlanilhaE
         fornecedor: get("fornecedor"),
         lote: get("lote"),
         minimo: num(get("minimo")),
+        observacao: get("observacao"),
       };
     })
     .filter((l) => l.produto !== "");

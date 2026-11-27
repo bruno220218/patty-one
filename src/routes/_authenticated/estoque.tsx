@@ -125,6 +125,7 @@ function EstoquePage() {
       fornecedor: p.fornecedor ?? "",
       lote: p.ultimoLote ?? "",
       minimo: p.estoqueMinimo === null ? "" : String(p.estoqueMinimo),
+      observacao: p.observacao ?? "",
     }));
     baixarArquivo(`estoque-${localToday()}.csv`, toCsv(linhas, [...COLUNAS_PLANILHA_ESTOQUE]));
   }
@@ -347,6 +348,14 @@ function ListaProdutos({
                     {verCusto && (
                       <td className="p-3 text-right whitespace-nowrap tabular-nums">
                         {formatCusto(p.custo)}
+                        {p.custoOrigem === "referencia" && (
+                          <span
+                            className="block text-xs text-muted-foreground"
+                            title="Preço da tabela de cotação: ainda não houve entrada com valor pago"
+                          >
+                            referência
+                          </span>
+                        )}
                       </td>
                     )}
                     <td className="p-3">{p.fornecedor ?? "—"}</td>
@@ -758,6 +767,7 @@ function ProdutoDialog({
   onClose: () => void;
 }) {
   const run = useDataAction();
+  const verCusto = canVerCustoEstoque(useCurrentUser().data);
   const [f, setF] = useState({
     setor: produto?.setor ?? "",
     nome: produto?.nome ?? "",
@@ -769,6 +779,7 @@ function ProdutoDialog({
         : null,
     observacao: produto?.observacao ?? "",
     ativo: produto?.ativo ?? true,
+    preco: produto?.precoReferencia == null ? "" : formatQtd(produto.precoReferencia),
   });
   const [salvando, setSalvando] = useState(false);
   const [excluir, setExcluir] = useState(false);
@@ -787,6 +798,7 @@ function ProdutoDialog({
           fornecedorNome: null,
           observacao: f.observacao,
           ativo: f.ativo,
+          ...(verCusto && { precoReferencia: lerNumero(f.preco) }),
         }),
       produto ? "Produto salvo" : "Produto cadastrado",
     );
@@ -848,6 +860,17 @@ function ProdutoDialog({
               onChange={(e) => set({ minimo: e.target.value })}
             />
           </Campo>
+          {verCusto && (
+            <Campo id="pr-preco" label="Preço de referência (R$, opcional)">
+              <Input
+                id="pr-preco"
+                inputMode="decimal"
+                placeholder="Da tabela de cotação"
+                value={f.preco}
+                onChange={(e) => set({ preco: e.target.value })}
+              />
+            </Campo>
+          )}
           <Campo label="Situação">
             <label className="flex h-10 items-center gap-2 text-sm">
               <input
@@ -1189,6 +1212,7 @@ function ImportarDialog({ onClose }: { onClose: () => void }) {
             fornecedor: "",
             lote: "",
             minimo: "5",
+            observacao: "",
           },
         ],
         [...COLUNAS_PLANILHA_ESTOQUE],
@@ -1230,6 +1254,7 @@ function ImportarDialog({ onClose }: { onClose: () => void }) {
             <div className="space-y-1 text-sm">
               <p>
                 {resultado.criados} produtos criados · {resultado.entradas} entradas registradas
+                {resultado.precos ? ` · ${resultado.precos} preços de referência` : ""}
               </p>
               {resultado.erros.length > 0 && (
                 <ul className="max-h-40 overflow-y-auto text-destructive">

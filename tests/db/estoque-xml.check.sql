@@ -1,6 +1,6 @@
 -- Self-checking test of migration 0047 (estoque: XML da NF-e + similares). Run it as one
 -- statement: it always ends with an exception "RESULT: ..." so every change is rolled back. Expected:
--- chave=cola super ciano semPar=null,produto,null fornecedor=t importa=t saldoCola=24 custoCola=0.7500 novo=06.0002 similares=2 reconhece=codigo,similar,similar fator=12 duplicada=blocked jaImportada=t producaoImporta=blocked geral=similar_geral notaNoMov=t
+-- chave=cola super ciano semPar=null,produto,null fornecedor=true importa=true saldoCola=24 custoCola=0.7500 novo=06.0002 similares=2 reconhece=codigo,similar,similar fator=12 duplicada=blocked jaImportada=true producaoImporta=blocked geral=similar_geral notaNoMov=true
 do $$
 declare e uuid := gen_random_uuid(); w uuid := gen_random_uuid(); forn uuid; cola uuid; nota uuid;
   res jsonb; out text := '';

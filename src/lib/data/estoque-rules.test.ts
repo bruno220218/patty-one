@@ -75,6 +75,7 @@ describe("planilha do estoque", () => {
         fornecedor: "",
         lote: "",
         minimo: "",
+        observacao: "",
       },
     ]);
   });

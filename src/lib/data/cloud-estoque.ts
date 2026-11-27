@@ -31,6 +31,11 @@ export interface ProdutoEstoque {
   ultimoLote: string | null;
   abaixoMinimo: boolean;
   movimentos: number;
+  /** Preço da tabela de cotação (0049); null sem permissão. */
+  precoReferencia: number | null;
+  precoReferenciaData: string | null;
+  /** Where `custo` comes from: last Entrada or the reference price. */
+  custoOrigem: "entrada" | "referencia" | null;
 }
 
 /** One stock movement (view estoque.v_movimentos). */
@@ -67,6 +72,8 @@ export interface ProdutoInput {
   fornecedorNome: string | null;
   observacao: string;
   ativo: boolean;
+  /** Omit to keep it; null clears it. */
+  precoReferencia?: number | null;
 }
 
 export interface MovimentoInput {
@@ -124,6 +131,8 @@ export interface SimilarEstoque {
 export interface ImportacaoEstoque {
   criados: number;
   entradas: number;
+  /** Reference prices saved (0049; missing on older databases). */
+  precos?: number;
   erros: { linha: number; produto: string | null; erro: string }[];
 }
 
@@ -165,6 +174,9 @@ interface ProdutoRow {
   ultimo_lote: string | null;
   abaixo_minimo: boolean | null;
   movimentos: N;
+  preco_referencia?: N;
+  preco_referencia_data?: string | null;
+  custo_origem?: string | null;
 }
 interface MovimentoRow {
   id: string;
@@ -207,6 +219,10 @@ const produtoDaLinha = (r: ProdutoRow): ProdutoEstoque => ({
   ultimoLote: r.ultimo_lote ?? null,
   abaixoMinimo: Boolean(r.abaixo_minimo),
   movimentos: Number(r.movimentos ?? 0),
+  precoReferencia: num(r.preco_referencia),
+  precoReferenciaData: r.preco_referencia_data ?? null,
+  custoOrigem:
+    r.custo_origem === "entrada" || r.custo_origem === "referencia" ? r.custo_origem : null,
 });
 
 const movimentoDaLinha = (r: MovimentoRow): MovimentoEstoque => ({
@@ -417,6 +433,7 @@ export const estoqueRepository = {
         fornecedor_nome: p.fornecedorId ? null : p.fornecedorNome,
         observacao: p.observacao,
         ativo: p.ativo,
+        ...(p.precoReferencia !== undefined && { preco_referencia: p.precoReferencia }),
       },
     });
     if (error) throw erro(error);
