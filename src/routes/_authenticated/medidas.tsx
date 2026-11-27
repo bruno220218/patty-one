@@ -142,13 +142,13 @@ function MedidasPage() {
             <TabsList>
               <TabsTrigger value="feitas" className="gap-1.5">
                 Medidas feitas
-                <span className="rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">
+                <span className="rounded-full bg-muted px-1.5 text-xs tabular-nums text-muted-foreground">
                   {porAba.feitas.length}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="aguardando" className="gap-1.5">
                 Aguardando visita
-                <span className="rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">
+                <span className="rounded-full bg-muted px-1.5 text-xs tabular-nums text-muted-foreground">
                   {porAba.aguardando.length}
                 </span>
               </TabsTrigger>

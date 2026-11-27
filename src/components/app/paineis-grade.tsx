@@ -55,7 +55,7 @@ function Celula({
       </PopoverTrigger>
       <PopoverContent className="w-72 space-y-3 p-4" align="start">
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold text-muted-foreground">
+          <p className="text-xs font-semibold text-muted-foreground">
             {painel.codigo} · espaço {v.posicao}
           </p>
           <p className="break-words font-semibold leading-tight">{v.cliente}</p>
@@ -74,7 +74,7 @@ function Celula({
           )}
           {v.observacao && <Detalhe label="Obs." value={v.observacao} />}
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Última alteração: {v.updatedByNome || "—"}
         </p>
         {podeEditar && (
@@ -150,7 +150,7 @@ export function PaineisGrade({
           </colgroup>
           <thead>
             <tr className="border-b">
-              <th className="sticky left-0 z-10 bg-card px-1 py-2 text-[11px] font-medium text-muted-foreground">
+              <th className="sticky left-0 z-10 bg-card px-1 py-2 text-xs font-medium text-muted-foreground">
                 Nº
               </th>
               {paineis.map((p) => {
@@ -163,15 +163,15 @@ export function PaineisGrade({
                       onClick={() => onAbrirPainel(p.id)}
                       className="block w-full text-left hover:underline"
                     >
-                      <span className="block text-[13px] font-semibold">{p.codigo}</span>
-                      <span className="block truncate text-[11px] text-muted-foreground">
+                      <span className="block text-xs font-semibold">{p.codigo}</span>
+                      <span className="block truncate text-xs text-muted-foreground">
                         {p.nome.replace(/^Painel\s+/i, "")}
                       </span>
                     </button>
                     <span className="mt-1 flex flex-wrap gap-1">
                       <span
                         className={cn(
-                          "rounded px-1 text-[10px] font-semibold tabular-nums",
+                          "rounded px-1 text-2xs font-semibold tabular-nums",
                           vagos === 0
                             ? "bg-destructive/10 text-destructive"
                             : "bg-muted text-muted-foreground",
@@ -180,7 +180,7 @@ export function PaineisGrade({
                         {vagos === 0 ? "cheio" : `${vagos} vaga${vagos === 1 ? "" : "s"}`}
                       </span>
                       {pend > 0 && (
-                        <span className="rounded bg-status-progress px-1 text-[10px] font-semibold text-status-progress-foreground">
+                        <span className="rounded bg-status-progress px-1 text-2xs font-semibold text-status-progress-foreground">
                           +{pend} p/ entrar
                         </span>
                       )}
@@ -193,7 +193,7 @@ export function PaineisGrade({
           <tbody>
             {Array.from({ length: max }, (_, i) => i + 1).map((pos) => (
               <tr key={pos} className="border-b last:border-0">
-                <td className="sticky left-0 z-10 bg-card px-1 py-0.5 text-center text-[11px] tabular-nums text-muted-foreground">
+                <td className="sticky left-0 z-10 bg-card px-1 py-0.5 text-center text-xs tabular-nums text-muted-foreground">
                   {pos}
                 </td>
                 {paineis.map((p) => {
@@ -216,14 +216,14 @@ export function PaineisGrade({
                         <button
                           type="button"
                           onClick={() => onOcupar(p, pos)}
-                          className="group flex w-full items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] text-muted-foreground/70 hover:bg-muted hover:text-foreground"
+                          className="group flex w-full items-center gap-1 rounded px-1.5 py-1 text-left text-xs text-muted-foreground/70 hover:bg-muted hover:text-foreground"
                           aria-label={`Ocupar ${p.codigo} espaço ${pos}`}
                         >
                           <Plus className="h-3 w-3 opacity-0 group-hover:opacity-100" />
                           vago
                         </button>
                       ) : (
-                        <span className="block px-1.5 py-1 text-[11px] text-muted-foreground/70">
+                        <span className="block px-1.5 py-1 text-xs text-muted-foreground/70">
                           vago
                         </span>
                       )}
@@ -236,7 +236,7 @@ export function PaineisGrade({
         </table>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
         {(["venda", "permuta", "camp_patty", "doacao", "reserva", "evento"] as const).map((t) => (
           <span key={t} className="inline-flex items-center gap-1.5">
             <span className={cn("h-2 w-2 rounded-full", TIPO_PONTO[t])} />

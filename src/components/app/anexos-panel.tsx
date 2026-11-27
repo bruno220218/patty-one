@@ -166,7 +166,7 @@ export function AnexosPanel({
             <Paperclip className="h-4 w-4 text-muted-foreground" />
             {titulo}
             {anexos && anexos.length > 0 && (
-              <span className="rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">
+              <span className="rounded-full bg-muted px-1.5 text-xs tabular-nums text-muted-foreground">
                 {anexos.length}
               </span>
             )}

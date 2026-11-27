@@ -458,7 +458,7 @@ export function ProgramacaoGrid({
       <TooltipProvider>
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full min-w-[2050px] text-xs">
-            <thead className="bg-muted text-left text-[11px] tracking-wide text-muted-foreground uppercase">
+            <thead className="bg-muted text-left text-xs tracking-wide text-muted-foreground uppercase">
               <tr>
                 {[
                   "#",
@@ -515,7 +515,7 @@ export function ProgramacaoGrid({
                           </Tooltip>
                         )}
                         {l.conflitoConfirmado && noDia > 1 && (
-                          <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] whitespace-nowrap text-secondary-foreground">
+                          <span className="rounded-full bg-secondary px-2 py-0.5 text-2xs whitespace-nowrap text-secondary-foreground">
                             {noDia} serviços no dia
                           </span>
                         )}

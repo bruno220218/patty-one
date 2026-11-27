@@ -320,7 +320,7 @@ function GrupoCard({
                   {alertas.has(it.id) && (
                     <span
                       className={cn(
-                        "ml-2 inline-flex items-center gap-1 rounded border px-1.5 text-[11px]",
+                        "ml-2 inline-flex items-center gap-1 rounded border px-1.5 text-xs",
                         TOM.aviso,
                       )}
                     >
@@ -329,7 +329,7 @@ function GrupoCard({
                     </span>
                   )}
                   {!alertas.has(it.id) && it.conflitoConfirmado && noDia > 1 && (
-                    <span className="ml-2 rounded bg-secondary px-1.5 py-0.5 text-[11px] text-secondary-foreground">
+                    <span className="ml-2 rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
                       {noDia} serviços no dia
                     </span>
                   )}
@@ -659,7 +659,7 @@ function NaoRealizados({
                 <td className="px-3 py-2">
                   {dataCurtaBR(p.data)}
                   {p.reagendamentos > 0 && (
-                    <span className="block text-[11px] text-muted-foreground">
+                    <span className="block text-xs text-muted-foreground">
                       reagendado {p.reagendamentos}x · orig. {dataCurtaBR(p.dataOriginal)}
                     </span>
                   )}

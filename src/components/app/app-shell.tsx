@@ -630,7 +630,7 @@ function NavLink({
       <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
       {!collapsed && <span className="min-w-0 flex-1 leading-snug">{item.label}</span>}
       {!collapsed && !item.to && (
-        <span className="shrink-0 rounded-full bg-sidebar-hover px-1.5 py-px text-[9px] font-semibold tracking-wide uppercase">
+        <span className="shrink-0 rounded-full bg-sidebar-hover px-1.5 py-px text-2xs font-semibold tracking-wide uppercase">
           em breve
         </span>
       )}
@@ -703,7 +703,7 @@ function UserMenu({
               <span className="block truncate text-sm font-medium text-sidebar-primary">
                 {me.name}
               </span>
-              <span className="block truncate text-[11px] text-sidebar-foreground">
+              <span className="block truncate text-xs text-sidebar-foreground">
                 {funcoesTexto(me)}
               </span>
             </span>
@@ -765,7 +765,7 @@ function SidebarBody({
             <span className="block leading-tight font-semibold text-sidebar-primary">
               Patty One
             </span>
-            <span className="block truncate text-[11px] leading-tight text-sidebar-foreground">
+            <span className="block truncate text-xs leading-tight text-sidebar-foreground">
               Produção e Comunicação Visual
             </span>
           </span>
@@ -798,7 +798,7 @@ function SidebarBody({
                   aria-expanded={!fechado}
                   aria-controls={listaId}
                   title={fechado ? `Mostrar ${setor.titulo}` : `Esconder ${setor.titulo}`}
-                  className="group mb-2 flex w-full items-center gap-1.5 rounded-md px-3 py-0.5 text-left text-[10px] font-semibold tracking-wider text-sidebar-foreground/80 uppercase transition-colors hover:text-sidebar-primary"
+                  className="group mb-2 flex w-full items-center gap-1.5 rounded-md px-3 py-0.5 text-left text-2xs font-semibold tracking-wider text-sidebar-foreground/80 uppercase transition-colors hover:text-sidebar-primary"
                 >
                   <span className="flex-1">{setor.titulo}</span>
                   {fechado && temAtivo && (
@@ -819,7 +819,7 @@ function SidebarBody({
                 {subs.map((sub, n) => (
                   <div key={sub.titulo ?? `soltos-${n}`} className="space-y-0.5">
                     {sub.titulo && !collapsed && (
-                      <div className="px-3 pt-1 text-[11px] font-medium text-sidebar-foreground/70">
+                      <div className="px-3 pt-1 text-xs font-medium text-sidebar-foreground/70">
                         {sub.titulo}
                       </div>
                     )}

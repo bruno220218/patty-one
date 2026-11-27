@@ -14,8 +14,8 @@ export function FuncoesChips({ funcoes }: { funcoes: Funcao[] }) {
           key={f.value}
           className={
             f.value === "gestor"
-              ? "rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground"
-              : "rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-foreground"
+              ? "rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground"
+              : "rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground"
           }
         >
           {f.label}
@@ -57,7 +57,7 @@ export function FuncoesPicker({
           <Users className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Funções</span>
           {funcoes.length > 0 && (
-            <span className="rounded-full bg-accent px-1.5 text-[11px] font-semibold text-accent-foreground">
+            <span className="rounded-full bg-accent px-1.5 text-xs font-semibold text-accent-foreground">
               {funcoes.length}
             </span>
           )}

@@ -194,7 +194,7 @@ export function ImagensLinks({ imagens }: { imagens: ImagemResumo[] }) {
           target="_blank"
           rel="noreferrer"
           title={imagem.nome}
-          className="inline-flex max-w-40 items-center gap-1 rounded-md border bg-muted px-1.5 py-0.5 text-[11px] hover:border-primary"
+          className="inline-flex max-w-40 items-center gap-1 rounded-md border bg-muted px-1.5 py-0.5 text-xs hover:border-primary"
         >
           <ImageIcon className="size-3 shrink-0" />
           <span className="truncate">{imagem.nome}</span>
@@ -237,7 +237,7 @@ export function ImagensButton({
       >
         <ImageIcon />
         {quantidade > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 rounded-full bg-primary px-1 text-[9px] text-primary-foreground">
+          <span className="absolute -top-0.5 -right-0.5 rounded-full bg-primary px-1 text-2xs text-primary-foreground">
             {quantidade}
           </span>
         )}

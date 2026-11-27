@@ -13,7 +13,7 @@ export function SetoresChips({ setores, ids }: { setores: SetorProducao[]; ids: 
       {meus.map((s) => (
         <span
           key={s.id}
-          className="rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+          className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground"
         >
           {s.nome}
         </span>
@@ -50,7 +50,7 @@ export function SetoresPicker({
           <Factory className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Setores</span>
           {ids.length > 0 && (
-            <span className="rounded-full bg-accent px-1.5 text-[11px] font-semibold text-accent-foreground">
+            <span className="rounded-full bg-accent px-1.5 text-xs font-semibold text-accent-foreground">
               {ids.length}
             </span>
           )}

@@ -159,7 +159,7 @@ function BriefingsPage() {
                   {a.label}
                   <span
                     className={cn(
-                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      "rounded-full px-1.5 text-xs tabular-nums",
                       a.value === "novo" && atende && porAba.novo.length > 0
                         ? "bg-status-progress text-status-progress-foreground"
                         : "bg-muted text-muted-foreground",

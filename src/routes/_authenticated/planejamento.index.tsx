@@ -547,7 +547,7 @@ function EventoCard({
             <p className="mt-0.5 text-xs text-muted-foreground">Ordem nº {e.ordemNumero}</p>
           )}
           {e.conflito && (
-            <p className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400">
+            <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400">
               <AlertTriangle className="size-3" />
               Recurso compartilhado
             </p>
@@ -561,12 +561,12 @@ function EventoCard({
             : "Dia inteiro"}
         </span>
         {e.dataInicio !== e.dataFim && (
-          <Badge variant="outline" className="bg-card px-1.5 py-0 text-[10px]">
+          <Badge variant="outline" className="bg-card px-1.5 py-0 text-2xs">
             até {dataBR(e.dataFim)}
           </Badge>
         )}
         {e.tipo !== "Agendamento" && e.tipo !== "Programação" && (
-          <Badge variant="outline" className="bg-card px-1.5 py-0 text-[10px]">
+          <Badge variant="outline" className="bg-card px-1.5 py-0 text-2xs">
             {e.tipo}
           </Badge>
         )}
@@ -751,7 +751,7 @@ function VisaoMensal({
                       title={e.titulo}
                       onClick={() => onOpen(e)}
                       className={cn(
-                        "flex w-full items-center gap-1 rounded-md border px-1.5 py-1 text-left text-[11px]",
+                        "flex w-full items-center gap-1 rounded-md border px-1.5 py-1 text-left text-xs",
                         TOM_EVENTO[e.tipo],
                         e.conflito && "ring-1 ring-amber-400",
                       )}
@@ -771,7 +771,7 @@ function VisaoMensal({
                     <button
                       type="button"
                       onClick={() => onDia(dia)}
-                      className="w-full px-1 text-left text-[11px] font-medium text-primary hover:underline"
+                      className="w-full px-1 text-left text-xs font-medium text-primary hover:underline"
                     >
                       + {doDia.length - 3} compromisso(s)
                     </button>

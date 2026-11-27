@@ -41,7 +41,7 @@ const MODALIDADE: Record<string, string> = {
 function Campo({ label, value, className }: { label: string; value: string; className?: string }) {
   return (
     <div className={cn("min-w-0", className)}>
-      <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </dt>
       <dd className="break-words text-sm font-medium">{value || "—"}</dd>
@@ -147,7 +147,7 @@ function CiPage() {
       <article className="surface-card overflow-hidden">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/40 px-5 py-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Comunicação interna de vinheta
             </p>
             <h1 className="text-xl font-bold tracking-tight">

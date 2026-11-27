@@ -123,7 +123,7 @@ function VisitasPage() {
                   {a.label}
                   <span
                     className={cn(
-                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      "rounded-full px-1.5 text-xs tabular-nums",
                       (a.value === "solicitada" && agenda && porAba.solicitada.length > 0) ||
                         (a.value === "minhas" && porAba.minhas.length > 0)
                         ? "bg-status-progress text-status-progress-foreground"

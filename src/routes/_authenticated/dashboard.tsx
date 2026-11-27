@@ -61,7 +61,7 @@ function CartaoIndicador({
         {valor?.variacao && (
           <span
             className={cn(
-              "rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums",
+              "rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",
               destaque
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "bg-status-idle text-status-idle-foreground",

@@ -182,7 +182,7 @@ export function OcupacaoGrid({
                         title={titulo}
                         aria-label={`${p.nome}, bi-semana ${b.codigoSige}: ${s}`}
                         className={cn(
-                          "block h-9 w-16 truncate rounded px-1 text-[10px] font-medium disabled:cursor-default",
+                          "block h-9 w-16 truncate rounded px-1 text-2xs font-medium disabled:cursor-default",
                           COR[s],
                           destacada && "ring-1 ring-primary/40",
                           salvando === chaveOcupacao(p.id, b.numero) && "opacity-50",

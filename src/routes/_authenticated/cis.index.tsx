@@ -123,7 +123,7 @@ function CisPage() {
                   Aguardando entrada
                   <span
                     className={cn(
-                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      "rounded-full px-1.5 text-xs tabular-nums",
                       aguardando.length > 0
                         ? "bg-status-progress text-status-progress-foreground"
                         : "bg-muted text-muted-foreground",
@@ -136,7 +136,7 @@ function CisPage() {
                   Fotos pendentes
                   <span
                     className={cn(
-                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      "rounded-full px-1.5 text-xs tabular-nums",
                       fotos.length > 0
                         ? "bg-status-progress text-status-progress-foreground"
                         : "bg-muted text-muted-foreground",
@@ -149,7 +149,7 @@ function CisPage() {
                   Checkout pendente
                   <span
                     className={cn(
-                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      "rounded-full px-1.5 text-xs tabular-nums",
                       checkouts.length > 0
                         ? "bg-status-progress text-status-progress-foreground"
                         : "bg-muted text-muted-foreground",
@@ -236,7 +236,7 @@ function CisPage() {
                                   : `Recusada: ${cp.motivo}`
                             }
                             className={cn(
-                              "rounded px-1.5 py-px text-[11px] font-semibold",
+                              "rounded px-1.5 py-px text-xs font-semibold",
                               cp.status === "pendente" &&
                                 "bg-status-progress text-status-progress-foreground",
                               cp.status === "aprovada" &&

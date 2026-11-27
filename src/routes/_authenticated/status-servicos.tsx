@@ -352,7 +352,7 @@ function StatusServicosPage() {
                     className="mb-2 flex items-center gap-2 text-sm font-semibold"
                   >
                     {c.titulo}
-                    <span className="rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">
+                    <span className="rounded-full bg-muted px-1.5 text-xs tabular-nums text-muted-foreground">
                       {porColuna[c.id].length}
                     </span>
                   </h2>

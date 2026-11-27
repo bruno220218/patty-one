@@ -249,7 +249,7 @@ function PaineisPage() {
             <span className="truncate">{v.cliente}</span>
           </span>
           {v.observacao && (
-            <span className="block truncate text-[11px] text-muted-foreground">{v.observacao}</span>
+            <span className="block truncate text-xs text-muted-foreground">{v.observacao}</span>
           )}
         </td>
         <td className="hidden px-2 py-1.5 text-xs text-muted-foreground md:table-cell">
@@ -266,7 +266,7 @@ function PaineisPage() {
           {situacaoCurta(s)}
         </td>
         <td className="hidden px-2 py-1.5 text-xs sm:table-cell">{v.representanteNome}</td>
-        <td className="hidden px-2 py-1.5 text-[11px] tabular-nums text-muted-foreground xl:table-cell">
+        <td className="hidden px-2 py-1.5 text-xs tabular-nums text-muted-foreground xl:table-cell">
           {v.tipo !== "indisponivel" ? `${v.duracaoSeg}s · ${v.loop} · ${v.insercoesDia}` : ""}
         </td>
         {podeEditar && (
@@ -293,7 +293,7 @@ function PaineisPage() {
 
   const cabecalho = (mostrarPainel: boolean) => (
     <thead>
-      <tr className="border-b text-left text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <tr className="border-b text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
         <th className={cn("px-2 py-2 text-right font-medium", mostrarPainel ? "w-20" : "w-10")}>
           {mostrarPainel ? "Painel" : "Nº"}
         </th>
@@ -388,7 +388,7 @@ function PaineisPage() {
                     {pend.map((cp) => (
                       <span
                         key={cp.id}
-                        className="rounded bg-status-progress px-1.5 text-[11px] font-semibold text-status-progress-foreground"
+                        className="rounded bg-status-progress px-1.5 text-xs font-semibold text-status-progress-foreground"
                       >
                         {painelPorId.get(cp.painelId)?.codigo ?? "?"}
                       </span>
@@ -423,7 +423,7 @@ function PaineisPage() {
             <TabsTrigger value="resumo" className="gap-1.5">
               Vencimentos
               {vencimentos.length > 0 && (
-                <span className="rounded-full bg-status-progress px-1.5 text-[11px] tabular-nums text-status-progress-foreground">
+                <span className="rounded-full bg-status-progress px-1.5 text-xs tabular-nums text-status-progress-foreground">
                   {vencimentos.length}
                 </span>
               )}
@@ -496,9 +496,9 @@ function PaineisPage() {
                   )}
                 >
                   {p.codigo}
-                  <span className={cn("text-[11px] tabular-nums", vagosTone(vagos))}>{vagos}</span>
+                  <span className={cn("text-xs tabular-nums", vagosTone(vagos))}>{vagos}</span>
                   {pend > 0 && (
-                    <span className="rounded bg-status-progress px-1 text-[10px] font-semibold text-status-progress-foreground">
+                    <span className="rounded bg-status-progress px-1 text-2xs font-semibold text-status-progress-foreground">
                       +{pend}
                     </span>
                   )}
@@ -537,7 +537,7 @@ function PaineisPage() {
                   key={cp.id}
                   className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-1.5 text-sm"
                 >
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-status-progress-foreground">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-status-progress-foreground">
                     Para entrar
                   </span>
                   <Link
@@ -642,7 +642,7 @@ function PaineisPage() {
                             key={p.id}
                             type="button"
                             onClick={() => abrirPainel(p.id)}
-                            className="rounded-md border px-1.5 py-px text-[11px] font-semibold hover:bg-muted"
+                            className="rounded-md border px-1.5 py-px text-xs font-semibold hover:bg-muted"
                           >
                             {p.codigo}
                           </button>
@@ -661,7 +661,7 @@ function PaineisPage() {
             <div className="surface-card overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
                     <th className="px-4 py-2 font-medium">Painel</th>
                     <th className="px-4 py-2 text-center font-medium">Vagos</th>
                     <th className="px-4 py-2 text-center font-medium">Situação</th>

@@ -189,7 +189,7 @@ function LiberacoesPage() {
                   {a.label}
                   <span
                     className={cn(
-                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      "rounded-full px-1.5 text-xs tabular-nums",
                       a.value === "edicao" && porAba.edicao.length > 0
                         ? "bg-destructive/10 text-destructive"
                         : "bg-muted text-muted-foreground",

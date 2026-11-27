@@ -306,7 +306,7 @@ function CartaoServico({
       )}
       {s.observacao && <p className="text-xs italic text-muted-foreground">💬 {s.observacao}</p>}
       {s.reagendamentos > 0 && (
-        <p className="flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-400">
+        <p className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">
           <AlertTriangle className="size-3" />
           Reagendado {s.reagendamentos}x · era {dataCurtaBR(s.dataOriginal)}
         </p>

@@ -87,7 +87,7 @@ function HeaderField({
     <div className="grid grid-cols-[6.75rem_minmax(0,1fr)] items-stretch overflow-hidden rounded-md border border-border">
       <label
         htmlFor={htmlFor}
-        className="flex items-center bg-secondary px-2.5 py-1.5 text-[10px] font-semibold uppercase leading-tight tracking-wide text-muted-foreground"
+        className="flex items-center bg-secondary px-2.5 py-1.5 text-2xs font-semibold uppercase leading-tight tracking-wide text-muted-foreground"
       >
         {label}
       </label>
@@ -494,10 +494,10 @@ export function LiberacaoEditor({
         <div className="overflow-x-auto">
           <table className="w-full min-w-[58rem] table-fixed border-collapse text-sm">
             <thead>
-              <tr className="bg-primary text-[11px] font-semibold uppercase tracking-wide text-primary-foreground">
+              <tr className="bg-primary text-xs font-semibold uppercase tracking-wide text-primary-foreground">
                 <th
                   rowSpan={2}
-                  className="w-[9%] border border-border bg-secondary px-1 py-2 text-[10px] leading-tight text-secondary-foreground"
+                  className="w-[9%] border border-border bg-secondary px-1 py-2 text-2xs leading-tight text-secondary-foreground"
                 >
                   {info.referencia}
                 </th>
@@ -521,7 +521,7 @@ export function LiberacaoEditor({
                   <th rowSpan={2} className={cn(th, "w-[2.25rem]")} aria-label="Remover" />
                 )}
               </tr>
-              <tr className="bg-primary text-[9px] font-semibold uppercase text-primary-foreground/80">
+              <tr className="bg-primary text-2xs font-semibold uppercase text-primary-foreground/80">
                 <th className={cn(th, "px-1 pb-1")}>Largura</th>
                 <th className={cn(th, "px-1 pb-1")}>Altura</th>
               </tr>
